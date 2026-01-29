@@ -15,13 +15,20 @@ async function startApp() {
     try {
         browser = await puppeteer.launch({
             headless: "new",
-            args: ['--no-sandbox', '--disable-setuid-sandbox'] 
+            // ESTA ES LA RUTA QUE RENDER SÍ RECONOCE
+            executablePath: '/usr/bin/google-chrome-stable', 
+            args: [
+                '--no-sandbox', 
+                '--disable-setuid-sandbox', 
+                '--disable-dev-shm-usage', 
+                '--single-process'
+            ]
         });
         console.log('🚀 Sniper Animelandia: MOTOR OPERATIVO');
         const PORT = process.env.PORT || 3000;
         app.listen(PORT, () => console.log(`🔥 Servidor listo en puerto ${PORT}`));
     } catch (err) { 
-        console.error("❌ Error al arrancar:", err); 
+        console.error("❌ Error fatal:", err); 
     }
 }
 startApp();
