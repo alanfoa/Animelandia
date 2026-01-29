@@ -15,11 +15,22 @@ async function startApp() {
     try {
         browser = await puppeteer.launch({
             headless: "new",
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--window-size=1920,1080']
+            // ESTA LINEA PARA RENDER
+            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || null, 
+            args: [
+                '--no-sandbox', 
+                '--disable-setuid-sandbox', 
+                '--disable-dev-shm-usage', 
+                '--single-process', 
+                '--no-zygote'
+            ]
         });
-        console.log('Animelandia corriendo.✅');
-        app.listen(3000, () => console.log('🔥 Servidor en puerto 3000'));
-    } catch (err) { console.error("❌ Error:", err); }
+        console.log('🚀 Sniper Animelandia: MOTOR OPERATIVO');
+        // Usar el puerto que asigne Render
+        app.listen(process.env.PORT || 3000, () => console.log('🔥 Servidor listo'));
+    } catch (err) { 
+        console.error("❌ Error al arrancar:", err); 
+    }
 }
 startApp();
 
