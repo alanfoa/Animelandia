@@ -1,36 +1,40 @@
 const express = require('express');
+const cors = require('cors');
 const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
-const cors = require('cors');
 
 puppeteer.use(StealthPlugin());
-const app = express();
-app.use(cors());
 
 let browser;
-let INFO_CACHE = new Map();
-let LATEST_CACHE = { data: null, lastUpdate: 0 };
 
 async function startApp() {
     try {
-        // Lanzamos sin executablePath para que use el del Build Command
         browser = await puppeteer.launch({
             headless: "new",
+
+            // 👇 ESTO ES LO QUE ARREGLA RENDER
+            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+
             args: [
-                '--no-sandbox', 
-                '--disable-setuid-sandbox', 
-                '--disable-dev-shm-usage', 
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
                 '--single-process',
-                '--no-zygote'
+                '--no-zygote',
+                '--disable-gpu'
             ]
         });
+
         console.log('🚀 Sniper Animelandia: MOTOR OPERATIVO');
+
         const PORT = process.env.PORT || 3000;
         app.listen(PORT, () => console.log(`🔥 Servidor listo en puerto ${PORT}`));
-    } catch (err) { 
-        console.error("❌ Error al arrancar:", err); 
+
+    } catch (err) {
+        console.error("❌ Error al arrancar:", err);
     }
 }
+
 startApp();
 
 // 1. ÚLTIMOS ESTRENOS
