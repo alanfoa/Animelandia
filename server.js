@@ -16,23 +16,34 @@ let LATEST_CACHE = { data: null, lastUpdate: 0 };
 
 async function startApp() {
     try {
-        const isProduction = process.env.NODE_ENV === 'production';
+        const port = process.env.PORT || 3000;
+        
+        // PRIMERO levantamos el servidor para que Railway vea que estamos "VIVOS"
+        app.listen(port, '0.0.0.0', () => {
+            console.log(`📡 Servidor escuchando en puerto ${port}`);
+        });
+
+        // ESPERAMOS 5 segundos antes de intentar abrir el pesado motor de Chrome
+        await new Promise(resolve => setTimeout(resolve, 5000));
 
         browser = await puppeteer.launch({
             headless: "new",
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage', // Clave: usa menos memoria compartida
-                '--disable-gpu',           // Clave: no intenta usar placa de video
-                '--no-zygote',             // Clave: ahorra procesos hijo
-                '--single-process'         // Clave: mete todo en un solo proceso
+                '--disable-dev-shm-usage',
+                '--disable-gpu',
+                '--no-first-run',
+                '--no-zygote',
+                '--single-process' // Esto es clave para no multiplicar procesos
             ]
         });
 
+        console.log("🚀 Sniper Animelandia: MOTOR OPERATIVO EN LA NUBE");
+
     } catch (error) {
         console.error("❌ Error al arrancar:", error);
-        process.exit(1);
+        // No matamos el proceso para que al menos el servidor Express responda algo
     }
 }
 
