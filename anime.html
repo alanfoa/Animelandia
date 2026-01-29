@@ -403,7 +403,7 @@
             renderizarFavoritosDetalle();
             if (!slug) return;
             try {
-                const res = await fetch(`http://localhost:3000/anime-info?slug=${slug}`);
+                const res = await fetch(`https://animelandia.up.railway.app/anime-info?slug=${slug}`);
                 const data = await res.json();
                 document.getElementById('sinopsis').innerText = data.descripcion || "Sin descripción.";
                 document.getElementById('rating-val').innerText = data.rating || "0.0";
@@ -496,7 +496,7 @@
             tituloViendo.innerText = `Cargando Episodio ${cap}...`;
             window.scrollTo({ top: 0, behavior: 'smooth' });
             try {
-                const res = await fetch(`http://localhost:3000/get-video?slug=${slug}&cap=${cap}`);
+                const res = await fetch(`https://animelandia.up.railway.app/get-video?slug=${slug}&cap=${cap}`);
                 const data = await res.json();
                 if (data.servidores && data.servidores.length > 0) {
                     divServidores.innerHTML = '';

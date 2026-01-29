@@ -66,7 +66,7 @@
         async function cargarEstrenos() {
             const container = document.getElementById('ultimos-lanzamientos');
             try {
-                const res = await fetch('http://localhost:3000/latest');
+                const res = await fetch('https://animelandia.up.railway.app/latest');
                 const data = await res.json();
                 renderizarEstrenos(data);
             } catch (e) { container.innerHTML = '<p>Error de conexión.</p>'; }
@@ -107,7 +107,7 @@
             container.innerHTML = 'Buscando...';
             document.getElementById('titulo-seccion').innerText = `Resultados para: ${query}`;
             try {
-                const res = await fetch(`http://localhost:3000/search?q=${query}`);
+                const res = await fetch(`https://animelandia.up.railway.app/search?q=${query}`);
                 const data = await res.json();
                 renderizarEstrenos(data);
             } catch (e) { container.innerHTML = 'Error en la búsqueda.'; }
