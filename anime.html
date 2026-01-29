@@ -206,10 +206,13 @@
             gap: 25px;
             margin-bottom: 30px;
             flex-wrap: wrap;
+            justify-content: center; /* Centra la foto en móviles */
         }
 
         .info-header img {
             width: 220px;
+            height: auto; /* Evita que se estire verticalmente */
+            object-fit: contain; /* Mantiene la proporción real */
             border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }

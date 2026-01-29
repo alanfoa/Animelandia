@@ -39,7 +39,7 @@ async function startApp() {
             ]
         });
 
-        console.log("🚀 Sniper Animelandia: MOTOR OPERATIVO EN LA NUBE");
+        console.log("Servidor corriendo en la nube ✅");
 
     } catch (error) {
         console.error("❌ Error al arrancar:", error);
