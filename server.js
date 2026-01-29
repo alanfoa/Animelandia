@@ -20,8 +20,10 @@ async function startApp() {
 
         browser = await puppeteer.launch({
             headless: "new",
-            // Cambiamos a la ruta de Chromium que Railway sí puede instalar
-            executablePath: isProduction ? '/usr/bin/chromium' : null,
+            // ESTA ES LA CLAVE: Si no encuentra la ruta manual, busca la automática de Railway
+            executablePath: isProduction 
+                ? (process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium') 
+                : null,
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
@@ -32,8 +34,8 @@ async function startApp() {
         });
 
         console.log(isProduction 
-            ? "🚀 Sniper Animelandia: MOTOR OPERATIVO EN LA NUBE (Chromium)" 
-            : "💻 Sniper Animelandia: MOTOR OPERATIVO LOCAL");
+            ? "🚀 Sniper Animelandia: MOTOR OPERATIVO" 
+            : "💻 Sniper Animelandia: MOTOR LOCAL");
 
         const port = process.env.PORT || 3000;
         app.listen(port, () => {
