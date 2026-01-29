@@ -15,8 +15,6 @@ async function startApp() {
     try {
         browser = await puppeteer.launch({
             headless: "new",
-            // ESTA ES LA RUTA QUE RENDER SÍ RECONOCE
-            executablePath: '/usr/bin/google-chrome-stable', 
             args: [
                 '--no-sandbox', 
                 '--disable-setuid-sandbox', 
@@ -28,7 +26,7 @@ async function startApp() {
         const PORT = process.env.PORT || 3000;
         app.listen(PORT, () => console.log(`🔥 Servidor listo en puerto ${PORT}`));
     } catch (err) { 
-        console.error("❌ Error fatal:", err); 
+        console.error("❌ Error al arrancar:", err); 
     }
 }
 startApp();
