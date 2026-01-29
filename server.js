@@ -13,13 +13,15 @@ let LATEST_CACHE = { data: null, lastUpdate: 0 };
 
 async function startApp() {
     try {
+        // Lanzamos sin executablePath para que use el del Build Command
         browser = await puppeteer.launch({
             headless: "new",
             args: [
                 '--no-sandbox', 
                 '--disable-setuid-sandbox', 
                 '--disable-dev-shm-usage', 
-                '--single-process'
+                '--single-process',
+                '--no-zygote'
             ]
         });
         console.log('🚀 Sniper Animelandia: MOTOR OPERATIVO');
