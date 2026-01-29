@@ -15,8 +15,6 @@ async function startApp() {
     try {
         browser = await puppeteer.launch({
             headless: "new",
-            // ESTA LINEA PARA RENDER
-            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || null, 
             args: [
                 '--no-sandbox', 
                 '--disable-setuid-sandbox', 
@@ -26,8 +24,9 @@ async function startApp() {
             ]
         });
         console.log('🚀 Sniper Animelandia: MOTOR OPERATIVO');
-        // Usar el puerto que asigne Render
-        app.listen(process.env.PORT || 3000, () => console.log('🔥 Servidor listo'));
+        // Importante: Usar el puerto que nos da Render
+        const PORT = process.env.PORT || 3000;
+        app.listen(PORT, () => console.log(`🔥 Servidor listo en puerto ${PORT}`));
     } catch (err) { 
         console.error("❌ Error al arrancar:", err); 
     }
