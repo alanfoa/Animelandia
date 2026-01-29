@@ -1,5 +1,6 @@
 const express = require('express');
 const puppeteer = require('puppeteer-extra');
+
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const cors = require('cors');
 
@@ -17,8 +18,6 @@ async function startApp() {
     try {
         browser = await puppeteer.launch({
             headless: "new",
-
-
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
@@ -28,6 +27,7 @@ async function startApp() {
                 '--disable-gpu'
             ]
         });
+
 
         console.log('🚀 Sniper Animelandia: MOTOR OPERATIVO');
 
@@ -47,14 +47,14 @@ app.get('/latest', async (req, res) => {
     const ahora = Date.now();
     // Cache de 10 minutos para no saturar
     if (LATEST_CACHE.data && (ahora - LATEST_CACHE.lastUpdate < 600000)) return res.json(LATEST_CACHE.data);
-    
+
     const page = await browser.newPage();
     try {
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
-        
+
         // Vamos directo a la home sin parámetros de página
         await page.goto('https://animeav1.com/', { waitUntil: 'domcontentloaded' });
-        
+
         const episodios = await page.evaluate(() => {
             const scripts = Array.from(document.querySelectorAll('script'));
             const target = scripts.find(s => s.innerText.includes('latestEpisodes'));
@@ -62,11 +62,11 @@ app.get('/latest', async (req, res) => {
             const regex = /media:\{id:(\d+),slug:"([^"]+)",title:"([^"]+)"\},number:(\d+)/g;
             let m;
             while ((m = regex.exec(target.innerText)) !== null) {
-                results.push({ 
-                    titulo: m[3], 
-                    imagen: `https://cdn.animeav1.com/covers/${m[1]}.jpg`, 
-                    slug: m[2], 
-                    cap: m[4] 
+                results.push({
+                    titulo: m[3],
+                    imagen: `https://cdn.animeav1.com/covers/${m[1]}.jpg`,
+                    slug: m[2],
+                    cap: m[4]
                 });
             }
             return results;
@@ -75,9 +75,9 @@ app.get('/latest', async (req, res) => {
         await page.close();
         LATEST_CACHE = { data: episodios.slice(0, 24), lastUpdate: ahora };
         res.json(LATEST_CACHE.data);
-    } catch (e) { 
-        if (page) await page.close(); 
-        res.json([]); 
+    } catch (e) {
+        if (page) await page.close();
+        res.json([]);
     }
 });
 
@@ -88,8 +88,8 @@ app.get('/search', async (req, res) => {
     try {
         await pageBrowser.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
 
-        let urlBase = (q.includes('minYear') || q.includes('category') || q.includes('genre') || q.includes('status')) 
-            ? `https://animeav1.com/catalogo?${q}` 
+        let urlBase = (q.includes('minYear') || q.includes('category') || q.includes('genre') || q.includes('status'))
+            ? `https://animeav1.com/catalogo?${q}`
             : `https://animeav1.com/catalogo?search=${encodeURIComponent(q)}`;
 
         // Agregamos el parámetro de página a la URL oficial
@@ -105,7 +105,7 @@ app.get('/search', async (req, res) => {
                 const img = item.querySelector('img');
                 const h3 = item.querySelector('h3');
                 const labels = Array.from(item.querySelectorAll('div')).map(d => d.innerText.toUpperCase().trim());
-                
+
                 let tipo = "Anime";
                 if (labels.some(l => l.includes("PELÍCULA"))) tipo = "PELÍCULA";
                 else if (labels.some(l => l.includes("OVA"))) tipo = "OVA";
