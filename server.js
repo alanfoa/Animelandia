@@ -20,20 +20,14 @@ async function startApp() {
 
         browser = await puppeteer.launch({
             headless: "new",
-            // Esta línea va a probar la variable de Railway, y si no, busca en la ruta de Nix
-            executablePath: isProduction
-                ? (process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium' || '/app/.nixpacks/bin/chromium')
-                : null,
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
-        });
-
-        console.log(isProduction
-            ? "🚀 Sniper Animelandia: MOTOR OPERATIVO"
-            : "💻 Sniper Animelandia: MOTOR LOCAL");
-
-        const port = process.env.PORT || 3000;
-        app.listen(port, () => {
-            console.log(`📡 Servidor escuchando en puerto ${port}`);
+            // Borramos el executablePath manual. 
+            // Puppeteer usará el que descargó npx en el postinstall.
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--single-process'
+            ]
         });
 
     } catch (error) {

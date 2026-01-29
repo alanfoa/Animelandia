@@ -1,23 +1,21 @@
-# Usamos una imagen de Node que ya trae herramientas de Linux
-FROM ghcr.io/puppeteer/puppeteer:24.1.1
+FROM node:18
 
-# Cambiamos al usuario root para instalar lo que falte
-USER root
+# Instalamos las dependencias de Linux necesarias para que Chrome corra
+RUN apt-get update && apt-get install -y \
+    wget \
+    gnupg \
+    ca-certificates \
+    procps \
+    libxss1 \
+    --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
 
-# Configuramos el directorio de trabajo
 WORKDIR /app
-
-# Copiamos los archivos de dependencias
 COPY package*.json ./
+RUN npm install
+# Este comando descarga el navegador correcto para este sistema
+RUN npx puppeteer browsers install chrome
 
-# Instalamos las dependencias
-RUN npm ci
-
-# Copiamos el resto del código
 COPY . .
-
-# Exponemos el puerto (Railway usa el que definas en variables)
 EXPOSE 3000
-
-# Comando para arrancar
 CMD ["node", "server.js"]
