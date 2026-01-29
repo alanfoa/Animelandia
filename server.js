@@ -16,24 +16,18 @@ let LATEST_CACHE = { data: null, lastUpdate: 0 };
 
 async function startApp() {
     try {
+        // Detecta si está en un servidor (Render, Railway, etc) o en tu PC
+        const isProduction = process.env.NODE_ENV === 'production' || process.env.PORT;
+        
         browser = await puppeteer.launch({
             headless: "new",
-            args: [
-                '--no-sandbox',
-                '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage',
-                '--single-process',
-                '--no-zygote',
-                '--disable-gpu'
-            ]
+            // Si está en el servidor, usa la ruta de Linux. Si es tu PC, usa la de Chrome local.
+            executablePath: isProduction ? '/usr/bin/google-chrome-stable' : null,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
-
-
-        console.log('🚀 Sniper Animelandia: MOTOR OPERATIVO');
-
-        const PORT = process.env.PORT || 3000;
-        app.listen(PORT, () => console.log(`🔥 Servidor listo en puerto ${PORT}`));
-
+        
+        console.log(`🚀 Motor operativo en modo: ${isProduction ? 'PRODUCCIÓN' : 'LOCAL'}`);
+        app.listen(process.env.PORT || 3000, () => console.log('🔥 Servidor listo'));
     } catch (err) {
         console.error("❌ Error al arrancar:", err);
     }
