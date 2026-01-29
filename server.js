@@ -20,13 +20,13 @@ async function startApp() {
 
         browser = await puppeteer.launch({
             headless: "new",
-            // Borramos el executablePath manual. 
-            // Puppeteer usará el que descargó npx en el postinstall.
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage',
-                '--single-process'
+                '--disable-dev-shm-usage', // Clave: usa menos memoria compartida
+                '--disable-gpu',           // Clave: no intenta usar placa de video
+                '--no-zygote',             // Clave: ahorra procesos hijo
+                '--single-process'         // Clave: mete todo en un solo proceso
             ]
         });
 
