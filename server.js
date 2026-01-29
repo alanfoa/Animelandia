@@ -20,21 +20,15 @@ async function startApp() {
 
         browser = await puppeteer.launch({
             headless: "new",
-            // ESTA ES LA CLAVE: Si no encuentra la ruta manual, busca la automática de Railway
-            executablePath: isProduction 
-                ? (process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium') 
+            // Esta línea va a probar la variable de Railway, y si no, busca en la ruta de Nix
+            executablePath: isProduction
+                ? (process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium' || '/app/.nixpacks/bin/chromium')
                 : null,
-            args: [
-                '--no-sandbox',
-                '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage',
-                '--single-process',
-                '--no-zygote'
-            ]
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
 
-        console.log(isProduction 
-            ? "🚀 Sniper Animelandia: MOTOR OPERATIVO" 
+        console.log(isProduction
+            ? "🚀 Sniper Animelandia: MOTOR OPERATIVO"
             : "💻 Sniper Animelandia: MOTOR LOCAL");
 
         const port = process.env.PORT || 3000;
