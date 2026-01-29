@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Animelandia - Explorar</title>
+    <link rel="icon" type="image/png" href="assets/img/Logo.png">
+    <style>
+        :root {
+            --racing-celeste: #00AEEF;
+            --dark-bg: #f0f2f5;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            background: var(--dark-bg);
+            font-family: 'Open Sans', sans-serif;
+            margin: 0;
+        }
+
+        /* HEADER IDENTICO AL INDEX */
+        header {
+            background: #fff;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 3px solid var(--racing-celeste);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        header img {
+            height: 150px;
+            width: auto;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        /* SEARCH BOX IDENTICA AL INDEX */
+        .search-box {
+            background: white;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            padding: 12px;
+            width: 400px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            outline: none;
+        }
+
+        .btn-main {
+            padding: 12px 25px;
+            cursor: pointer;
+            background: var(--racing-celeste);
+            color: white;
+            font-weight: bold;
+            border-radius: 8px;
+            border: none;
+            text-transform: uppercase;
+            transition: 0.2s;
+        }
+
+        .btn-inicio { background: #6c757d; }
+        .btn-catalogo { background: #0056b3; }
+        .btn-fav-nav { background: #ffc107; color: #000; }
+        .btn-main:hover { opacity: 0.9; transform: scale(1.05); }
+
+        /* PANEL DE FILTROS */
+        .filter-panel {
+            background: white;
+            padding: 25px;
+            margin: 20px auto;
+            max-width: 1100px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-group label {
+            font-weight: bold;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .filter-group select {
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            outline: none;
+            background: #fff;
+        }
+
+        .btn-search-adv {
+            grid-column: 1 / -1;
+            background: var(--racing-celeste);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            margin-top: 10px;
+            transition: 0.2s;
+        }
+
+        /* RESULTADOS */
+        .results-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 20px rgba(0, 174, 239, 0.3);
+        }
+
+        .card img {
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+            background: #000;
+        }
+
+        .card-year {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--racing-celeste);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .card-info {
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 13px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.2;
+        }
+
+        #btn-cargar-mas-animes {
+            display: none;
+            width: 300px;
+            margin: 30px auto;
+            padding: 15px;
+            background: var(--racing-celeste);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html">
+            <img src="assets/img/Logo.png" alt="Logo" onerror="this.src='https://via.placeholder.com/280x150?text=Animelandia'">
+        </a>
+    </header>
+
+    <div class="search-box">
+        <button class="btn-main btn-inicio" onclick="window.location.href='index.html'">INICIO</button>
+        <input type="text" id="input-buscador" placeholder="Busque su anime favorito..." onkeyup="if(event.key === 'Enter') buscarYRedirigir()">
+        <button class="btn-main" onclick="buscarYRedirigir()">BUSCAR</button>
+        <button class="btn-main btn-catalogo" onclick="window.location.href='explorar.html'">CATALOGO</button>
+        <button class="btn-main btn-fav-nav" onclick="window.location.href='index.html#seccion-favoritos'">⭐ FAVORITOS</button>
+    </div>
+
+    <div class="filter-panel">
+        <h3 style="margin-top:0; color: #555;">Filtros de Catálogo</h3>
+        <div class="filter-grid">
+            <div class="filter-group">
+                <label>Género</label>
+                <select id="f-genero">
+                    <option value="">Cualquiera</option>
+                    <option value="accion">Acción</option>
+                    <option value="aventura">Aventura</option>
+                    <option value="ciencia-ficcion">Ciencia Ficción</option>
+                    <option value="comedia">Comedia</option>
+                    <option value="deportes">Deportes</option>
+                    <option value="drama">Drama</option>
+                    <option value="fantasia">Fantasía</option>
+                    <option value="misterio">Misterio</option>
+                    <option value="romance">Romance</option>
+                    <option value="seinen">Seinen</option>
+                    <option value="shoujo">Shoujo</option>
+                    <option value="shounen">Shounen</option>
+                    <option value="sobrenatural">Sobrenatural</option>
+                    <option value="suspenso">Suspenso</option>
+                    <option value="terror">Terror</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Año</label>
+                <select id="f-year">
+                    <option value="">Cualquier año</option>
+                </select>
+            </div>
+
+            <button class="btn-search-adv" onclick="ejecutarFiltro()">APLICAR FILTROS</button>
+        </div>
+    </div>
+
+    <div id="resultados" class="results-container"></div>
+    <button id="btn-cargar-mas-animes" onclick="mostrarMasAnimes()">
+        CARGAR MÁS ANIMES
+    </button>
+
+    <script>
+        // Generador de años
+        const yearSelect = document.getElementById('f-year');
+        for (let y = 2026; y >= 1990; y--) {
+            let opt = document.createElement('option');
+            opt.value = y;
+            opt.innerText = y;
+            yearSelect.appendChild(opt);
+        }
+
+        let currentQuery = ""; 
+        let paginaCargar = 1;  
+
+        // Función para la barra de búsqueda superior (igual que en index)
+        function buscarYRedirigir() {
+            const q = document.getElementById('input-buscador').value;
+            if (q) window.location.href = `index.html?search=${encodeURIComponent(q)}`;
+        }
+
+        async function ejecutarFiltro() {
+            const container = document.getElementById('resultados');
+            const btn = document.getElementById('btn-cargar-mas-animes');
+
+            container.innerHTML = '<div style="grid-column: 1/-1; text-align:center;"><p> Buscando... </p></div>';
+            btn.style.display = 'none';
+            paginaCargar = 1; 
+
+            let params = new URLSearchParams();
+            const y = document.getElementById('f-year').value;
+            const g = document.getElementById('f-genero').value;
+
+            if (y) {
+                params.append('minYear', y);
+                params.append('maxYear', y);
+            }
+            if (g) params.append('genre', g);
+
+            currentQuery = params.toString(); 
+            await buscarPagina(paginaCargar, true);
+        }
+
+        async function buscarPagina(num, esNuevaBusqueda) {
+            const container = document.getElementById('resultados');
+            const btn = document.getElementById('btn-cargar-mas-animes');
+
+            try {
+                const res = await fetch(`http://localhost:3000/search?q=${encodeURIComponent(currentQuery)}&page=${num}`);
+                const nuevosAnimes = await res.json();
+
+                if (esNuevaBusqueda) container.innerHTML = '';
+
+                if (nuevosAnimes.length === 0) {
+                    if (esNuevaBusqueda) container.innerHTML = '<p>No hay resultados.</p>';
+                    btn.style.display = 'none';
+                    return;
+                }
+
+                nuevosAnimes.forEach(anime => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.onclick = () => window.location.href = `anime.html?slug=${anime.slug}&titulo=${encodeURIComponent(anime.titulo)}&imagen=${encodeURIComponent(anime.imagen)}`;
+                    card.innerHTML = `
+                        ${anime.anio ? `<div class="card-year">${anime.anio}</div>` : ''}
+                        <img src="${anime.imagen}" onerror="this.src='https://via.placeholder.com/200x280?text=Sin+Imagen'">
+                        <div class="card-info"><b>${anime.titulo}</b></div>
+                    `;
+                    container.appendChild(card);
+                });
+
+                btn.style.display = (nuevosAnimes.length >= 20) ? 'block' : 'none';
+                btn.innerText = "CARGAR MÁS (PÁGINA " + (num + 1) + ")";
+
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function mostrarMasAnimes() {
+            const btn = document.getElementById('btn-cargar-mas-animes');
+            btn.innerText = "CARGANDO...";
+            paginaCargar++;
+            await buscarPagina(paginaCargar, false);
+        }
+
+        window.onload = () => ejecutarFiltro();
+    </script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Animelandia - Inicio</title>
+    <link rel="icon" type="image/png" href="assets/img/Logo.png">
+    <style>
+        :root { --racing-celeste: #00AEEF; --dark-bg: #f0f2f5; --card-bg: #ffffff; }
+        body { background: var(--dark-bg); font-family: 'Open Sans', sans-serif; margin: 0; scroll-behavior: smooth; }
+        header { background: #fff; padding: 10px; display: flex; align-items: center; justify-content: center; border-bottom: 3px solid var(--racing-celeste); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
+        header img { height: 150px; width: auto; cursor: pointer; transition: 0.3s; }
+        .search-box { background: white; padding: 20px; text-align: center; border-bottom: 1px solid #ddd; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        input[type="text"] { padding: 12px; width: 400px; border-radius: 8px; border: 1px solid #ddd; outline: none; }
+        .btn-main { padding: 12px 25px; cursor: pointer; background: var(--racing-celeste); color: white; font-weight: bold; border-radius: 8px; border: none; text-transform: uppercase; transition: 0.2s; }
+        .btn-inicio { background: #6c757d; }
+        .btn-catalogo { background: #0056b3; }
+        .btn-fav-nav { background: #ffc107; color: #000; }
+        .btn-main:hover { opacity: 0.9; transform: scale(1.05); }
+        .container { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 25px; padding: 20px 50px; }
+        .card { background: var(--card-bg); border-radius: 10px; overflow: hidden; position: relative; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: 0.3s; cursor: pointer; }
+        .card:hover { transform: translateY(-8px); box-shadow: 0 10px 20px rgba(0, 174, 239, 0.3); }
+        .card img { width: 100%; height: 280px; object-fit: contain; background: #000; }
+        .ep-tag { position: absolute; top: 10px; left: 10px; background: var(--racing-celeste); color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; z-index: 5; text-transform: uppercase; }
+        .btn-fav { position: absolute; bottom: 60px; right: 10px; background: white; border: 2px solid var(--racing-celeste); border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 20; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); }
+        .card-info { padding: 15px; text-align: center; background: white; position: relative; z-index: 10; font-size: 14px; height: 40px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    </style>
+</head>
+
+<body>
+    <header>
+        <a href="index.html">
+            <img src="assets/img/Logo.png" alt="Logo" onerror="this.src='https://via.placeholder.com/280x100?text=Animelandia'">
+        </a>
+    </header>
+
+    <div class="search-box">
+        <button class="btn-main btn-inicio" onclick="window.location.href='index.html'">INICIO</button>
+        <input type="text" id="input-buscador" placeholder="Busque su anime favorito..." onkeyup="if(event.key === 'Enter') buscarAnime()">
+        <button class="btn-main" onclick="buscarAnime()">BUSCAR</button>
+        <button class="btn-main btn-catalogo" onclick="window.location.href='explorar.html'">CATALOGO</button>
+        <button class="btn-main btn-fav-nav" onclick="document.getElementById('seccion-favoritos').scrollIntoView();">⭐ FAVORITOS</button>
+    </div>
+
+    <h2 id="titulo-seccion" style="padding: 20px 50px 0; color: var(--racing-celeste);">Ultimos Estrenos:</h2>
+    <div id="ultimos-lanzamientos" class="container">Cargando animes...</div>
+
+    <h2 id="seccion-favoritos" style="padding: 20px 50px 0; color: var(--racing-celeste);">Favoritos ⭐</h2>
+    <div id="miLista" class="container"></div>
+
+    <script>
+        const listaDiv = document.getElementById('miLista');
+        let favoritos = JSON.parse(localStorage.getItem('misAnimes')) || [];
+
+        renderizarLista();
+
+        window.onload = async () => {
+            const params = new URLSearchParams(window.location.search);
+            const searchQuery = params.get('search');
+            if (searchQuery) {
+                document.getElementById('input-buscador').value = searchQuery;
+                buscarAnime();
+            } else { await cargarEstrenos(); }
+        };
+
+        async function cargarEstrenos() {
+            const container = document.getElementById('ultimos-lanzamientos');
+            try {
+                const res = await fetch('http://localhost:3000/latest');
+                const data = await res.json();
+                renderizarEstrenos(data);
+            } catch (e) { container.innerHTML = '<p>Error de conexión.</p>'; }
+        }
+
+        function renderizarEstrenos(episodios) {
+            const container = document.getElementById('ultimos-lanzamientos');
+            container.innerHTML = '';
+
+            episodios.forEach(ep => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => irADetalle(ep.slug, ep.titulo, ep.imagen);
+
+                // CORRECCIÓN DEL "UNDEFINED"
+                // Si existe 'cap' (es un estreno), muestra Cap. X
+                // Si no existe (es una búsqueda), muestra el Tipo (Movie/TV) o el Año
+                const etiquetaTexto = ep.cap ? `Cap. ${ep.cap}` : (ep.tipo || ep.anio || "Anime");
+
+                card.innerHTML = `
+                    <div class="ep-tag">${etiquetaTexto}</div>
+                    <button class="btn-fav">⭐</button>
+                    <img src="${ep.imagen}" onerror="this.src='https://via.placeholder.com/200x280?text=Sin+Imagen'">
+                    <div class="card-info"><b>${ep.titulo}</b></div>`;
+
+                card.querySelector('.btn-fav').onclick = (e) => {
+                    e.stopPropagation();
+                    guardar(ep);
+                };
+                container.appendChild(card);
+            });
+        }
+
+        async function buscarAnime() {
+            const query = document.getElementById('input-buscador').value.trim();
+            if (!query) return;
+            const container = document.getElementById('ultimos-lanzamientos');
+            container.innerHTML = 'Buscando...';
+            document.getElementById('titulo-seccion').innerText = `Resultados para: ${query}`;
+            try {
+                const res = await fetch(`http://localhost:3000/search?q=${query}`);
+                const data = await res.json();
+                renderizarEstrenos(data);
+            } catch (e) { container.innerHTML = 'Error en la búsqueda.'; }
+        }
+
+        function irADetalle(slug, titulo, imagen) {
+            window.location.href = `anime.html?slug=${slug}&titulo=${encodeURIComponent(titulo)}&imagen=${encodeURIComponent(imagen)}`;
+        }
+
+        function renderizarLista() {
+            listaDiv.innerHTML = '';
+            favoritos.forEach((anime, i) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => irADetalle(anime.slug, anime.titulo, anime.imagen);
+                card.innerHTML = `<img src="${anime.imagen}"><div class="card-info"><b>${anime.titulo}</b></div>
+                    <button class="btn-main" style="width:100%; border-radius:0; background:#666;" onclick="event.stopPropagation(); borrar(${i})">QUITAR</button>`;
+                listaDiv.appendChild(card);
+            });
+        }
+
+        function guardar(obj) {
+            if (!favoritos.some(f => f.slug === obj.slug)) {
+                favoritos.push(obj);
+                localStorage.setItem('misAnimes', JSON.stringify(favoritos));
+                renderizarLista();
+                alert(`¡${obj.titulo} guardado!`);
+            }
+        }
+
+        function borrar(i) { favoritos.splice(i, 1); localStorage.setItem('misAnimes', JSON.stringify(favoritos)); renderizarLista(); }
+    </script>
+</body>
+</html>
