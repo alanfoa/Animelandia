@@ -1,19 +1,23 @@
 const express = require('express');
-const cors = require('cors');
 const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+const cors = require('cors');
 
 puppeteer.use(StealthPlugin());
 
+const app = express();   // ← CREA EXPRESS
+app.use(cors());
+
 let browser;
+
+let INFO_CACHE = new Map();
+let LATEST_CACHE = { data: null, lastUpdate: 0 };
 
 async function startApp() {
     try {
         browser = await puppeteer.launch({
             headless: "new",
 
-            // 👇 ESTO ES LO QUE ARREGLA RENDER
-            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
 
             args: [
                 '--no-sandbox',
