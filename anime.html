@@ -556,47 +556,57 @@
         }
 
         async function buscarOpciones(cap) {
+
             const rep = document.getElementById('reproductor');
+
             const frame = document.getElementById('video-frame');
+
             const tituloViendo = document.getElementById('viendo-titulo');
+
             const divServidores = document.getElementById('contenedor-servidores');
 
-            // Reseteamos visualmente ANTES de pedir los datos
             rep.style.display = 'block';
-            divServidores.innerHTML = '🔍 Buscando servidores...';
+
+            divServidores.innerHTML = ' Buscando servidores...';
+
             tituloViendo.innerText = `Cargando Episodio ${cap}...`;
-            frame.src = ''; // Limpiamos el video anterior
-            frame.style.display = 'none'; // Escondemos el cuadro hasta que elijas servidor
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
             try {
-                // Hacemos el fetch al Sniper en Railway
+
                 const res = await fetch(`https://animelandia.up.railway.app/get-video?slug=${slug}&cap=${cap}`);
+
                 const data = await res.json();
 
                 if (data.servidores && data.servidores.length > 0) {
+
                     divServidores.innerHTML = '';
+
                     tituloViendo.innerText = `Viendo Episodio ${cap}`;
 
                     data.servidores.forEach(srv => {
+
                         const btn = document.createElement('button');
-                        btn.className = 'btn-servidor';
-                        btn.innerText = srv.nombre;
+
+                        btn.className = 'btn-servidor'; btn.innerText = srv.nombre;
+
                         btn.onclick = () => {
-                            frame.src = srv.url;
-                            frame.style.display = 'block';
+
+                            frame.src = srv.url; frame.style.display = 'block';
+
                             frame.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
                         };
+
                         divServidores.appendChild(btn);
+
                     });
-                } else {
-                    divServidores.innerHTML = '⚠️ No hay reproductores disponibles.';
-                }
-            } catch (e) {
-                console.error(e);
-                tituloViendo.innerText = "❌ Error: El Sniper está reiniciando...";
-            }
+
+                } else divServidores.innerHTML = '⚠️ No hay reproductores.';
+
+            } catch (e) { tituloViendo.innerText = "❌ Error Sniper."; }
+
         }
     </script>
 </body>
