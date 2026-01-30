@@ -325,38 +325,48 @@
             transform: translateX(-5px);
         }
 
-        /* Ajustes para Celulares */
         @media (max-width: 768px) {
-            header img {
-                height: 80px; /* Logo más chico en móviles */
-            }
+            header img { height: 70px; } /* Logo más sutil */
 
             .search-box {
-                flex-direction: column; /* Botones uno arriba del otro */
+                flex-direction: column;
+                gap: 8px;
                 padding: 10px;
             }
 
-            input[type="text"] {
-                width: 90%; /* Que no se salga de la pantalla */
-            }
+            input[type="text"] { width: 95%; padding: 8px; }
 
+            /* AKÁ EL TRUCO: Ponemos la imagen arriba y el texto abajo */
             .info-header {
-                text-align: center; /* Texto centrado en móviles */
-                gap: 15px;
+                flex-direction: column; 
+                align-items: center;
+                text-align: center;
             }
 
             .info-header img {
-                width: 180px; /* Un toque más chica la portada */
+                width: 70%; /* La imagen ahora es grande y central */
+                max-width: 250px;
+                margin-bottom: 15px;
             }
 
-            #video-frame {
-                height: 250px; /* Reproductor más bajo para que entre en la pantalla */
+            /* Achicamos el texto para que no abrume */
+            #titulo-anime {
+                font-size: 1.5rem !important;
+                margin-bottom: 5px;
             }
 
-            .content {
-                padding: 15px;
-                margin: 10px;
+            #sinopsis {
+                font-size: 14px; /* Texto más fino y legible */
+                line-height: 1.4;
+                color: #444;
             }
+
+            .meta-info {
+                justify-content: center;
+                margin-bottom: 10px;
+            }
+
+            #video-frame { height: 220px; }
         }
 
         
