@@ -53,21 +53,30 @@ startApp();
 // 1. ÚLTIMOS ESTRENOS (CORREGIDO PARA CARGA RÁPIDA)
 app.get('/latest', async (req, res) => {
     const ahora = Date.now();
-    // Cache de 10 minutos para no saturar
-    if (LATEST_CACHE.data && (ahora - LATEST_CACHE.lastUpdate < 600000)) return res.json(LATEST_CACHE.data);
+    // Mantenemos tu cache de 10 minutos para proteger la RAM de Railway
+    if (LATEST_CACHE.data && (ahora - LATEST_CACHE.lastUpdate < 600000)) {
+        return res.json(LATEST_CACHE.data);
+    }
 
-    const page = await browser.newPage();
+    let page;
     try {
+        page = await browser.newPage();
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
 
-        // Vamos directo a la home sin parámetros de página
-        await page.goto('https://animeav1.com/', { waitUntil: 'domcontentloaded' });
+        console.log("🎯 Sniper: Extrayendo últimos estrenos...");
+        await page.goto('https://animeav1.com/', { waitUntil: 'networkidle2', timeout: 30000 });
 
         const episodios = await page.evaluate(() => {
             const scripts = Array.from(document.querySelectorAll('script'));
+            // Buscamos el script que contiene la data de los episodios
             const target = scripts.find(s => s.innerText.includes('latestEpisodes'));
+            if (!target) return [];
+
             const results = [];
-            const regex = /media:\{id:(\d+),slug:"([^"]+)",title:"([^"]+)"\},number:(\d+)/g;
+            // Regex más flexible para capturar id, slug, titulo y número de episodio
+            // Permite espacios opcionales y variaciones en las comillas
+            const regex = /id:(\d+),slug:"([^"]+)",title:"([^"]+)"\},number:(\d+)/g;
+            
             let m;
             while ((m = regex.exec(target.innerText)) !== null) {
                 results.push({
@@ -81,9 +90,18 @@ app.get('/latest', async (req, res) => {
         });
 
         await page.close();
-        LATEST_CACHE = { data: episodios.slice(0, 24), lastUpdate: ahora };
-        res.json(LATEST_CACHE.data);
+
+        if (episodios.length > 0) {
+            LATEST_CACHE = { data: episodios.slice(0, 24), lastUpdate: ahora };
+            console.log(`✅ Sniper: ${episodios.length} estrenos encontrados.`);
+            res.json(LATEST_CACHE.data);
+        } else {
+            console.log("⚠️ Sniper: No se encontraron estrenos en el script.");
+            res.json([]);
+        }
+
     } catch (e) {
+        console.error("❌ Error en Sniper /latest:", e.message);
         if (page) await page.close();
         res.json([]);
     }
