@@ -11,23 +11,37 @@
             --racing-celeste: #00AEEF;
             --dark-bg: #f0f2f5;
             --card-bg: #ffffff;
+            --text-color: #333;
+            --header-bg: #fff;
+            --box-bg: #ffffff;
+        }
+
+        [data-theme="dark"] {
+            --dark-bg: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --header-bg: #1a1a1a;
+            --box-bg: #1a1a1a;
         }
 
         body {
             background: var(--dark-bg);
+            color: var(--text-color);
             font-family: 'Open Sans', sans-serif;
             margin: 0;
             scroll-behavior: smooth;
+            transition: 0.3s;
         }
 
         header {
-            background: #fff;
+            background: var(--header-bg);
             padding: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-bottom: 3px solid var(--racing-celeste);
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
         }
 
         header img {
@@ -37,8 +51,25 @@
             transition: 0.3s;
         }
 
+        .btn-mode {
+            position: absolute;
+            right: 30px;
+            background: var(--racing-celeste);
+            border: none;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
         .search-box {
-            background: white;
+            background: var(--box-bg);
             padding: 20px;
             text-align: center;
             border-bottom: 1px solid #ddd;
@@ -54,6 +85,8 @@
             border-radius: 8px;
             border: 1px solid #ddd;
             outline: none;
+            background: var(--card-bg);
+            color: var(--text-color);
         }
 
         .btn-main {
@@ -68,329 +101,59 @@
             transition: 0.2s;
         }
 
-        .btn-inicio {
-            background: #6c757d;
-        }
-
-        .btn-catalogo {
-            background: #0056b3;
-        }
-
-        .btn-fav-nav {
-            background: #ffc107;
-            color: #000;
-        }
-
-        .btn-main:hover {
-            opacity: 0.9;
-            transform: scale(1.05);
-        }
+        .btn-inicio { background: #6c757d; }
+        .btn-catalogo { background: #0056b3; }
+        .btn-fav-nav { background: #ffc107; color: #000; }
+        .btn-main:hover { opacity: 0.9; transform: scale(1.05); }
 
         .content {
             max-width: 1100px;
             margin: 20px auto;
-            background: white;
+            background: var(--card-bg);
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            color: var(--text-color);
         }
 
-        .meta-info {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
+        .meta-info { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; }
+        .genre-tag { background: #e0e0e0; color: #333; padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: bold; }
+        .rating-tag { background: #ffc107; color: #000; padding: 5px 12px; border-radius: 15px; font-size: 13px; font-weight: bold; display: flex; align-items: center; gap: 5px; }
+        .year-tag { background: var(--racing-celeste); color: white; padding: 5px 12px; border-radius: 15px; font-size: 13px; font-weight: bold; }
 
-        .genre-tag {
-            background: #e0e0e0;
-            color: #333;
-            padding: 5px 12px;
-            border-radius: 15px;
-            font-size: 12px;
-            font-weight: bold;
-        }
+        #reproductor { display: none; margin-bottom: 25px; background: #000; padding: 15px; border-radius: 12px; border: 4px solid var(--racing-celeste); }
+        .lista-servidores { display: flex; justify-content: center; gap: 8px; margin: 15px 0; flex-wrap: wrap; }
+        .btn-servidor { background: var(--racing-celeste); color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s; }
 
-        .rating-tag {
-            background: #ffc107;
-            color: #000;
-            padding: 5px 12px;
-            border-radius: 15px;
-            font-size: 13px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
+        .grid-caps { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
+        .cap-card { position: relative; cursor: pointer; overflow: hidden; border-radius: 10px; transition: 0.3s; aspect-ratio: 16 / 9; background: #000; }
+        .cap-card:hover { transform: scale(1.05); }
+        .cap-card img { width: 100%; height: 100%; object-fit: cover; opacity: 0.7; }
+        .cap-label { position: absolute; bottom: 10px; left: 10px; background: var(--racing-celeste); color: white; padding: 4px 10px; border-radius: 5px; font-weight: bold; font-size: 12px; z-index: 2; }
+        
+        .info-header { display: flex; gap: 25px; margin-bottom: 30px; flex-wrap: wrap; justify-content: center; }
+        .info-header img { width: 220px; max-width: 100%; height: auto; display: block; margin: 0 auto 15px auto; border-radius: 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); }
 
-        /* Tag especial para el Año */
-        .year-tag {
-            background: var(--racing-celeste);
-            color: white;
-            padding: 5px 12px;
-            border-radius: 15px;
-            font-size: 13px;
-            font-weight: bold;
-        }
-
-        #reproductor {
-            display: none;
-            margin-bottom: 25px;
-            background: #000;
-            padding: 15px;
-            border-radius: 12px;
-            border: 4px solid var(--racing-celeste);
-        }
-
-        .lista-servidores {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin: 15px 0;
-            flex-wrap: wrap;
-        }
-
-        .btn-servidor {
-            background: var(--racing-celeste);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.2s;
-        }
-
-        .grid-caps {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .cap-card {
-            position: relative;
-            cursor: pointer;
-            overflow: hidden;
-            border-radius: 10px;
-            transition: 0.3s;
-            aspect-ratio: 16 / 9;
-            background: #000;
-        }
-
-        .cap-card:hover {
-            transform: scale(1.05);
-        }
-
-        .cap-card img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0.7;
-        }
-
-        .cap-label {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            background: var(--racing-celeste);
-            color: white;
-            padding: 4px 10px;
-            border-radius: 5px;
-            font-weight: bold;
-            font-size: 12px;
-            z-index: 2;
-        }
-
-        .info-header {
-            display: flex;
-            gap: 25px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            justify-content: center;
-            /* Centra la foto en móviles */
-        }
-
-        .info-header img {
-            width: 220px;
-            max-width: 100%;
-            /* Evita que se salga de la pantalla */
-            height: auto;
-            display: block;
-            margin: 0 auto 15px auto;
-            /* La centra y le da aire abajo */
-        }
-
-        .container-favs {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .card-fav {
-            background: #fff;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            cursor: pointer;
-            transition: 0.3s;
-            position: relative;
-        }
-
-        .card-fav:hover {
-            transform: translateY(-5px);
-        }
-
-        .card-fav img {
-            width: 100%;
-            height: 250px;
-            object-fit: cover;
-            background: #000;
-        }
-
-        .card-fav-info {
-            padding: 10px;
-            text-align: center;
-            font-size: 13px;
-            font-weight: bold;
-            height: 35px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #btn-cargar-mas {
-            width: 100%;
-            margin-top: 20px;
-            padding: 15px;
-            background: #eee;
-            color: #333;
-            border: 2px dashed #ccc;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        #btn-cargar-mas:hover {
-            background: var(--racing-celeste);
-            color: white;
-            border-style: solid;
-        }
-
-        .caps-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 10px;
-            margin-top: 30px;
-        }
-
-        .search-cap-container {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: #f0f2f5;
-            padding: 8px 15px;
-            border-radius: 25px;
-            border: 1px solid #ddd;
-        }
-
-        .search-cap-container input {
-            border: none;
-            background: transparent;
-            outline: none;
-            width: 120px;
-            font-size: 14px;
-            font-weight: bold;
-        }
-
-        /* Botón Volver Atrás */
-        .btn-back {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: #6c757d;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: bold;
-            margin-bottom: 20px;
-            transition: 0.3s;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn-back:hover {
-            background: #5a6268;
-            transform: translateX(-5px);
-        }
+        .container-favs { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; margin-top: 20px; }
+        .card-fav { background: var(--card-bg); border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); cursor: pointer; transition: 0.3s; position: relative; }
+        .card-fav img { width: 100%; height: 250px; object-fit: cover; background: #000; }
+        .card-fav-info { padding: 10px; text-align: center; font-size: 13px; font-weight: bold; height: 35px; display: flex; align-items: center; justify-content: center; color: var(--text-color); }
+        
+        #btn-cargar-mas { width: 100%; margin-top: 20px; padding: 15px; background: #eee; color: #333; border: 2px dashed #ccc; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .caps-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 30px; }
+        .search-cap-container { display: flex; align-items: center; gap: 8px; background: var(--dark-bg); padding: 8px 15px; border-radius: 25px; border: 1px solid #ddd; }
+        .search-cap-container input { border: none; background: transparent; outline: none; width: 120px; font-size: 14px; font-weight: bold; color: var(--text-color); }
 
         @media (max-width: 768px) {
-            header img {
-                height: 70px;
-            }
-
-            /* Logo más sutil */
-
-            .search-box {
-                flex-direction: column;
-                gap: 12px;
-                /* Más espacio entre botones */
-                padding: 15px;
-            }
-
-            .search-box button {
-                width: 100%;
-                /* Botones de ancho completo para que sea fácil tocarlos */
-                padding: 15px;
-            }
-
-            input[type="text"] {
-                width: 100%;
-                box-sizing: border-box;
-                /* Evita que el padding lo ensanche de más */
-            }
-
-            /* AKÁ EL TRUCO: Ponemos la imagen arriba y el texto abajo */
-            .info-header {
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-            }
-
-            .info-header img {
-                width: 70%;
-                /* La imagen ahora es grande y central */
-                max-width: 250px;
-                margin-bottom: 15px;
-            }
-
-            /* Achicamos el texto para que no abrume */
-            #titulo-anime {
-                font-size: 1.5rem !important;
-                margin-bottom: 5px;
-            }
-
-            #sinopsis {
-                font-size: 14px;
-                /* Texto más fino y legible */
-                line-height: 1.4;
-                color: #444;
-            }
-
-            .meta-info {
-                justify-content: center;
-                margin-bottom: 10px;
-            }
-
-            #video-frame {
-                height: 220px;
-            }
+            header img { height: 70px; }
+            .btn-mode { right: 10px; width: 35px; height: 35px; font-size: 16px; }
+            .search-box { flex-direction: column; gap: 12px; padding: 15px; }
+            .search-box button { width: 100%; padding: 15px; }
+            input[type="text"] { width: 100%; box-sizing: border-box; }
+            .info-header { flex-direction: column; align-items: center; text-align: center; }
+            .info-header img { width: 70%; max-width: 250px; margin-bottom: 15px; }
+            #titulo-anime { font-size: 1.5rem !important; margin-bottom: 5px; color: var(--text-color); }
+            #sinopsis { font-size: 14px; line-height: 1.4; color: var(--text-color); }
         }
     </style>
 </head>
@@ -398,38 +161,35 @@
 <body>
     <header>
         <a href="index.html">
-            <img src="assets/img/Logo.png" alt="Logo"
-                onerror="this.src='https://via.placeholder.com/280x100?text=Animelandia'">
+            <img src="assets/img/Logo.png" alt="Logo" onerror="this.src='https://via.placeholder.com/280x100?text=Animelandia'">
         </a>
+        <button class="btn-mode" id="theme-toggle" onclick="toggleTheme()">🌙</button>
     </header>
 
     <div class="search-box">
         <button class="btn-main btn-inicio" onclick="window.location.href='index.html'">INICIO</button>
-        <input type="text" id="input-buscador" placeholder="Busque su anime favorito..."
-            onkeyup="if(event.key === 'Enter') buscarYRedirigir()">
+        <input type="text" id="input-buscador" placeholder="Busque su anime favorito..." onkeyup="if(event.key === 'Enter') buscarYRedirigir()">
         <button class="btn-main" onclick="buscarYRedirigir()">BUSCAR</button>
         <button class="btn-main btn-catalogo" onclick="window.location.href='explorar.html'">CATALOGO</button>
-        <button class="btn-main btn-fav-nav" onclick="document.getElementById('seccion-favoritos').scrollIntoView();">⭐
-            FAVORITOS</button>
+        <button class="btn-main btn-fav-nav" onclick="document.getElementById('seccion-favoritos').scrollIntoView();">⭐ FAVORITOS</button>
     </div>
 
     <div class="content">
         <div id="reproductor">
             <h4 id="viendo-titulo" style="color:white; text-align:center; margin-top:0;"></h4>
             <div id="contenedor-servidores" class="lista-servidores"></div>
-            <iframe id="video-frame" src="" width="100%" height="500px" frameborder="0" allowfullscreen
-                style="display:none; border-radius: 8px;"></iframe>
+            <iframe id="video-frame" src="" width="100%" height="500px" frameborder="0" allowfullscreen style="display:none; border-radius: 8px;"></iframe>
         </div>
 
         <div class="info-header">
             <img id="img-anime" src="">
             <div style="flex:1; min-width: 300px;">
-                <h1 id="titulo-anime" style="color:#333; margin:0 0 10px 0;">Cargando...</h1>
+                <h1 id="titulo-anime">Cargando...</h1>
                 <div class="meta-info">
                     <div class="rating-tag">⭐ <span id="rating-val">0.0</span></div>
                     <div id="lista-generos" style="display: flex; gap: 5px; flex-wrap: wrap;"></div>
                 </div>
-                <p id="sinopsis" style="color:#555; line-height:1.6;">Buscando información...</p>
+                <p id="sinopsis">Buscando información...</p>
             </div>
         </div>
 
@@ -444,13 +204,31 @@
         <div id="grid-caps" class="grid-caps"></div>
         <button id="btn-cargar-mas" style="display:none;" onclick="mostrarMasCaps()">CARGAR MÁS EPISODIOS</button>
 
-        <h3 id="seccion-favoritos"
-            style="color: var(--racing-celeste); border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 50px;">
-            Mis Favoritos ⭐</h3>
+        <h3 id="seccion-favoritos" style="color: var(--racing-celeste); border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 50px;">Mis Favoritos ⭐</h3>
         <div id="lista-favoritos-detalle" class="container-favs"></div>
     </div>
 
     <script>
+        // MODO OSCURO SINCRONIZADO
+        function toggleTheme() {
+            const body = document.body;
+            const btn = document.getElementById('theme-toggle');
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                btn.innerText = '🌙';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                btn.innerText = '☀️';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.setAttribute('data-theme', 'dark');
+            setTimeout(() => { document.getElementById('theme-toggle').innerText = '☀️'; }, 100);
+        }
+
         const params = new URLSearchParams(window.location.search);
         const slug = params.get('slug');
         const titulo = decodeURIComponent(params.get('titulo') || 'Anime');
@@ -476,26 +254,18 @@
                 const data = await res.json();
                 document.getElementById('sinopsis').innerText = data.descripcion || "Sin descripción.";
                 document.getElementById('rating-val').innerText = data.rating || "0.0";
-
                 const genreDiv = document.getElementById('lista-generos');
                 genreDiv.innerHTML = '';
-
-                // AGREGAR EL AÑO AQUÍ
                 if (data.anio) {
                     const yearSpan = document.createElement('span');
                     yearSpan.className = 'year-tag';
                     yearSpan.innerText = `Año: ${data.anio}`;
                     genreDiv.appendChild(yearSpan);
                 }
-
                 if (data.generos) data.generos.forEach(g => {
                     const span = document.createElement('span'); span.className = 'genre-tag'; span.innerText = g; genreDiv.appendChild(span);
                 });
-
-                if (data.episodios) {
-                    allEpisodes = data.episodios;
-                    renderCaps();
-                }
+                if (data.episodios) { allEpisodes = data.episodios; renderCaps(); }
             } catch (e) { console.error(e); }
         };
 
@@ -542,10 +312,7 @@
         function renderizarFavoritosDetalle() {
             const container = document.getElementById('lista-favoritos-detalle');
             container.innerHTML = '';
-            if (favoritos.length === 0) {
-                container.innerHTML = '<p style="color:gray;">No tenés animes guardados aún.</p>';
-                return;
-            }
+            if (favoritos.length === 0) { container.innerHTML = '<p style="color:gray;">No tenés animes guardados aún.</p>'; return; }
             favoritos.forEach((anime) => {
                 const card = document.createElement('div');
                 card.className = 'card-fav';
@@ -560,24 +327,14 @@
             const frame = document.getElementById('video-frame');
             const tituloViendo = document.getElementById('viendo-titulo');
             const divServidores = document.getElementById('contenedor-servidores');
-
-            // Limpieza previa para que no se vea el video viejo
-            if (frame) {
-                frame.src = "";
-                frame.style.display = "none";
-            }
-
+            if (frame) { frame.src = ""; frame.style.display = "none"; }
             rep.style.display = 'block';
             divServidores.innerHTML = '🔍 Buscando servidores...';
             tituloViendo.innerText = `Cargando Episodio ${cap}...`;
-
             window.scrollTo({ top: 0, behavior: 'smooth' });
-
             try {
-                // slug ya está definido arriba en tu script, así que esto va a andar
                 const res = await fetch(`https://animelandia.up.railway.app/get-video?slug=${slug}&cap=${cap}`);
                 const data = await res.json();
-
                 if (data.servidores && data.servidores.length > 0) {
                     divServidores.innerHTML = '';
                     tituloViendo.innerText = `Viendo Episodio ${cap}`;
@@ -592,13 +349,8 @@
                         };
                         divServidores.appendChild(btn);
                     });
-                } else {
-                    divServidores.innerHTML = '⚠️ No hay reproductores disponibles.';
-                }
-            } catch (e) {
-                console.error("Error encontrando:", e);
-                tituloViendo.innerText = "❌ Error encontrando.";
-            }
+                } else { divServidores.innerHTML = '⚠️ No hay reproductores disponibles.'; }
+            } catch (e) { tituloViendo.innerText = "❌ Error encontrando."; }
         }
     </script>
 </body>

@@ -7,26 +7,47 @@
     <link rel="icon" type="image/png" href="assets/img/Logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        /* 1. DEFINICIÓN DE VARIABLES DE COLOR */
         :root {
             --racing-celeste: #00AEEF;
             --dark-bg: #f0f2f5;
             --card-bg: #ffffff;
+            --text-color: #333;
+            --header-bg: #ffffff;
+            --box-bg: #ffffff;
+            --panel-bg: #ffffff;
+            --label-color: #555;
+        }
+
+        /* 2. VALORES PARA MODO OSCURO */
+        [data-theme="dark"] {
+            --dark-bg: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --header-bg: #1a1a1a;
+            --box-bg: #1a1a1a;
+            --panel-bg: #1e1e1e;
+            --label-color: #aaa;
         }
 
         body {
             background: var(--dark-bg);
+            color: var(--text-color);
             font-family: 'Open Sans', sans-serif;
             margin: 0;
+            transition: 0.3s;
+            /* Transición suave */
         }
 
         header {
-            background: #fff;
+            background: var(--header-bg);
             padding: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-bottom: 3px solid var(--racing-celeste);
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
         }
 
         header img {
@@ -36,8 +57,27 @@
             transition: 0.3s;
         }
 
+        /* BOTÓN MODO OSCURO */
+        .btn-mode {
+            position: absolute;
+            right: 30px;
+            background: var(--racing-celeste);
+            border: none;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
         .search-box {
-            background: white;
+            background: var(--box-bg);
             padding: 20px;
             text-align: center;
             border-bottom: 1px solid #ddd;
@@ -47,12 +87,18 @@
             gap: 10px;
         }
 
-        input[type="text"] {
+        input[type="text"],
+        select {
             padding: 12px;
-            width: 400px;
             border-radius: 8px;
             border: 1px solid #ddd;
             outline: none;
+            background: var(--card-bg);
+            color: var(--text-color);
+        }
+
+        input[type="text"] {
+            width: 400px;
         }
 
         .btn-main {
@@ -86,12 +132,13 @@
         }
 
         .filter-panel {
-            background: white;
+            background: var(--panel-bg);
             padding: 25px;
             margin: 20px auto;
             max-width: 1100px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            color: var(--text-color);
         }
 
         .filter-grid {
@@ -108,16 +155,8 @@
 
         .filter-group label {
             font-weight: bold;
-            color: #555;
+            color: var(--label-color);
             font-size: 14px;
-        }
-
-        .filter-group select {
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            outline: none;
-            background: #fff;
         }
 
         .btn-search-adv {
@@ -144,7 +183,7 @@
         }
 
         .card {
-            background: white;
+            background: var(--card-bg);
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -180,6 +219,8 @@
         .card-info {
             padding: 15px;
             text-align: center;
+            background: var(--card-bg);
+            color: var(--text-color);
             font-weight: bold;
             font-size: 13px;
             min-height: 40px;
@@ -202,12 +243,17 @@
             cursor: pointer;
         }
 
-        /* ==========================================
-           AJUSTES PARA MÓVILES (Samsung, etc.)
-           ========================================== */
+        /* RESPONSIVE MÓVIL */
         @media (max-width: 768px) {
             header img {
                 height: 70px;
+            }
+
+            .btn-mode {
+                right: 10px;
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
             }
 
             .search-box {
@@ -231,22 +277,16 @@
 
             .filter-grid {
                 grid-template-columns: 1fr;
-                /* Un filtro debajo del otro */
             }
 
             .results-container {
                 grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-                /* 2 animes por fila */
                 padding: 10px;
                 gap: 15px;
             }
 
             .card img {
                 height: 200px;
-            }
-
-            #btn-cargar-mas-animes {
-                width: 90%;
             }
         }
     </style>
@@ -269,6 +309,7 @@
         <button class="btn-main btn-catalogo" onclick="window.location.href='explorar.html'">CATALOGO</button>
         <button class="btn-main btn-fav-nav" onclick="window.location.href='index.html#seccion-favoritos'">⭐
             FAVORITOS</button>
+        <button class="btn-mode" id="theme-toggle" onclick="toggleTheme()">🌙</button>
     </div>
 
     <div class="filter-panel">
@@ -313,6 +354,30 @@
     </button>
 
     <script>
+        // Modo Nocturno
+        // LÓGICA MODO OSCURO
+        function toggleTheme() {
+            const body = document.body;
+            const btn = document.getElementById('theme-toggle');
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                btn.innerText = '🌙';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                btn.innerText = '☀️';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // CARGAR TEMA GUARDADO AL INICIAR
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.setAttribute('data-theme', 'dark');
+            // Pequeño delay para asegurar que el DOM cargó el botón
+            window.addEventListener('DOMContentLoaded', () => {
+                document.getElementById('theme-toggle').innerText = '☀️';
+            });
+        }
         // Generador de años
         const yearSelect = document.getElementById('f-year');
         for (let y = 2026; y >= 1990; y--) {
