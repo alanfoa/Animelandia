@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>Animelandia - Detalles</title>
     <link rel="icon" type="image/png" href="assets/img/Logo.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         :root {
             --racing-celeste: #00AEEF;
@@ -71,7 +72,8 @@
             background: #6c757d;
         }
 
-        .btn-catalogo { background: #0056b3; 
+        .btn-catalogo {
+            background: #0056b3;
         }
 
         .btn-fav-nav {
@@ -206,15 +208,18 @@
             gap: 25px;
             margin-bottom: 30px;
             flex-wrap: wrap;
-            justify-content: center; /* Centra la foto en móviles */
+            justify-content: center;
+            /* Centra la foto en móviles */
         }
 
         .info-header img {
             width: 220px;
-            height: auto; /* Evita que se estire verticalmente */
-            object-fit: contain; /* Mantiene la proporción real */
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            max-width: 100%;
+            /* Evita que se salga de la pantalla */
+            height: auto;
+            display: block;
+            margin: 0 auto 15px auto;
+            /* La centra y le da aire abajo */
         }
 
         .container-favs {
@@ -326,25 +331,38 @@
         }
 
         @media (max-width: 768px) {
-            header img { height: 70px; } /* Logo más sutil */
+            header img {
+                height: 70px;
+            }
+
+            /* Logo más sutil */
 
             .search-box {
                 flex-direction: column;
-                gap: 8px;
-                padding: 10px;
+                gap: 12px; /* Más espacio entre botones */
+                padding: 15px;
             }
 
-            input[type="text"] { width: 95%; padding: 8px; }
+            .search-box button {
+                width: 100%; /* Botones de ancho completo para que sea fácil tocarlos */
+                padding: 15px;
+            }
+
+            input[type="text"] {
+                width: 100%;
+                box-sizing: border-box; /* Evita que el padding lo ensanche de más */
+            }
 
             /* AKÁ EL TRUCO: Ponemos la imagen arriba y el texto abajo */
             .info-header {
-                flex-direction: column; 
+                flex-direction: column;
                 align-items: center;
                 text-align: center;
             }
 
             .info-header img {
-                width: 70%; /* La imagen ahora es grande y central */
+                width: 70%;
+                /* La imagen ahora es grande y central */
                 max-width: 250px;
                 margin-bottom: 15px;
             }
@@ -356,7 +374,8 @@
             }
 
             #sinopsis {
-                font-size: 14px; /* Texto más fino y legible */
+                font-size: 14px;
+                /* Texto más fino y legible */
                 line-height: 1.4;
                 color: #444;
             }
@@ -366,10 +385,10 @@
                 margin-bottom: 10px;
             }
 
-            #video-frame { height: 220px; }
+            #video-frame {
+                height: 220px;
+            }
         }
-
-        
     </style>
 </head>
 
@@ -390,7 +409,7 @@
         <button class="btn-main btn-fav-nav" onclick="document.getElementById('seccion-favoritos').scrollIntoView();">⭐
             FAVORITOS</button>
     </div>
-    
+
     <div class="content">
         <div id="reproductor">
             <h4 id="viendo-titulo" style="color:white; text-align:center; margin-top:0;"></h4>
