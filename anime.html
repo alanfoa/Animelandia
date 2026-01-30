@@ -339,18 +339,21 @@
 
             .search-box {
                 flex-direction: column;
-                gap: 12px; /* Más espacio entre botones */
+                gap: 12px;
+                /* Más espacio entre botones */
                 padding: 15px;
             }
 
             .search-box button {
-                width: 100%; /* Botones de ancho completo para que sea fácil tocarlos */
+                width: 100%;
+                /* Botones de ancho completo para que sea fácil tocarlos */
                 padding: 15px;
             }
 
             input[type="text"] {
                 width: 100%;
-                box-sizing: border-box; /* Evita que el padding lo ensanche de más */
+                box-sizing: border-box;
+                /* Evita que el padding lo ensanche de más */
             }
 
             /* AKÁ EL TRUCO: Ponemos la imagen arriba y el texto abajo */
@@ -557,27 +560,42 @@
             const frame = document.getElementById('video-frame');
             const tituloViendo = document.getElementById('viendo-titulo');
             const divServidores = document.getElementById('contenedor-servidores');
+
+            // --- AGREGÁ ESTAS DOS LÍNEAS AQUÍ ---
+            frame.style.display = 'none'; // Esconde el video anterior
+            frame.src = '';               // Limpia la URL del video anterior
+            // ------------------------------------
+
             rep.style.display = 'block';
             divServidores.innerHTML = ' Buscando servidores...';
             tituloViendo.innerText = `Cargando Episodio ${cap}...`;
+
             window.scrollTo({ top: 0, behavior: 'smooth' });
+
             try {
                 const res = await fetch(`https://animelandia.up.railway.app/get-video?slug=${slug}&cap=${cap}`);
                 const data = await res.json();
+
                 if (data.servidores && data.servidores.length > 0) {
                     divServidores.innerHTML = '';
                     tituloViendo.innerText = `Viendo Episodio ${cap}`;
                     data.servidores.forEach(srv => {
                         const btn = document.createElement('button');
-                        btn.className = 'btn-servidor'; btn.innerText = srv.nombre;
+                        btn.className = 'btn-servidor';
+                        btn.innerText = srv.nombre;
                         btn.onclick = () => {
-                            frame.src = srv.url; frame.style.display = 'block';
+                            frame.src = srv.url;
+                            frame.style.display = 'block';
                             frame.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         };
                         divServidores.appendChild(btn);
                     });
-                } else divServidores.innerHTML = '⚠️ No hay reproductores.';
-            } catch (e) { tituloViendo.innerText = "❌ Error Sniper."; }
+                } else {
+                    divServidores.innerHTML = '⚠️ No hay reproductores.';
+                }
+            } catch (e) {
+                tituloViendo.innerText = "❌ Error Sniper.";
+            }
         }
     </script>
 </body>
