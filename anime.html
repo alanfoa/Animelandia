@@ -561,24 +561,24 @@
             const tituloViendo = document.getElementById('viendo-titulo');
             const divServidores = document.getElementById('contenedor-servidores');
 
-            // --- AGREGÁ ESTAS DOS LÍNEAS AQUÍ ---
-            frame.style.display = 'none'; // Esconde el video anterior
-            frame.src = '';               // Limpia la URL del video anterior
-            // ------------------------------------
-
+            // Reseteamos visualmente ANTES de pedir los datos
             rep.style.display = 'block';
-            divServidores.innerHTML = ' Buscando servidores...';
+            divServidores.innerHTML = '🔍 Buscando servidores...';
             tituloViendo.innerText = `Cargando Episodio ${cap}...`;
+            frame.src = ''; // Limpiamos el video anterior
+            frame.style.display = 'none'; // Escondemos el cuadro hasta que elijas servidor
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
             try {
+                // Hacemos el fetch al Sniper en Railway
                 const res = await fetch(`https://animelandia.up.railway.app/get-video?slug=${slug}&cap=${cap}`);
                 const data = await res.json();
 
                 if (data.servidores && data.servidores.length > 0) {
                     divServidores.innerHTML = '';
                     tituloViendo.innerText = `Viendo Episodio ${cap}`;
+
                     data.servidores.forEach(srv => {
                         const btn = document.createElement('button');
                         btn.className = 'btn-servidor';
@@ -591,10 +591,11 @@
                         divServidores.appendChild(btn);
                     });
                 } else {
-                    divServidores.innerHTML = '⚠️ No hay reproductores.';
+                    divServidores.innerHTML = '⚠️ No hay reproductores disponibles.';
                 }
             } catch (e) {
-                tituloViendo.innerText = "❌ Error Sniper.";
+                console.error(e);
+                tituloViendo.innerText = "❌ Error: El Sniper está reiniciando...";
             }
         }
     </script>
