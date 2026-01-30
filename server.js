@@ -63,7 +63,7 @@ app.get('/latest', async (req, res) => {
         page = await browser.newPage();
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
 
-        console.log("🎯 Sniper: Extrayendo últimos estrenos...");
+        console.log("🎯 Extrayendo últimos estrenos...");
         await page.goto('https://animeav1.com/', { waitUntil: 'networkidle2', timeout: 30000 });
 
         const episodios = await page.evaluate(() => {
@@ -93,15 +93,15 @@ app.get('/latest', async (req, res) => {
 
         if (episodios.length > 0) {
             LATEST_CACHE = { data: episodios.slice(0, 24), lastUpdate: ahora };
-            console.log(`✅ Sniper: ${episodios.length} estrenos encontrados.`);
+            console.log(`${episodios.length} estrenos encontrados.`);
             res.json(LATEST_CACHE.data);
         } else {
-            console.log("⚠️ Sniper: No se encontraron estrenos en el script.");
+            console.log("No se encontraron estrenos en el script.");
             res.json([]);
         }
 
     } catch (e) {
-        console.error("❌ Error en Sniper /latest:", e.message);
+        console.error("❌ Error en /latest:", e.message);
         if (page) await page.close();
         res.json([]);
     }
