@@ -295,7 +295,7 @@
         async function cargarEstrenos() {
             const container = document.getElementById('ultimos-lanzamientos');
             try {
-                const res = await fetch('https://animelandia.up.railway.app/latest');
+                const res = await fetch('https://animelandia-oficial.netlify.app/latest');
                 const data = await res.json();
                 renderizarEstrenos(data);
             } catch (e) { container.innerHTML = '<p>Error de conexión.</p>'; }
