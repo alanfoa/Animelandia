@@ -308,8 +308,12 @@
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.onclick = () => irADetalle(ep.slug, ep.titulo, ep.imagen);
+
+                // AGREGAMOS ESTA LÓGICA: Solo crea el HTML del tag si ep.cap tiene valor
+                const tagCap = ep.cap ? `<div class="ep-tag">${ep.cap}</div>` : '';
+
                 card.innerHTML = `
-            <div class="ep-tag">${ep.cap}</div>
+            ${tagCap} 
             <button class="btn-fav">⭐</button>
             <img src="${ep.imagen}" loading="lazy" onerror="this.src='https://via.placeholder.com/200x280?text=Sin+Imagen'">
             <div class="card-info"><b>${ep.titulo}</b></div>`;
@@ -326,7 +330,8 @@
             container.innerHTML = 'Buscando...';
             document.getElementById('titulo-seccion').innerText = `Resultados para: ${query}`;
             try {
-                const res = await fetch(`https://animelandia.app/search?q=${query}`);
+                // CORREGIDO: URL de Railway
+                const res = await fetch(`https://animelandia.up.railway.app/search?q=${query}`);
                 const data = await res.json();
                 renderizarEstrenos(data);
             } catch (e) { container.innerHTML = 'Error en la búsqueda.'; }
