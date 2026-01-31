@@ -107,33 +107,34 @@ app.get('/latest', async (req, res) => {
     }
 });
 
-// 2. BUSCADOR CON PAGINACIÓN BAJO DEMANDA
 app.get('/get-video', async (req, res) => {
     const { slug, cap } = req.query;
-    const page = await browser.newPage();
+    let page;
     try {
-        // La URL de los videos en AnimeAV1 sigue este patrón:
-        const videoUrl = `https://animeav1.com/ver/${slug}-${cap}`;
-        console.log(`Buscando reproductores en: ${videoUrl}`);
+        page = await browser.newPage();
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
 
-        await page.goto(videoUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
-        
-        // Esperamos un segundo extra para que los scripts carguen los embeds
-        await new Promise(r => setTimeout(r, 1000));
+        // Esta URL es la clave. Antes intentábamos entrar a /media/ y por eso no cargaba nada.
+        const videoUrl = `https://animeav1.com/ver/${slug}-${cap}`;
+        console.log(`🎬 Scrapeando reproductor: ${videoUrl}`);
+
+        await page.goto(videoUrl, { waitUntil: 'domcontentloaded', timeout: 45000 });
+
+        // Esperamos un segundo para que los scripts del sitio original inyecten los servidores
+        await new Promise(r => setTimeout(r, 2000));
 
         const servidores = await page.evaluate(() => {
             const scripts = Array.from(document.querySelectorAll('script'));
-            // Buscamos el objeto global 'embeds' que inyecta el sitio
-            const dataScript = scripts.find(s => s.innerText.includes('embeds:'));
+            const dataScript = scripts.find(s => s.innerText.includes('embeds'));
             if (!dataScript) return [];
             
             const results = [];
-            // Regex para capturar el nombre del servidor y la URL
+            // Regex para capturar nombre y URL del servidor de video
             const regex = /\{server:"([^"]+)",url:"([^"]+)"\}/g;
             let m;
             while ((m = regex.exec(dataScript.innerText)) !== null) {
-                let url = m[2].replace(/\\u0023/g, '#');
-                if (url.includes('http')) {
+                const url = m[2].replace(/\\u0023/g, '#');
+                if (url.includes('http') && !results.some(s => s.url === url)) {
                     results.push({ nombre: m[1].toUpperCase(), url });
                 }
             }
@@ -142,13 +143,13 @@ app.get('/get-video', async (req, res) => {
 
         await page.close();
         res.json({ servidores });
+
     } catch (e) { 
-        console.error("Error scrapeando video:", e.message);
+        console.error("❌ Error en get-video:", e.message);
         if (page) await page.close(); 
         res.json({ servidores: [] }); 
     }
 });
-
 // 3. INFO DEL ANIME (AÑO Y DETALLES)
 app.get('/anime-info', async (req, res) => {
     const { slug } = req.query;
