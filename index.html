@@ -326,7 +326,7 @@
             container.innerHTML = 'Buscando...';
             document.getElementById('titulo-seccion').innerText = `Resultados para: ${query}`;
             try {
-                const res = await fetch(`https://animelandia.up.railway.app/search?q=${query}`);
+                const res = await fetch(`https://animelandia.app/search?q=${query}`);
                 const data = await res.json();
                 renderizarEstrenos(data);
             } catch (e) { container.innerHTML = 'Error en la búsqueda.'; }

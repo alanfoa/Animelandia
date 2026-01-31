@@ -108,51 +108,44 @@ app.get('/latest', async (req, res) => {
 });
 
 // 2. BUSCADOR CON PAGINACIÓN BAJO DEMANDA
-app.get('/search', async (req, res) => {
-    const { q, page = 1 } = req.query; // Recibe el número de página
-    const pageBrowser = await browser.newPage();
+app.get('/get-video', async (req, res) => {
+    const { slug, cap } = req.query;
+    const page = await browser.newPage();
     try {
-        await pageBrowser.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
+        // La URL de los videos en AnimeAV1 sigue este patrón:
+        const videoUrl = `https://animeav1.com/ver/${slug}-${cap}`;
+        console.log(`Buscando reproductores en: ${videoUrl}`);
 
-        let urlBase = (q.includes('minYear') || q.includes('category') || q.includes('genre') || q.includes('status'))
-            ? `https://animeav1.com/catalogo?${q}`
-            : `https://animeav1.com/catalogo?search=${encodeURIComponent(q)}`;
+        await page.goto(videoUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+        
+        // Esperamos un segundo extra para que los scripts carguen los embeds
+        await new Promise(r => setTimeout(r, 1000));
 
-        // Agregamos el parámetro de página a la URL oficial
-        let urlFinal = `${urlBase}&page=${page}`;
-        console.log(`Buscando en página ${page}: ${urlFinal}`);
-
-        await pageBrowser.goto(urlFinal, { waitUntil: 'domcontentloaded', timeout: 60000 });
-        await new Promise(r => setTimeout(r, 1500)); // Espera mínima para SPA
-
-        const resultados = await pageBrowser.evaluate(() => {
-            return Array.from(document.querySelectorAll('article')).map(item => {
-                const a = item.querySelector('a[href*="/media/"]');
-                const img = item.querySelector('img');
-                const h3 = item.querySelector('h3');
-                const labels = Array.from(item.querySelectorAll('div')).map(d => d.innerText.toUpperCase().trim());
-
-                let tipo = "Anime";
-                if (labels.some(l => l.includes("PELÍCULA"))) tipo = "PELÍCULA";
-                else if (labels.some(l => l.includes("OVA"))) tipo = "OVA";
-                else if (labels.some(l => l.includes("TV"))) tipo = "TV ANIME";
-
-                if (!a || !img) return null;
-                return {
-                    titulo: h3 ? h3.innerText.trim() : "Sin título",
-                    imagen: img.src,
-                    slug: a.href.split('/media/')[1],
-                    anio: labels.find(l => /^\d{4}$/.test(l)) || "",
-                    tipo: tipo
-                };
-            }).filter(r => r !== null);
+        const servidores = await page.evaluate(() => {
+            const scripts = Array.from(document.querySelectorAll('script'));
+            // Buscamos el objeto global 'embeds' que inyecta el sitio
+            const dataScript = scripts.find(s => s.innerText.includes('embeds:'));
+            if (!dataScript) return [];
+            
+            const results = [];
+            // Regex para capturar el nombre del servidor y la URL
+            const regex = /\{server:"([^"]+)",url:"([^"]+)"\}/g;
+            let m;
+            while ((m = regex.exec(dataScript.innerText)) !== null) {
+                let url = m[2].replace(/\\u0023/g, '#');
+                if (url.includes('http')) {
+                    results.push({ nombre: m[1].toUpperCase(), url });
+                }
+            }
+            return results;
         });
 
-        await pageBrowser.close();
-        res.json(resultados);
-    } catch (e) {
-        if (pageBrowser) await pageBrowser.close();
-        res.json([]);
+        await page.close();
+        res.json({ servidores });
+    } catch (e) { 
+        console.error("Error scrapeando video:", e.message);
+        if (page) await page.close(); 
+        res.json({ servidores: [] }); 
     }
 });
 
