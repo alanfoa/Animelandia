@@ -8,10 +8,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         /* VARIABLES DE COLOR (NUEVO) */
-        :root { 
-            --racing-celeste: #00AEEF; 
-            --dark-bg: #f0f2f5; 
-            --card-bg: #ffffff; 
+        :root {
+            --racing-celeste: #00AEEF;
+            --dark-bg: #f0f2f5;
+            --card-bg: #ffffff;
             --text-color: #333;
             --header-bg: #fff;
             --box-bg: white;
@@ -25,11 +25,32 @@
             --box-bg: #1a1a1a;
         }
 
-        body { background: var(--dark-bg); color: var(--text-color); font-family: 'Open Sans', sans-serif; margin: 0; scroll-behavior: smooth; transition: 0.3s; }
-        
-        header { background: var(--header-bg); padding: 10px; display: flex; align-items: center; justify-content: center; border-bottom: 3px solid var(--racing-celeste); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); position: relative; }
-        
-        header img { height: 150px; width: auto; cursor: pointer; transition: 0.3s; }
+        body {
+            background: var(--dark-bg);
+            color: var(--text-color);
+            font-family: 'Open Sans', sans-serif;
+            margin: 0;
+            scroll-behavior: smooth;
+            transition: 0.3s;
+        }
+
+        header {
+            background: var(--header-bg);
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 3px solid var(--racing-celeste);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        header img {
+            height: 150px;
+            width: auto;
+            cursor: pointer;
+            transition: 0.3s;
+        }
 
         /* BOTÓN MODO NOCTURNO TIRADO A LA DERECHA */
         .btn-mode {
@@ -46,40 +67,166 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
             transition: 0.3s;
         }
 
-        .search-box { background: var(--box-bg); padding: 20px; text-align: center; border-bottom: 1px solid #ddd; display: flex; justify-content: center; align-items: center; gap: 10px; }
-        
-        input[type="text"] { padding: 12px; width: 400px; border-radius: 8px; border: 1px solid #ddd; outline: none; background: var(--card-bg); color: var(--text-color); }
-        
-        .btn-main { padding: 12px 25px; cursor: pointer; background: var(--racing-celeste); color: white; font-weight: bold; border-radius: 8px; border: none; text-transform: uppercase; transition: 0.2s; }
-        
-        .btn-inicio { background: #6c757d; }
-        .btn-catalogo { background: #0056b3; }
-        .btn-fav-nav { background: #ffc107; color: #000; }
-        .btn-main:hover { opacity: 0.9; transform: scale(1.05); }
-        
-        .container { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 25px; padding: 20px 50px; }
-        
-        .card { background: var(--card-bg); border-radius: 10px; overflow: hidden; position: relative; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: 0.3s; cursor: pointer; }
-        .card:hover { transform: translateY(-8px); box-shadow: 0 10px 20px rgba(0, 174, 239, 0.3); }
-        .card img { width: 100%; height: 280px; object-fit: cover; background: #000; }
-        
-        .ep-tag { position: absolute; top: 10px; left: 10px; background: var(--racing-celeste); color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; z-index: 5; text-transform: uppercase; }
-        
-        .btn-fav { position: absolute; bottom: 60px; right: 10px; background: white; border: 2px solid var(--racing-celeste); border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 20; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); }
-        
-        .card-info { padding: 15px; text-align: center; background: var(--card-bg); color: var(--text-color); position: relative; z-index: 10; font-size: 14px; min-height: 40px; display: flex; align-items: center; justify-content: center; }
+        .search-box {
+            background: var(--box-bg);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            padding: 12px;
+            width: 400px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            outline: none;
+            background: var(--card-bg);
+            color: var(--text-color);
+        }
+
+        .btn-main {
+            padding: 12px 25px;
+            cursor: pointer;
+            background: var(--racing-celeste);
+            color: white;
+            font-weight: bold;
+            border-radius: 8px;
+            border: none;
+            text-transform: uppercase;
+            transition: 0.2s;
+        }
+
+        .btn-inicio {
+            background: #6c757d;
+        }
+
+        .btn-catalogo {
+            background: #0056b3;
+        }
+
+        .btn-fav-nav {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .btn-main:hover {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 25px;
+            padding: 20px 50px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 20px rgba(0, 174, 239, 0.3);
+        }
+
+        .card img {
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+            background: #000;
+        }
+
+        .ep-tag {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: var(--racing-celeste);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            z-index: 5;
+            text-transform: uppercase;
+        }
+
+        .btn-fav {
+            position: absolute;
+            bottom: 60px;
+            right: 10px;
+            background: white;
+            border: 2px solid var(--racing-celeste);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-info {
+            padding: 15px;
+            text-align: center;
+            background: var(--card-bg);
+            color: var(--text-color);
+            position: relative;
+            z-index: 10;
+            font-size: 14px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
         @media (max-width: 768px) {
-            header img { height: 80px; }
-            .btn-mode { right: 10px; width: 35px; height: 35px; font-size: 16px; }
-            .search-box { flex-direction: column; padding: 15px; gap: 8px; }
-            input[type="text"] { width: 90%; }
-            .btn-main { width: 100%; }
-            .container { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); padding: 15px; }
+            header img {
+                height: 80px;
+            }
+
+            .btn-mode {
+                right: 10px;
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
+            }
+
+            .search-box {
+                flex-direction: column;
+                padding: 15px;
+                gap: 8px;
+            }
+
+            input[type="text"] {
+                width: 90%;
+            }
+
+            .btn-main {
+                width: 100%;
+            }
+
+            .container {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                padding: 15px;
+            }
         }
     </style>
 </head>
@@ -87,16 +234,19 @@
 <body>
     <header>
         <a href="index.html">
-            <img src="assets/img/Logo.png" alt="Logo" onerror="this.src='https://via.placeholder.com/280x100?text=Animelandia'">
+            <img src="assets/img/Logo.png" alt="Logo"
+                onerror="this.src='https://via.placeholder.com/280x100?text=Animelandia'">
         </a>
     </header>
 
     <div class="search-box">
         <button class="btn-main btn-inicio" onclick="window.location.href='index.html'">INICIO</button>
-        <input type="text" id="input-buscador" placeholder="Busque su anime favorito..." onkeyup="if(event.key === 'Enter') buscarAnime()">
+        <input type="text" id="input-buscador" placeholder="Busque su anime favorito..."
+            onkeyup="if(event.key === 'Enter') buscarAnime()">
         <button class="btn-main" onclick="buscarAnime()">BUSCAR</button>
         <button class="btn-main btn-catalogo" onclick="window.location.href='explorar.html'">CATALOGO</button>
-        <button class="btn-main btn-fav-nav" onclick="document.getElementById('seccion-favoritos').scrollIntoView();">⭐ FAVORITOS</button>
+        <button class="btn-main btn-fav-nav" onclick="document.getElementById('seccion-favoritos').scrollIntoView();">⭐
+            FAVORITOS</button>
         <button class="btn-mode" id="theme-toggle" onclick="toggleTheme()">🌙</button>
     </div>
 
@@ -154,20 +304,17 @@
         function renderizarEstrenos(episodios) {
             const container = document.getElementById('ultimos-lanzamientos');
             container.innerHTML = '';
-
             episodios.forEach(ep => {
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.onclick = () => irADetalle(ep.slug, ep.titulo, ep.imagen);
-
-                const etiquetaTexto = ep.cap ? `Cap. ${ep.cap}` : (ep.tipo || ep.anio || "Anime");
-
                 card.innerHTML = `
-                    <div class="ep-tag">${etiquetaTexto}</div>
-                    <button class="btn-fav" onclick="event.stopPropagation(); guardar(${JSON.stringify(ep).replace(/"/g, '&quot;')})">⭐</button>
-                    <img src="${ep.imagen}" onerror="this.src='https://via.placeholder.com/200x280?text=Sin+Imagen'">
-                    <div class="card-info"><b>${ep.titulo}</b></div>`;
+            <div class="ep-tag">${ep.cap}</div>
+            <button class="btn-fav">⭐</button>
+            <img src="${ep.imagen}" loading="lazy" onerror="this.src='https://via.placeholder.com/200x280?text=Sin+Imagen'">
+            <div class="card-info"><b>${ep.titulo}</b></div>`;
 
+                card.querySelector('.btn-fav').onclick = (e) => { e.stopPropagation(); guardar(ep); };
                 container.appendChild(card);
             });
         }
@@ -213,4 +360,5 @@
         function borrar(i) { favoritos.splice(i, 1); localStorage.setItem('misAnimes', JSON.stringify(favoritos)); renderizarLista(); }
     </script>
 </body>
+
 </html>

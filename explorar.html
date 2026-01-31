@@ -434,15 +434,18 @@
                     return;
                 }
 
+                // BUSCÁ ESTA PARTE DENTRO DE buscarPagina EN EXPLORAR.HTML
                 nuevosAnimes.forEach(anime => {
                     const card = document.createElement('div');
                     card.className = 'card';
                     card.onclick = () => window.location.href = `anime.html?slug=${anime.slug}&titulo=${encodeURIComponent(anime.titulo)}&imagen=${encodeURIComponent(anime.imagen)}`;
+
+                    // ACÁ AGREGAMOS EL LOADING LAZY
                     card.innerHTML = `
-                        ${anime.anio ? `<div class="card-year">${anime.anio}</div>` : ''}
-                        <img src="${anime.imagen}" onerror="this.src='https://via.placeholder.com/200x280?text=Sin+Imagen'">
-                        <div class="card-info"><b>${anime.titulo}</b></div>
-                    `;
+        ${anime.anio ? `<div class="card-year">${anime.anio}</div>` : ''}
+        <img src="${anime.imagen}" loading="lazy" onerror="this.src='https://via.placeholder.com/200x280?text=Sin+Imagen'">
+        <div class="card-info"><b>${anime.titulo}</b></div>
+    `;
                     container.appendChild(card);
                 });
 
