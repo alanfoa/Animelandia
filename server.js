@@ -14,18 +14,19 @@ let LATEST_CACHE = { data: null, lastUpdate: 0 };
 async function startApp() {
     try {
         const port = process.env.PORT || 3000;
-        app.listen(port, '0.0.0.0', () => console.log(`📡 Servidor en puerto ${port}`));
+        app.listen(port, '0.0.0.0', () => console.log(`📡 Sniper activo en puerto ${port}`));
+        
         await new Promise(resolve => setTimeout(resolve, 5000));
         browser = await puppeteer.launch({
             headless: "new",
             args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--single-process']
         });
-        console.log("✅ Navegador listo");
-    } catch (error) { console.error("❌ Error:", error); }
+        console.log("✅ Navegador listo en la nube");
+    } catch (error) { console.error("❌ Error de arranque:", error); }
 }
 startApp();
 
-// 1. ÚLTIMOS ESTRENOS (Para la Home)
+// 1. ÚLTIMOS ESTRENOS (Home)
 app.get('/latest', async (req, res) => {
     const ahora = Date.now();
     if (LATEST_CACHE.data && (ahora - LATEST_CACHE.lastUpdate < 600000)) return res.json(LATEST_CACHE.data);
@@ -52,22 +53,36 @@ app.get('/latest', async (req, res) => {
     } catch (e) { if (page) await page.close(); res.json([]); }
 });
 
-// 2. BUSCADOR (Para buscar series - Corregido sin undefined)
+// 2. BUSCADOR (Recuperado de tu versión anterior con filtros inteligentes)
 app.get('/search', async (req, res) => {
     const { q, page = 1 } = req.query;
     const pBrowser = await browser.newPage();
     try {
         await pBrowser.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
-        let url = q.includes('genre') ? `https://animeav1.com/catalogo?${q}&page=${page}` : `https://animeav1.com/catalogo?search=${encodeURIComponent(q)}&page=${page}`;
-        await pBrowser.goto(url, { waitUntil: 'domcontentloaded', timeout: 40000 });
+        
+        // Detecta si es búsqueda por texto o por filtros del catálogo
+        let urlDestino = (q.includes('=') || q.includes('&')) 
+            ? `https://animeav1.com/catalogo?${q}&page=${page}` 
+            : `https://animeav1.com/catalogo?search=${encodeURIComponent(q)}&page=${page}`;
+
+        await pBrowser.goto(urlDestino, { waitUntil: 'domcontentloaded', timeout: 45000 });
         await new Promise(r => setTimeout(r, 2000));
+
         const resultados = await pBrowser.evaluate(() => {
             return Array.from(document.querySelectorAll('article')).map(item => {
                 const a = item.querySelector('a[href*="/media/"]');
                 const img = item.querySelector('img');
                 const h3 = item.querySelector('h3');
+                const labels = Array.from(item.querySelectorAll('div')).map(d => d.innerText.toUpperCase().trim());
                 if (!a || !img) return null;
-                return { titulo: h3 ? h3.innerText.trim() : "Sin título", imagen: img.src, slug: a.href.split('/media/')[1], cap: null };
+                return {
+                    titulo: h3 ? h3.innerText.trim() : "Sin título",
+                    imagen: img.src,
+                    slug: a.href.split('/media/')[1],
+                    anio: labels.find(l => /^\d{4}$/.test(l)) || "",
+                    tipo: labels.find(l => ["TV", "MOVIE", "OVA", "SPECIAL"].includes(l)) || "Anime",
+                    cap: null // Para evitar 'undefined' en las tarjetas
+                };
             }).filter(r => r !== null);
         });
         await pBrowser.close();
@@ -75,9 +90,11 @@ app.get('/search', async (req, res) => {
     } catch (e) { if (pBrowser) await pBrowser.close(); res.json([]); }
 });
 
-// 3. INFO DEL ANIME (Para la página de detalles y lista de caps)
+// 3. INFO DEL ANIME (Detalles y Lista de Caps)
 app.get('/anime-info', async (req, res) => {
     const { slug } = req.query;
+    const ahora = Date.now();
+    if (INFO_CACHE.has(slug) && (ahora - INFO_CACHE.get(slug).time < 3600000)) return res.json(INFO_CACHE.get(slug).data);
     const page = await browser.newPage();
     try {
         await page.goto(`https://animeav1.com/media/${slug.split('/')[0]}`, { waitUntil: 'domcontentloaded' });
@@ -100,56 +117,33 @@ app.get('/anime-info', async (req, res) => {
         });
         await page.close();
         info.episodios.sort((a, b) => b.numero - a.numero);
+        INFO_CACHE.set(slug, { data: info, time: ahora });
         res.json(info);
     } catch (e) { if (page) await page.close(); res.json({ error: "Error" }); }
 });
 
-// 4. REPRODUCTOR (Única versión que extrae los servidores de video)
+// 4. REPRODUCTOR (Captura de servidores recuperada de tu código anterior)
 app.get('/get-video', async (req, res) => {
     const { slug, cap } = req.query;
-    let page;
+    const page = await browser.newPage();
     try {
-        page = await browser.newPage();
+        // Usamos la URL que te funcionaba antes: /media/slug/cap
+        const videoUrl = `https://animeav1.com/media/${slug}/${cap}`;
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
-
-        const videoUrl = `https://animeav1.com/ver/${slug}-${cap}`;
-        console.log(`🚀 Forzando scraping en: ${videoUrl}`);
-
-        await page.goto(videoUrl, { waitUntil: 'networkidle2', timeout: 50000 });
-
-        // TRUCO: Hacemos un scroll pequeño. Algunos sitios no cargan scripts de video hasta que hay interacción.
-        await page.evaluate(() => window.scrollBy(0, 300));
-        await new Promise(r => setTimeout(r, 3000)); // Damos 3 segundos reales
-
+        await page.goto(videoUrl, { waitUntil: 'domcontentloaded', timeout: 35000 });
+        
         const servidores = await page.evaluate(() => {
-            const scripts = Array.from(document.querySelectorAll('script'));
-            // Buscamos con un método más agresivo cualquier script que mencione 'embeds'
-            const target = scripts.find(s => s.innerText.toLowerCase().includes('embeds'));
-            if (!target) return [];
-
+            const script = Array.from(document.querySelectorAll('script')).find(s => s.innerText.includes('embeds'));
+            if (!script) return [];
             const results = [];
             const regex = /\{server:"([^"]+)",url:"([^"]+)"\}/g;
             let m;
-            while ((m = regex.exec(target.innerText)) !== null) {
-                const url = m[2].replace(/\\u0023/g, '#');
-                if (url.includes('http') && !results.some(s => s.url === url)) {
-                    results.push({ nombre: m[1].toUpperCase(), url });
-                }
+            while ((m = regex.exec(script.innerText)) !== null) {
+                results.push({ nombre: m[1].toUpperCase(), url: m[2].replace(/\\u0023/g, '#') });
             }
             return results;
         });
-
         await page.close();
-
-        if (servidores.length === 0) {
-            console.log("❌ Sigue sin encontrar. Probablemente el script cambió de nombre.");
-        }
-
         res.json({ servidores });
-
-    } catch (e) {
-        console.error("❌ Error en get-video:", e.message);
-        if (page) await page.close();
-        res.json({ servidores: [] });
-    }
+    } catch (e) { if (page) await page.close(); res.json({ servidores: [] }); }
 });
