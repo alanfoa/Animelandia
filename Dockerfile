@@ -1,6 +1,6 @@
 FROM node:18
 
-# Instalamos TODAS las librerías que Chrome necesita para no fallar en Linux
+# Instalamos TODAS las librerías que Chrome necesita
 RUN apt-get update && apt-get install -y \
     ca-certificates \
     fonts-liberation \
@@ -41,10 +41,9 @@ RUN apt-get update && apt-get install -y \
     --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app/backend
+WORKDIR /app
 COPY backend/package*.json ./
 RUN npm install
-# Descargamos el motor de Chrome actualizado
 RUN npx puppeteer browsers install chrome
 
 COPY backend/ .
