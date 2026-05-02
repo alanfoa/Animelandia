@@ -34,9 +34,10 @@ Animelandia es una aplicación web full-stack de streaming y descubrimiento de a
 - **Almacenamiento**: localStorage para favoritos y preferencias de tema
 
 ### Deployment
-- **Plataforma**: Render
+- **Plataforma**: Render (Backend) + Netlify (Frontend)
 - **URL de API**: `https://animelandia-api-6wp2.onrender.com`
-- **Containerización**: Docker con imagen base Node.js 18
+- **URL de Frontend**: `https://animelandia1.netlify.app` (verificar en Netlify)
+- **Containerización**: Docker con imagen base Node.js 20
 
 ---
 
@@ -160,11 +161,77 @@ E:\Github\Animelandia\
 
 ---
 
+## Mejoras Planeadas (Pendientes)
+
+### 🔧 Backend (backend/server.js)
+
+1. **Reintentos (Retry) con Axios** (Prioridad: Alta)
+   - Problema: Si animeav1.com falla, usuario ve error vacío
+   - Solución: Agregar `axios-retry` con 3 reintentos y exponential backoff
+   - Impacto: Mayor resiliencia sin cambios visibles
+
+2. **Validación de Parámetros** (Prioridad: Alta)
+   - Problema: Llamadas sin `?slug=` causan errores
+   - Solución: 
+     ```javascript
+     if (!slug) return res.status(400).json({ error: "Falta el parámetro slug" });
+     ```
+
+3. **Variables de Entorno** (Prioridad: Media)
+   - Problema: Cambiar de sitio de scraping requiere editar código
+   - Solución: Crear `backend/.env` con `SCRAPING_TARGET=https://animeav1.com`
+   - Dependencias: `dotenv`
+
+4. **Logger Estructurado** (Prioridad: Baja)
+   - Problema: `console.log` sin timestamps ni niveles
+   - Solución: Usar `winston` o formato consistente con timestamps
+
+5. **Rate Limiting** (Prioridad: Media)
+   - Problema: Alguien puede tumbar el servicio gratuito con bucles
+   - Solución: Agregar `express-rate-limit` (100 requests/15 min)
+   - Dependencias: `express-rate-limit`
+
+### 🎨 Frontend (frontend/)
+
+6. **Loading States (Spinners)** (Prioridad: Alta)
+   - Problema: Pantalla en blanco mientras carga
+   - Solución: Agregar spinners en index.html, anime.html y explorar.html
+   - Implementación: CSS puro + clase `.loading`
+
+7. **Manejo de Errores Visual** (Prioridad: Media)
+   - Problema: "Error de conexión" en texto plano
+   - Solución: Mensaje amigable con botón "Reintentar"
+   - Implementación: `<div id="error-container">` oculto por defecto
+
+8. **Título Dinámico** (Prioridad: Baja)
+   - Problema: Pestaña siempre dice "Animelandia" en lugar del anime
+   - Solución: `document.title = \`${data.titulo} - Animelandia\`;`
+
+9. **Modo Offline Básico** (Prioridad: Baja)
+   - Problema: Si backend cae, frontend no sirve
+   - Solución: Cachear resultados en `localStorage` y mostrarlos si falla la red
+
+### 📊 Infraestructura
+
+10. **Monitoreo con UptimeRobot** (Prioridad: Baja)
+    - Problema: Servicio gratuito se "duerme" por inactividad
+    - Solución: Ping cada 14 min a `/health` endpoint
+
+---
+
 ## Scripts Disponibles
 
 ```bash
 npm start          # Inicia servidor (node server.js)
-npm run postinstall # Instala Chrome para Puppeteer
+npm test           # Test placeholder (no implementado)
+```
+
+---
+
+## Scripts Disponibles
+
+```bash
+npm start          # Inicia servidor (node server.js)
 npm test           # Test placeholder (no implementado)
 ```
 
