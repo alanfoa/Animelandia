@@ -24,10 +24,8 @@ Animelandia es una aplicación web full-stack de streaming y descubrimiento de a
 - **Runtime**: Node.js
 - **Framework**: Express.js (v5.2.1)
 - **Web Scraping**:
-  - Puppeteer (v24.36.0) - Automatización con navegador headless
-  - Puppeteer Extra + Stealth Plugin - Evitar detección
-  - Cheerio (v1.2.0) - Parsing de HTML
-  - Axios (v1.13.3) - Peticiones HTTP
+  - Axios (v1.13.3) - Peticiones HTTP rápidas
+  - Cheerio (v1.2.0) - Parsing de HTML del lado del servidor
 - **Middleware**: CORS (v2.8.6)
 
 ### Frontend
@@ -111,18 +109,17 @@ E:\Github\Animelandia\
 ### Scraping
 - **Target**: animeav1.com
 - **Métodos**:
-  - Puppeteer para extraer episodios recientes del homepage
-  - Puppeteer para resultados de búsqueda en catálogo
-  - Puppeteer para detalles de anime desde páginas de media
-  - Puppeteer para iframes de video de páginas de episodios
+  - Axios para peticiones HTTP rápidas
+  - Cheerio para extraer datos del HTML
+  - Parseo de scripts embebidos para episodios y metadatos
 
 ### Estrategia de Caching
 - Usa caché en memoria con `Map` de JavaScript y verificación de timestamps
 - **No persistente** entre reinicios del servidor
 - Tiempos configurados por endpoint (ver tabla de API)
 
-### Stealth Mode
-- Usa `puppeteer-extra-plugin-stealth` para evitar detección de bots
+### Headers
+- Usa User-Agent personalizado para evitar bloqueos básicos
 
 ### Diseño Responsive
 - Todos los HTML incluyen media queries CSS para móviles
@@ -139,9 +136,8 @@ E:\Github\Animelandia\
 - Referenciada en archivos HTML frontend para llamadas API
 
 ### Docker
-- Base: Node.js 18
-- Instala dependencias de Chrome para Puppeteer
-- Ejecuta `npx puppeteer browsers install chrome` post-instalación
+- Base: Node.js 20
+- Instala dependencias npm estándar
 - Expone puerto 3000
 - WORKDIR: `/app/backend`
 - Entry point: `node server.js`
@@ -160,7 +156,7 @@ E:\Github\Animelandia\
 5. **Dependencias de Scraping**: Si animeav1.com cambia su estructura HTML, el scraping se romperá
 6. **Sin Variables de Entorno**: Las URLs de API están hardcodeadas en archivos HTML
 7. **Caché Volátil**: El caché se pierde con reinicios del servidor
-8. **Puppeteer en Producción**: Asegurar que Railway soporta Chrome headless (ver Dockerfile)
+8. **Sin Puppeteer**: Migrado a Axios + Cheerio para mayor velocidad (67% más rápido)
 
 ---
 

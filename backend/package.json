@@ -2,10 +2,9 @@
   "name": "animelandia",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "postinstall": "npx puppeteer browsers install chrome",
     "test": "echo \"Error: no test specified\" && exit 1",
     "benchmark": "node scraper-test.js"
   },
@@ -16,9 +15,6 @@
     "axios": "^1.13.3",
     "cheerio": "^1.2.0",
     "cors": "^2.8.6",
-    "express": "^5.2.1",
-    "puppeteer": "^24.36.0",
-    "puppeteer-extra": "^3.3.6",
-    "puppeteer-extra-plugin-stealth": "^2.11.2"
+    "express": "^5.2.1"
   }
 }
