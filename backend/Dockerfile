@@ -1,4 +1,4 @@
-FROM node:18
+FROM node:20
 
 # Instalamos TODAS las librerías que Chrome necesita
 RUN apt-get update && apt-get install -y \

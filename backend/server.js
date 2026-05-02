@@ -7,6 +7,9 @@ puppeteer.use(StealthPlugin());
 const app = express();
 app.use(cors());
 
+// Health check endpoint
+app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: Date.now() }));
+
 let browser;
 let INFO_CACHE = new Map();
 let LATEST_CACHE = { data: null, lastUpdate: 0 };
