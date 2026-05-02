@@ -41,12 +41,12 @@ RUN apt-get update && apt-get install -y \
     --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
-COPY package*.json ./
+WORKDIR /app/backend
+COPY backend/package*.json ./
 RUN npm install
 # Descargamos el motor de Chrome actualizado
 RUN npx puppeteer browsers install chrome
 
-COPY . .
+COPY backend/ .
 EXPOSE 3000
 CMD ["node", "server.js"]
