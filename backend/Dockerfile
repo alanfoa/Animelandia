@@ -42,10 +42,10 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-COPY backend/package*.json ./
+COPY package*.json ./
 RUN npm install
 RUN npx puppeteer browsers install chrome
 
-COPY backend/ .
+COPY . .
 EXPOSE 3000
 CMD ["node", "server.js"]
