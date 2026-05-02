@@ -36,8 +36,8 @@ Animelandia es una aplicación web full-stack de streaming y descubrimiento de a
 - **Almacenamiento**: localStorage para favoritos y preferencias de tema
 
 ### Deployment
-- **Plataforma**: Railway
-- **URL de API**: `https://animelandia.up.railway.app/`
+- **Plataforma**: Render
+- **URL de API**: `https://animelandia-api-6wp2.onrender.com`
 - **Containerización**: Docker con imagen base Node.js 18
 
 ---
@@ -134,8 +134,8 @@ E:\Github\Animelandia\
 
 ## Deployment
 
-### Railway (Producción)
-- URL: `https://animelandia.up.railway.app/`
+### Render (Producción)
+- URL: `https://animelandia-api-6wp2.onrender.com`
 - Referenciada en archivos HTML frontend para llamadas API
 
 ### Docker
@@ -147,7 +147,7 @@ E:\Github\Animelandia\
 - Entry point: `node server.js`
 
 ### Archivo No Usado
-- `render-build.sh` - Leftover de intento previo con Render.com (ahora usa Railway)
+- `render-build.sh` - Leftover de intento previo con Render.com (ya no se usa)
 
 ---
 
