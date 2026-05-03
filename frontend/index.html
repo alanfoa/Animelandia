@@ -330,10 +330,11 @@
             container.innerHTML = 'Buscando...';
             document.getElementById('titulo-seccion').innerText = `Resultados para: ${query}`;
             try {
-                // CORREGIDO: URL de Railway
                 const res = await fetch(`https://animelandia-api-6wp2.onrender.com/search?q=${query}`);
                 const data = await res.json();
-                renderizarEstrenos(data);
+                // Manejar tanto formato nuevo { results, pagination } como antiguo []
+                const episodios = data.results || data;
+                renderizarEstrenos(episodios);
             } catch (e) { container.innerHTML = 'Error en la búsqueda.'; }
         }
 
