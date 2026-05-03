@@ -301,3 +301,16 @@ npm test           # Test placeholder (no implementado)
 ## Información de Licencia
 - **License**: ISC (según package.json)
 - **No hay archivo LICENSE**: Considerar agregar uno si se va a hacer público
+
+---
+
+## 📖 Recursos de Aprendizaje
+
+Para aprender todo sobre este proyecto, leé el archivo **`aprendizaje.md`**.
+Fue escrito como una clase completa que cubre:
+- Arquitectura y flujo de datos
+- Tecnologías usadas y por qué
+- Desafíos enfrentados (paginación, scraping, CORS)
+- Lecciones para el mercado laboral
+- Plan de estudio para mañana (variables de entorno, spinners, etc.)
+- Mensaje de motivación personalizado 💪
