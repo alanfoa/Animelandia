@@ -230,19 +230,6 @@
             line-height: 1.2;
         }
 
-        #btn-cargar-mas-animes {
-            display: none;
-            width: 300px;
-            margin: 30px auto;
-            padding: 15px;
-            background: var(--racing-celeste);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
         /* Paginación profesional */
         .pagination-container {
             display: flex;
@@ -565,10 +552,10 @@
 
         async function ejecutarFiltro() {
             const container = document.getElementById('resultados');
-            const btn = document.getElementById('btn-cargar-mas-animes');
+            const paginationContainer = document.getElementById('pagination');
 
             container.innerHTML = '<div style="grid-column: 1/-1; text-align:center;"><p> Buscando... </p></div>';
-            btn.style.display = 'none';
+            if (paginationContainer) paginationContainer.innerHTML = '';
             paginaCargar = 1;
 
             let params = new URLSearchParams();
