@@ -380,6 +380,16 @@
             </div>
 
             <div class="filter-group">
+                <label>Estado</label>
+                <select id="f-estado">
+                    <option value="">Cualquiera</option>
+                    <option value="finished">Finalizado</option>
+                    <option value="airing">En emisión</option>
+                    <option value="upcoming">Próximamente</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
                 <label>Año</label>
                 <select id="f-year">
                     <option value="">Cualquier año</option>
@@ -450,6 +460,7 @@
             const y = document.getElementById('f-year').value;
             const g = document.getElementById('f-genero').value;
             const t = document.getElementById('f-tipo').value;
+            const e = document.getElementById('f-estado').value;
 
             if (y) {
                 params.append('minYear', y);
@@ -457,6 +468,7 @@
             }
             if (g) params.append('genre', g);
             if (t) params.append('category', t);
+            if (e) params.append('status', e);
 
             currentQuery = params.toString();
             await buscarPagina(paginaCargar, true);
