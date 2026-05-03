@@ -268,9 +268,20 @@ E:\Github\Animelandia\
 7. **fix: cambiar URL de backend a producción para Netlify**
    - `explorar.html` apunta a `https://animelandia-api-6wp2.onrender.com`
 
+**Commits posteriores (pusheados a main):**
+- **fix: actualizar /latest para nuevo formato de animeav1.com** (commit `eb729cf`)
+  - Cambiado regex para extraer `latestEpisodes` del nuevo formato SvelteKit
+  - Endpoint devuelve 20 episodios correctamente
+
+- **fix: manejar nuevo formato de /search en index.html** (commit `2fc6f2f`)
+  - Maneja tanto formato nuevo `{ results, pagination }` como antiguo `[]`
+  - Solucionado "Error en la búsqueda" por mismatch de formatos
+
 **Estado actual:**
 - ✅ Paginación funcionando en producción (Netlify + Render)
 - ✅ Catálogo con filtros avanzados y paginación profesional
+- ✅ Últimos Estrenos funcionando (`/latest` arreglado)
+- ✅ Buscador funcionando (`/search` maneja ambos formatos)
 - ✅ Sin errores de `file://` al usar Netlify (CORS solucionado)
 
 ### Problema conocido:
