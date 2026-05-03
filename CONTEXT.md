@@ -219,12 +219,17 @@ E:\Github\Animelandia\
 
 ---
 
-## Scripts Disponibles
+## Cambios Recientes (Mayo 2026 - Pendientes de Push)
 
-```bash
-npm start          # Inicia servidor (node server.js)
-npm test           # Test placeholder (no implementado)
-```
+### Commits realizados localmente (no pusheados a main):
+1. **feat: agregar filtro de Tipo (TV Anime, Película, OVA, Especial) en catálogo**
+   - Agregado dropdown de "Tipo" en `frontend/explorar.html` (panel de filtros)
+   - Actualizada función `ejecutarFiltro` para enviar parámetro `category` al backend
+   - El backend ya reenvía el parámetro a animeav1.com sin cambios
+
+2. **feat: expandir filtro de géneros a 46 opciones disponibles en animeav1.com**
+   - Actualizado select de "Género" en `frontend/explorar.html` con todos los slugs de `genresIdsMap` del sitio de scraping
+   - Incluye nuevos géneros: Antropomórfico, Artes Marciales, Isekai, Mecha, Psicológico, Vampiros, etc.
 
 ---
 
