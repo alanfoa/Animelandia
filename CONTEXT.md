@@ -231,6 +231,11 @@ E:\Github\Animelandia\
    - Actualizado select de "Género" en `frontend/explorar.html` con todos los slugs de `genresIdsMap` del sitio de scraping
    - Incluye nuevos géneros: Antropomórfico, Artes Marciales, Isekai, Mecha, Psicológico, Vampiros, etc.
 
+3. **feat: agregar filtro de Estado (Finalizado, En emisión, Próximamente) en catálogo**
+   - Agregado dropdown de "Estado" en `frontend/explorar.html` (panel de filtros)
+   - Actualizada función `ejecutarFiltro` para enviar parámetro `status` al backend
+   - Valores: `finished` (Finalizado), `airing` (En emisión), `upcoming` (Próximamente)
+
 ---
 
 ## Scripts Disponibles
