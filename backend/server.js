@@ -48,21 +48,42 @@ app.get('/latest', async (req, res) => {
 
 // 2. BUSCADOR
 app.get('/search', async (req, res) => {
-    const { q, page = 1 } = req.query;
+    const { q, page = 1, ...filters } = req.query;
     try {
-        let urlDestino = (q.includes('=') || q.includes('&')) 
-            ? `https://animeav1.com/catalogo?${q}&page=${page}` 
-            : `https://animeav1.com/catalogo?search=${encodeURIComponent(q)}&page=${page}`;
-        
+        const params = new URLSearchParams();
+
+        if (q) {
+            // Decodificar q por si viene encodeado
+            const decodedQ = decodeURIComponent(q);
+            if (decodedQ.includes('=') || decodedQ.includes('&')) {
+                // q es un string de parámetros (formato legacy)
+                const temp = new URLSearchParams(decodedQ);
+                for (const [key, value] of temp) params.append(key, value);
+            } else {
+                params.append('search', decodedQ);
+            }
+        }
+
+        // Agregar filtros individuales (tienen prioridad sobre q)
+        for (const [key, value] of Object.entries(filters)) {
+            params.append(key, value);
+        }
+
+        const queryString = params.toString();
+        const urlDestino = queryString
+            ? `https://animeav1.com/catalogo?${queryString}&page=${page}`
+            : `https://animeav1.com/catalogo?page=${page}`;
+        console.log('URL destino:', urlDestino);
+
         const $ = await fetchAndParse(urlDestino);
         const resultados = [];
-        
+
         $('article').each((i, el) => {
             const article = $(el);
             const a = article.find('a[href*="/media/"]');
             const img = article.find('img');
             const h3 = article.find('h3');
-            
+
             if (a.length && img.length) {
                 const labels = article.find('div').map((i, d) => $(d).text().trim()).get();
                 resultados.push({
@@ -75,7 +96,7 @@ app.get('/search', async (req, res) => {
                 });
             }
         });
-        
+
         // Extraer metadatos de paginación del script embebido
         let pagination = { currentPage: parseInt(page), totalPages: 1, totalRecords: resultados.length };
         try {
@@ -83,10 +104,10 @@ app.get('/search', async (req, res) => {
             const allScripts = scripts.join('');
             const totalPagesMatch = allScripts.match(/totalPages:(\d+)/);
             const totalRecordsMatch = allScripts.match(/totalRecords:(\d+)/);
-            
+
             if (totalPagesMatch) pagination.totalPages = parseInt(totalPagesMatch[1]);
             if (totalRecordsMatch) pagination.totalRecords = parseInt(totalRecordsMatch[1]);
-            
+
             // Si no se encontró totalPages pero hay 20 resultados, estimar más páginas
             if (!totalPagesMatch && resultados.length >= 20) {
                 pagination.totalPages = parseInt(page) + 1;
@@ -94,11 +115,11 @@ app.get('/search', async (req, res) => {
         } catch (e) {
             console.error('Error extrayendo paginación:', e.message);
         }
-        
+
         res.json({ results: resultados, pagination });
-    } catch (e) { 
+    } catch (e) {
         console.error('Error en /search:', e.message);
-        res.json({ results: [], pagination: { currentPage: 1, totalPages: 1, totalRecords: 0 } }); 
+        res.json({ results: [], pagination: { currentPage: 1, totalPages: 1, totalRecords: 0 } });
     }
 });
 

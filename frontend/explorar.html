@@ -550,15 +550,8 @@
             if (q) window.location.href = `index.html?search=${encodeURIComponent(q)}`;
         }
 
-        async function ejecutarFiltro() {
-            const container = document.getElementById('resultados');
-            const paginationContainer = document.getElementById('pagination');
-
-            container.innerHTML = '<div style="grid-column: 1/-1; text-align:center;"><p> Buscando... </p></div>';
-            if (paginationContainer) paginationContainer.innerHTML = '';
-            paginaCargar = 1;
-
-            let params = new URLSearchParams();
+        function obtenerFiltros() {
+            const params = new URLSearchParams();
             const y = document.getElementById('f-year').value;
             const g = document.getElementById('f-genero').value;
             const t = document.getElementById('f-tipo').value;
@@ -576,7 +569,18 @@
             if (o) params.append('order', o);
             if (l) params.append('letter', l);
 
-            currentQuery = params.toString();
+            return params.toString();
+        }
+
+        async function ejecutarFiltro() {
+            const container = document.getElementById('resultados');
+            const paginationContainer = document.getElementById('pagination');
+
+            container.innerHTML = '<div style="grid-column: 1/-1; text-align:center;"><p> Buscando... </p></div>';
+            if (paginationContainer) paginationContainer.innerHTML = '';
+            paginaCargar = 1;
+
+            currentQuery = obtenerFiltros();
             await buscarPagina(paginaCargar, true);
         }
 
@@ -584,23 +588,36 @@
             const container = document.getElementById('resultados');
             const paginationContainer = document.getElementById('pagination');
 
-            try {
-                const res = await fetch(`http://localhost:3000/search?q=${encodeURIComponent(currentQuery)}&page=${num}`);
-                const data = await res.json();
-                
-                // Manejar tanto formato nuevo { results, pagination } como antiguo []
-                const nuevosAnimes = data.results || data;
-                const pagination = data.pagination || { currentPage: num, totalPages: (nuevosAnimes.length >= 20 ? num + 1 : num), totalRecords: nuevosAnimes.length };
+            // Limpiar resultados y paginación siempre (tanto nueva búsqueda como cambio de página)
+            container.innerHTML = '<div style="grid-column: 1/-1; text-align:center;"><p> Buscando... </p></div>';
+            if (paginationContainer) paginationContainer.innerHTML = '';
 
-                if (esNuevaBusqueda) {
-                    container.innerHTML = '';
-                    paginationContainer.innerHTML = '';
+            try {
+                // Construir URL con URLSearchParams para mayor claridad
+                const params = new URLSearchParams();
+                params.append('page', num);
+
+                // Agregar filtros actuales
+                if (currentQuery) {
+                    const filtros = new URLSearchParams(currentQuery);
+                    for (const [key, value] of filtros) {
+                        params.append(key, value);
+                    }
                 }
 
+                const url = 'http://localhost:3000/search?' + params.toString();
+                const res = await fetch(url);
+                const data = await res.json();
+
+                // Manejar formato { results, pagination }
+                const nuevosAnimes = data.results || [];
+                const pagination = data.pagination || { currentPage: num, totalPages: (nuevosAnimes.length >= 20 ? num + 1 : num), totalRecords: nuevosAnimes.length };
+
+                // Limpiar el "Buscando..." y mostrar resultados
+                container.innerHTML = '';
+
                 if (!nuevosAnimes || nuevosAnimes.length === 0) {
-                    if (esNuevaBusqueda) {
-                        container.innerHTML = '<p style="grid-column: 1/-1; text-align:center;">No hay resultados.</p>';
-                    }
+                    container.innerHTML = '<p style="grid-column: 1/-1; text-align:center;">No hay resultados.</p>';
                     return;
                 }
 
@@ -625,9 +642,7 @@
 
             } catch (e) {
                 console.error(e);
-                if (esNuevaBusqueda) {
-                    container.innerHTML = '<p style="grid-column: 1/-1; text-align:center;">Error al cargar los resultados.</p>';
-                }
+                container.innerHTML = '<p style="grid-column: 1/-1; text-align:center;">Error al cargar los resultados.</p>';
             }
         }
 
@@ -672,19 +687,19 @@
             
             // Botón ">" (siguiente)
             if (currentPage < totalPages) {
-                html += createPageLink(currentPage + 1, false, '>', 'next-btn');
+                html += createPageLink(currentPage + 1, currentPage, '>', 'next-btn');
             }
             
             // Botón ">>" (última)
             if (currentPage < totalPages) {
-                html += createPageLink(totalPages, false, '>>', 'last-btn');
+                html += createPageLink(totalPages, currentPage, '>>', 'last-btn');
             }
             
             container.innerHTML = html;
         }
 
-        function createPageLink(pageNum, isActive, text, extraClass = '') {
-            if (isActive === pageNum) {
+        function createPageLink(pageNum, currentPage, text, extraClass = '') {
+            if (pageNum === currentPage) {
                 return '<a class="active ' + extraClass + '">' + text + '</a>';
             }
             return '<a href="#" onclick="irAPagina(' + pageNum + '); return false;" class="' + extraClass + '">' + text + '</a>';
@@ -692,11 +707,12 @@
 
         function irAPagina(num) {
             paginaCargar = num;
-            buscarPagina(num, false);
+            buscarPagina(num);
             // Scroll al inicio de resultados
             document.getElementById('resultados').scrollIntoView({ behavior: 'smooth' });
         }
 
+        // Cargar resultados al iniciar (catálogo por defecto)
         window.onload = () => ejecutarFiltro();
     </script>
     <footer style="text-align:center; padding:10px; font-size:12px; color:#666; background:#1a1a1a; margin-top:20px;">

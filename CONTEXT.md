@@ -1,7 +1,7 @@
 # Animelandia - Context File
 
 > Proyecto creado en verano 2025 (Argentina)
-> Última actualización: Mayo 2026
+> Última actualización: Mayo 2026 (Pagination fixed!)
 
 ## Descripción General
 
@@ -47,7 +47,7 @@ Animelandia es una aplicación web full-stack de streaming y descubrimiento de a
 E:\Github\Animelandia\
 ├── CONTEXT.md             # Este archivo de contexto
 ├── backend\               # Servidor y lógica de scraping
-│   ├── server.js          # Servidor Express con scraping de Puppeteer
+│   ├── server.js          # Servidor Express con scraping de Axios + Cheerio
 │   ├── package.json       # Dependencias y scripts
 │   ├── package-lock.json  # Lock file de dependencias
 │   ├── Dockerfile         # Configuración Docker
@@ -70,10 +70,17 @@ E:\Github\Animelandia\
 
 | Endpoint | Método | Propósito | Cache |
 |----------|--------|-----------|-------|
+| `/health` | GET | Health check (monitoreo) | Sin cache |
 | `/latest` | GET | Obtener últimos episodios | 10 minutos |
-| `/search?q=` | GET | Buscar anime (texto o filtros) | Sin cache |
+| `/search?q=&page=&...` | GET | Buscar anime (texto o filtros) + paginación | Sin cache |
 | `/anime-info?slug=` | GET | Detalles de anime y episodios | 1 hora |
 | `/get-video?slug=&cap=` | GET | Servidores de video para episodio | Sin cache |
+
+### Detalles de `/search`
+- Soporta parámetros individuales (`genre`, `category`, `status`, `order`, `letter`, `minYear`, `maxYear`, `page`)
+- También acepta `q` con string de parámetros encodeado (legacy)
+- Devuelve `{ results: [...], pagination: { currentPage, totalPages, totalRecords } }`
+- `totalPages` se extrae del script embebido de animeav1.com (regex `totalPages:(\d+)`)
 
 ---
 
@@ -81,9 +88,10 @@ E:\Github\Animelandia\
 
 ### Backend: `backend/server.js`
 - Inicia servidor Express en puerto 3000 (o variable `PORT`)
-- Lanza navegador Puppeteer con modo stealth
-- Implementa 4 endpoints de API (ver tabla arriba)
+- Usa Axios + Cheerio para scraping rápido (sin Puppeteer)
+- Implementa 5 endpoints de API (ver tabla arriba)
 - Usa caching con `Map` y timestamps
+- Maneja parámetros individuales y formato legacy `q` en `/search`
 
 ### Frontend: `frontend/index.html`
 - Muestra últimos episodios en grilla
@@ -99,9 +107,10 @@ E:\Github\Animelandia\
 - Muestra favoritos
 
 ### Frontend: `frontend/explorar.html`
-- Filtros avanzados: género (15 opciones), año (1990-2026)
-- Resultados paginados
-- Funcionalidad "Cargar Más"
+- Filtros avanzados: género (46 opciones), año (1990-2026), tipo, estado, orden, letra
+- Resultados paginados con paginación profesional (1,2,3,...,N,>>)
+- Paginación dinámica que muestra rango alrededor de la página actual + ellipsis
+- Limpieza de resultados al cambiar de página (evita acumulación)
 
 ---
 
@@ -221,7 +230,10 @@ E:\Github\Animelandia\
 
 ## Cambios Recientes (Mayo 2026 - Pendientes de Push)
 
-### Commits realizados localmente (no pusheados a main):
+### Branch: `feature/pagination` (trabajo en progreso)
+
+**Commits realizados localmente (no pusheados a main):**
+
 1. **feat: agregar filtro de Tipo (TV Anime, Película, OVA, Especial) en catálogo**
    - Agregado dropdown de "Tipo" en `frontend/explorar.html` (panel de filtros)
    - Actualizada función `ejecutarFiltro` para enviar parámetro `category` al backend
@@ -240,6 +252,24 @@ E:\Github\Animelandia\
    - Agregado dropdown de "Ordenar por" con opciones: Predeterminado, Puntuación, Año, Título
    - Agregado dropdown de "Filtro Alfabético" con letras A-Z y # (para números)
    - Actualizada función `ejecutarFiltro` para enviar parámetros `order` y `letter` al backend
+
+5. **feat: implementar paginación profesional tipo animeav1 (rama feature/pagination)**
+   - Reemplazado botón "Cargar Más" con paginación numérica: 1,2,3,...,N,>>
+   - Agregada función `renderPagination()` en `frontend/explorar.html`
+   - Backend devuelve `pagination.totalPages` extraído de scripts embebidos
+   - Corregido envío de filtros al backend (sin doble encodeo)
+   - Corregido acumulamiento de resultados al cambiar de página
+
+6. **fix: eliminar referencias a botón eliminado y corregir ejecutarFiltro**
+   - Limpieza de código y corrección de `irAPagina()`
+   - `createPageLink()` ahora marca página activa correctamente
+
+7. **test: configurar frontend para usar backend local (puerto 3000) para pruebas**
+   - Hardcodeado `http://localhost:3000` en `explorar.html` para desarrollo
+   - **Nota**: Antes de pushear a producción, cambiar a URL de Render
+
+### Problema conocido:
+- Al abrir `explorar.html` directamente desde el filesystem (`file://`), el navegador bloquea peticiones por CORS. Solución: servir con un servidor local o usar Live Server.
 
 ---
 
