@@ -338,6 +338,17 @@
             </div>
 
             <div class="filter-group">
+                <label>Tipo</label>
+                <select id="f-tipo">
+                    <option value="">Cualquiera</option>
+                    <option value="tv-anime">TV Anime</option>
+                    <option value="pelicula">Película</option>
+                    <option value="ova">OVA</option>
+                    <option value="especial">Especial</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
                 <label>Año</label>
                 <select id="f-year">
                     <option value="">Cualquier año</option>
@@ -407,12 +418,14 @@
             let params = new URLSearchParams();
             const y = document.getElementById('f-year').value;
             const g = document.getElementById('f-genero').value;
+            const t = document.getElementById('f-tipo').value;
 
             if (y) {
                 params.append('minYear', y);
                 params.append('maxYear', y);
             }
             if (g) params.append('genre', g);
+            if (t) params.append('category', t);
 
             currentQuery = params.toString();
             await buscarPagina(paginaCargar, true);
