@@ -36,7 +36,8 @@ app.get('/latest', async (req, res) => {
         if (!target) return res.json([]);
         
         const results = [];
-        const regex = /id:(\d+),slug:"([^"]+)",title:"([^"]+)"\},number:(\d+)/g;
+        // Nuevo regex para formato actual: media:{id:123,slug:"slug",title:"Titulo"},number:16
+        const regex = /media:\s*\{id:\s*(\d+),\s*slug:\s*"([^"]+)",\s*title:\s*"([^"]+)"[^}]*\},\s*number:\s*(\d+)/g;
         let m;
         while ((m = regex.exec(target)) !== null) {
             results.push({ titulo: m[3], imagen: `https://cdn.animeav1.com/covers/${m[1]}.jpg`, slug: m[2], cap: m[4] });
