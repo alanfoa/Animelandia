@@ -598,7 +598,7 @@
             const paginationContainer = document.getElementById('pagination');
 
             try {
-                const res = await fetch(`https://animelandia-api-6wp2.onrender.com/search?q=${encodeURIComponent(currentQuery)}&page=${num}`);
+                const res = await fetch(`http://localhost:3000/search?q=${encodeURIComponent(currentQuery)}&page=${num}`);
                 const data = await res.json();
                 
                 // Manejar tanto formato nuevo { results, pagination } como antiguo []
