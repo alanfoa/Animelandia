@@ -236,6 +236,11 @@ E:\Github\Animelandia\
    - Actualizada función `ejecutarFiltro` para enviar parámetro `status` al backend
    - Valores: `finished` (Finalizado), `airing` (En emisión), `upcoming` (Próximamente)
 
+4. **feat: agregar filtros Ordenar por y Filtro Alfabético A-Z en catálogo**
+   - Agregado dropdown de "Ordenar por" con opciones: Predeterminado, Puntuación, Año, Título
+   - Agregado dropdown de "Filtro Alfabético" con letras A-Z y # (para números)
+   - Actualizada función `ejecutarFiltro` para enviar parámetros `order` y `letter` al backend
+
 ---
 
 ## Scripts Disponibles
