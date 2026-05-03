@@ -243,6 +243,79 @@
             cursor: pointer;
         }
 
+        /* Paginación profesional */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 30px 20px;
+        }
+
+        .pagination-container a,
+        .pagination-container span {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            height: 40px;
+            padding: 0 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .pagination-container a {
+            background: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid #ddd;
+        }
+
+        .pagination-container a:hover {
+            background: var(--racing-celeste);
+            color: white;
+            border-color: var(--racing-celeste);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 174, 239, 0.3);
+        }
+
+        .pagination-container a.active {
+            background: var(--racing-celeste);
+            color: white;
+            border-color: var(--racing-celeste);
+            pointer-events: none;
+        }
+
+        .pagination-container span {
+            color: var(--text-color);
+            opacity: 0.5;
+        }
+
+        .pagination-container a.next-btn,
+        .pagination-container a.last-btn {
+            font-weight: bold;
+            min-width: 50px;
+        }
+
+        /* RESPONSIVE MÓVIL */
+        @media (max-width: 768px) {
+            .pagination-container {
+                gap: 4px;
+                padding: 20px 10px;
+            }
+            
+            .pagination-container a,
+            .pagination-container span {
+                min-width: 35px;
+                height: 35px;
+                font-size: 12px;
+                padding: 0 8px;
+            }
+        }
+
         /* RESPONSIVE MÓVIL */
         @media (max-width: 768px) {
             header img {
@@ -445,9 +518,7 @@
     </div>
 
     <div id="resultados" class="results-container"></div>
-    <button id="btn-cargar-mas-animes" onclick="mostrarMasAnimes()">
-        CARGAR MÁS ANIMES
-    </button>
+    <div id="pagination" class="pagination-container"></div>
 
     <script>
         // Modo Nocturno
@@ -524,27 +595,34 @@
 
         async function buscarPagina(num, esNuevaBusqueda) {
             const container = document.getElementById('resultados');
-            const btn = document.getElementById('btn-cargar-mas-animes');
+            const paginationContainer = document.getElementById('pagination');
 
             try {
                 const res = await fetch(`https://animelandia-api-6wp2.onrender.com/search?q=${encodeURIComponent(currentQuery)}&page=${num}`);
-                const nuevosAnimes = await res.json();
+                const data = await res.json();
+                
+                // Manejar tanto formato nuevo { results, pagination } como antiguo []
+                const nuevosAnimes = data.results || data;
+                const pagination = data.pagination || { currentPage: num, totalPages: (nuevosAnimes.length >= 20 ? num + 1 : num), totalRecords: nuevosAnimes.length };
 
-                if (esNuevaBusqueda) container.innerHTML = '';
+                if (esNuevaBusqueda) {
+                    container.innerHTML = '';
+                    paginationContainer.innerHTML = '';
+                }
 
-                if (nuevosAnimes.length === 0) {
-                    if (esNuevaBusqueda) container.innerHTML = '<p>No hay resultados.</p>';
-                    btn.style.display = 'none';
+                if (!nuevosAnimes || nuevosAnimes.length === 0) {
+                    if (esNuevaBusqueda) {
+                        container.innerHTML = '<p style="grid-column: 1/-1; text-align:center;">No hay resultados.</p>';
+                    }
                     return;
                 }
 
-                // BUSCÁ ESTA PARTE DENTRO DE buscarPagina EN EXPLORAR.HTML
+                // Renderizar tarjetas
                 nuevosAnimes.forEach(anime => {
                     const card = document.createElement('div');
                     card.className = 'card';
                     card.onclick = () => window.location.href = `anime.html?slug=${anime.slug}&titulo=${encodeURIComponent(anime.titulo)}&imagen=${encodeURIComponent(anime.imagen)}`;
 
-                    // ACÁ AGREGAMOS EL LOADING LAZY
                     card.innerHTML = `
         ${anime.anio ? `<div class="card-year">${anime.anio}</div>` : ''}
         <img src="${anime.imagen}" loading="lazy" onerror="this.src='https://via.placeholder.com/200x280?text=Sin+Imagen'">
@@ -553,19 +631,83 @@
                     container.appendChild(card);
                 });
 
-                btn.style.display = (nuevosAnimes.length >= 20) ? 'block' : 'none';
-                btn.innerText = "CARGAR MÁS (PÁGINA " + (num + 1) + ")";
+                // Renderizar paginación profesional
+                if (pagination.totalPages > 1) {
+                    renderPagination(pagination);
+                }
 
             } catch (e) {
                 console.error(e);
+                if (esNuevaBusqueda) {
+                    container.innerHTML = '<p style="grid-column: 1/-1; text-align:center;">Error al cargar los resultados.</p>';
+                }
             }
         }
 
-        async function mostrarMasAnimes() {
-            const btn = document.getElementById('btn-cargar-mas-animes');
-            btn.innerText = "CARGANDO...";
-            paginaCargar++;
-            await buscarPagina(paginaCargar, false);
+        function renderPagination(pagination) {
+            const container = document.getElementById('pagination');
+            const { currentPage, totalPages } = pagination;
+            
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+            
+            // Lógica de paginación: mostrar 1, 2, 3, 4, 5, 6, 7, ..., totalPages, >, >>
+            // Siempre mostrar primera página
+            html += createPageLink(1, currentPage, '1');
+            
+            // Determinar rango de páginas a mostrar alrededor de la actual
+            let startPage = Math.max(2, currentPage - 3);
+            let endPage = Math.min(totalPages - 1, currentPage + 3);
+            
+            // Si hay brecha después de la página 1, mostrar "..."
+            if (startPage > 2) {
+                html += '<span>...</span>';
+            }
+            
+            // Mostrar páginas del rango
+            for (let i = startPage; i <= endPage; i++) {
+                html += createPageLink(i, currentPage, i.toString());
+            }
+            
+            // Si hay brecha antes de la última página, mostrar "..."
+            if (endPage < totalPages - 1) {
+                html += '<span>...</span>';
+            }
+            
+            // Siempre mostrar última página (si es diferente de la primera)
+            if (totalPages > 1) {
+                html += createPageLink(totalPages, currentPage, totalPages.toString());
+            }
+            
+            // Botón ">" (siguiente)
+            if (currentPage < totalPages) {
+                html += createPageLink(currentPage + 1, false, '>', 'next-btn');
+            }
+            
+            // Botón ">>" (última)
+            if (currentPage < totalPages) {
+                html += createPageLink(totalPages, false, '>>', 'last-btn');
+            }
+            
+            container.innerHTML = html;
+        }
+
+        function createPageLink(pageNum, isActive, text, extraClass = '') {
+            if (isActive === pageNum) {
+                return '<a class="active ' + extraClass + '">' + text + '</a>';
+            }
+            return '<a href="#" onclick="irAPagina(' + pageNum + '); return false;" class="' + extraClass + '">' + text + '</a>';
+        }
+
+        function irAPagina(num) {
+            paginaCargar = num;
+            buscarPagina(num, false);
+            // Scroll al inicio de resultados
+            document.getElementById('resultados').scrollIntoView({ behavior: 'smooth' });
         }
 
         window.onload = () => ejecutarFiltro();

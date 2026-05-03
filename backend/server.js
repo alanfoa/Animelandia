@@ -76,8 +76,30 @@ app.get('/search', async (req, res) => {
             }
         });
         
-        res.json(resultados);
-    } catch (e) { res.json([]); }
+        // Extraer metadatos de paginación del script embebido
+        let pagination = { currentPage: parseInt(page), totalPages: 1, totalRecords: resultados.length };
+        try {
+            const scripts = $('script').map((i, el) => $(el).html()).get();
+            const allScripts = scripts.join('');
+            const totalPagesMatch = allScripts.match(/totalPages:(\d+)/);
+            const totalRecordsMatch = allScripts.match(/totalRecords:(\d+)/);
+            
+            if (totalPagesMatch) pagination.totalPages = parseInt(totalPagesMatch[1]);
+            if (totalRecordsMatch) pagination.totalRecords = parseInt(totalRecordsMatch[1]);
+            
+            // Si no se encontró totalPages pero hay 20 resultados, estimar más páginas
+            if (!totalPagesMatch && resultados.length >= 20) {
+                pagination.totalPages = parseInt(page) + 1;
+            }
+        } catch (e) {
+            console.error('Error extrayendo paginación:', e.message);
+        }
+        
+        res.json({ results: resultados, pagination });
+    } catch (e) { 
+        console.error('Error en /search:', e.message);
+        res.json({ results: [], pagination: { currentPage: 1, totalPages: 1, totalRecords: 0 } }); 
+    }
 });
 
 // 3. INFO DEL ANIME (Detalles y Lista de Caps)
