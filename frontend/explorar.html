@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
@@ -463,6 +463,29 @@
                 height: 200px;
             }
         }
+
+        .btn-fav {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            border: 2px solid var(--racing-celeste);
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+        }
+
+        .btn-fav-active {
+            background: #ffc107;
+            border-color: #ffc107;
+            color: #000;
+        }
     </style>
 </head>
 
@@ -662,16 +685,7 @@
             document.getElementById('toggle-circle').style.left = 'calc(100% - 30px)';
             document.getElementById('toggle-circle').innerHTML = '🌙';
         }
-        }
 
-        // CARGAR TEMA GUARDADO AL INICIAR
-        if (localStorage.getItem('theme') === 'dark') {
-            document.body.setAttribute('data-theme', 'dark');
-            // Pequeño delay para asegurar que el DOM cargó el botón
-            window.addEventListener('DOMContentLoaded', () => {
-                document.getElementById('theme-toggle').innerText = '☀️';
-            });
-        }
         // Generador de años
         const yearSelect = document.getElementById('f-year');
         for (let y = 2026; y >= 1990; y--) {
