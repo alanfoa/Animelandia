@@ -112,26 +112,39 @@
             transform: scale(1.05);
         }
 
-        /* Theme toggle - keep circular */
-        .btn-mode {
-            background: var(--racing-celeste);
-            border: none;
-            color: white;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
+        /* Toggle Switch - Reemplaza btn-mode */
+        .toggle-container {
+            background-color: #000;
+            border-radius: 34px;
             cursor: pointer;
-            font-size: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            height: 34px;
+            width: 70px;
+            position: relative;
+            border: none;
+            padding: 0;
+            flex-shrink: 0;
             transition: 0.3s;
         }
 
-        .btn-mode:hover {
+        .toggle-container:hover {
             opacity: 0.9;
-            transform: scale(1.05);
+        }
+
+        .toggle-circle {
+            position: absolute;
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: transparent;
+            border-radius: 50%;
+            border: 2px solid var(--racing-celeste);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: var(--racing-celeste);
         }
 
         input[type="text"] {
@@ -216,7 +229,9 @@
         <div class="nav-menu">
             <button class="btn-nav" onclick="window.location.href='explorar.html'">CATALOGO</button>
             <button class="btn-nav" onclick="document.getElementById('seccion-favoritos').scrollIntoView();">⭐ FAVORITOS</button>
-            <button class="btn-mode" id="theme-toggle" onclick="toggleTheme()">☀️</button>
+            <button class="toggle-container" id="theme-toggle" onclick="toggleTheme()">
+                <div class="toggle-circle" id="toggle-circle">☀️</div>
+            </button>
         </div>
     </nav>
 
@@ -255,6 +270,9 @@
     </div>
 
     <script>
+        // API URL: usa localhost en desarrollo, Render en producción
+        const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://animelandia-api-6wp2.onrender.com';
+
         // Variables globales
         let favoritos = [];
         let allEpisodes = [];
@@ -266,14 +284,17 @@
         // LÓGICA MODO OSCURO (NUEVO) - Default: Dark mode
         function toggleTheme() {
             const html = document.documentElement;
-            const btn = document.getElementById('theme-toggle');
+            const toggleCircle = document.getElementById('toggle-circle');
+            
             if (html.getAttribute('data-theme') === 'dark') {
                 html.removeAttribute('data-theme');
-                btn.innerText = '🌙';
+                toggleCircle.style.left = '4px';
+                toggleCircle.innerHTML = '🌙';
                 localStorage.setItem('theme', 'light');
             } else {
                 html.setAttribute('data-theme', 'dark');
-                btn.innerText = '☀️';
+                toggleCircle.style.left = 'calc(100% - 30px)';
+                toggleCircle.innerHTML = '☀️';
                 localStorage.setItem('theme', 'dark');
             }
         }
@@ -281,11 +302,13 @@
         // APLICAR TEMA GUARDADO AL CARGAR - Default is dark
         if (localStorage.getItem('theme') === 'light') {
             document.documentElement.removeAttribute('data-theme');
-            document.getElementById('theme-toggle').innerText = '🌙';
+            document.getElementById('toggle-circle').style.left = '4px';
+            document.getElementById('toggle-circle').innerHTML = '🌙';
         } else {
             // Default to dark mode
             document.documentElement.setAttribute('data-theme', 'dark');
-            document.getElementById('theme-toggle').innerText = '☀️';
+            document.getElementById('toggle-circle').style.left = 'calc(100% - 30px)';
+            document.getElementById('toggle-circle').innerHTML = '☀️';
         }
 
         window.onload = async () => {
@@ -312,7 +335,7 @@
             if (!slug) return;
             
             try {
-                const res = await fetch(`https://animelandia-api-6wp2.onrender.com/anime-info?slug=${slug}`);
+                const res = await fetch(`${API_URL}/anime-info?slug=${slug}`);
                 const data = await res.json();
                 document.getElementById('sinopsis').innerText = data.descripcion || "Sin descripción.";
                 document.getElementById('rating-val').innerText = data.rating || "0.0";
@@ -400,7 +423,7 @@
             tituloViendo.innerText = `Cargando Episodio ${cap}...`;
             window.scrollTo({ top: 0, behavior: 'smooth' });
             try {
-                const res = await fetch(`https://animelandia-api-6wp2.onrender.com/get-video?slug=${slug}&cap=${cap}`);
+                const res = await fetch(`${API_URL}/get-video?slug=${slug}&cap=${cap}`);
                 const data = await res.json();
                 if (data.servidores && data.servidores.length > 0) {
                     divServidores.innerHTML = '';
