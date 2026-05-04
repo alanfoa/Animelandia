@@ -122,6 +122,197 @@
             transform: scale(1.05);
         }
 
+        /* CAROUSEL STYLES */
+        .carousel-container {
+            position: relative;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+
+        .carousel-track {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+        }
+
+        .carousel-slide {
+            min-width: 100%;
+            position: relative;
+            height: 450px;
+            cursor: pointer;
+        }
+
+        .carousel-slide .carousel-backdrop {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.4);
+        }
+
+        [data-theme="light"] .carousel-slide .carousel-backdrop {
+            filter: brightness(0.6);
+        }
+
+        .carousel-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 30px 40px;
+            z-index: 2;
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%);
+        }
+
+        .carousel-content h2 {
+            color: #fff;
+            font-size: 32px;
+            margin: 0 0 10px 0;
+            font-weight: 700;
+        }
+
+        .carousel-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: #ccc;
+        }
+
+        .carousel-meta span {
+            background: rgba(255,255,255,0.15);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .carousel-meta .status-airing {
+            background: rgba(0, 174, 239, 0.3);
+            color: #00AEEF;
+        }
+
+        .carousel-synopsis {
+            color: #ddd;
+            font-size: 14px;
+            line-height: 1.5;
+            max-width: 600px;
+            max-height: 80px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+
+        .carousel-btn {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 24px;
+            background: var(--racing-celeste);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: 0.2s;
+        }
+
+        .carousel-btn:hover {
+            opacity: 0.85;
+            transform: scale(1.03);
+        }
+
+        .carousel-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+            background: rgba(0,0,0,0.5);
+            border: none;
+            color: #fff;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+
+        .carousel-nav:hover {
+            background: var(--racing-celeste);
+        }
+
+        .carousel-prev { left: 15px; }
+        .carousel-next { right: 15px; }
+
+        .carousel-indicators {
+            position: absolute;
+            bottom: 15px;
+            right: 40px;
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        .carousel-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.4);
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+            padding: 0;
+        }
+
+        .carousel-indicator.active {
+            background: var(--racing-celeste);
+            transform: scale(1.3);
+        }
+
+        @media (max-width: 768px) {
+            .carousel-slide {
+                height: 300px;
+            }
+
+            .carousel-content {
+                padding: 20px;
+            }
+
+            .carousel-content h2 {
+                font-size: 22px;
+            }
+
+            .carousel-synopsis {
+                font-size: 12px;
+                max-height: 55px;
+            }
+
+            .carousel-nav {
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
+            }
+
+            .carousel-prev { left: 8px; }
+            .carousel-next { right: 8px; }
+
+            .carousel-indicators {
+                right: 20px;
+                bottom: 10px;
+            }
+        }
+
         .container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -227,6 +418,10 @@
                 grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
                 padding: 15px;
             }
+
+            .carousel-container {
+                margin: 0 10px;
+            }
         }
     </style>
 </head>
@@ -250,6 +445,13 @@
         <button class="btn-mode" id="theme-toggle" onclick="toggleTheme()">🌙</button>
     </div>
 
+    <div class="carousel-container" id="carousel">
+        <div class="carousel-track" id="carousel-track"></div>
+        <button class="carousel-nav carousel-prev" onclick="moveCarousel(-1)">&#10094;</button>
+        <button class="carousel-nav carousel-next" onclick="moveCarousel(1)">&#10095;</button>
+        <div class="carousel-indicators" id="carousel-indicators"></div>
+    </div>
+
     <h2 id="titulo-seccion" style="padding: 20px 50px 0; color: var(--racing-celeste);">Ultimos Estrenos:</h2>
     <div id="ultimos-lanzamientos" class="container">Cargando animes...</div>
 
@@ -259,6 +461,85 @@
     <script>
         const listaDiv = document.getElementById('miLista');
         let favoritos = JSON.parse(localStorage.getItem('misAnimes')) || [];
+
+        // CAROUSEL STATE
+        let carouselIndex = 0;
+        let carouselData = [];
+        let carouselInterval;
+
+        function moveCarousel(direction) {
+            if (carouselData.length === 0) return;
+            carouselIndex = (carouselIndex + direction + carouselData.length) % carouselData.length;
+            updateCarousel();
+            resetCarouselTimer();
+        }
+
+        function goToSlide(index) {
+            carouselIndex = index;
+            updateCarousel();
+            resetCarouselTimer();
+        }
+
+        function updateCarousel() {
+            const track = document.getElementById('carousel-track');
+            track.style.transform = `translateX(-${carouselIndex * 100}%)`;
+
+            document.querySelectorAll('.carousel-indicator').forEach((dot, i) => {
+                dot.classList.toggle('active', i === carouselIndex);
+            });
+        }
+
+        function resetCarouselTimer() {
+            clearInterval(carouselInterval);
+            carouselInterval = setInterval(() => moveCarousel(1), 6000);
+        }
+
+        async function loadCarousel() {
+            try {
+                const res = await fetch('https://animelandia-api-6wp2.onrender.com/featured');
+                carouselData = await res.json();
+                if (!carouselData || carouselData.length === 0) {
+                    document.getElementById('carousel').style.display = 'none';
+                    return;
+                }
+                renderCarousel();
+                resetCarouselTimer();
+            } catch (e) {
+                document.getElementById('carousel').style.display = 'none';
+            }
+        }
+
+        function renderCarousel() {
+            const track = document.getElementById('carousel-track');
+            const indicators = document.getElementById('carousel-indicators');
+
+            track.innerHTML = carouselData.map(anime => {
+                const statusText = anime.status === 0 ? 'En emisión' : anime.status === 2 ? 'Finalizado' : 'Próximamente';
+                const statusClass = anime.status === 0 ? 'status-airing' : '';
+                const synopsis = anime.synopsis.length > 200 ? anime.synopsis.substring(0, 200) + '...' : anime.synopsis;
+
+                return `
+                <div class="carousel-slide" onclick="irADetalle('${anime.slug}', '${anime.titulo.replace(/'/g, "\\'")}', 'https://cdn.animeav1.com/covers/${anime.id}.jpg')">
+                    <img class="carousel-backdrop" src="${anime.backdrop}" loading="lazy" alt="${anime.titulo} Backdrop"
+                         onerror="this.src='https://via.placeholder.com/1280x720?text=Animelandia'">
+                    <div class="carousel-content">
+                        <h2>${anime.titulo}</h2>
+                        <div class="carousel-meta">
+                            <span>${anime.tipo}</span>
+                            <span>${anime.anio}</span>
+                            <span class="${statusClass}">${statusText}</span>
+                            ${anime.generos.map(g => `<span>${g}</span>`).join('')}
+                        </div>
+                        <p class="carousel-synopsis">${synopsis}</p>
+                        <button class="carousel-btn">Ver Anime</button>
+                    </div>
+                </div>`;
+            }).join('');
+
+            indicators.innerHTML = carouselData.map((_, i) => 
+                `<button class="carousel-indicator ${i === 0 ? 'active' : ''}" onclick="goToSlide(${i})"></button>`
+            ).join('');
+        }
 
         // LÓGICA MODO OSCURO (NUEVO)
         function toggleTheme() {
@@ -289,7 +570,10 @@
             if (searchQuery) {
                 document.getElementById('input-buscador').value = searchQuery;
                 buscarAnime();
-            } else { await cargarEstrenos(); }
+            } else {
+                await loadCarousel();
+                await cargarEstrenos();
+            }
         };
 
         async function cargarEstrenos() {

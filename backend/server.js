@@ -11,6 +11,7 @@ app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: Date.now() 
 
 let INFO_CACHE = new Map();
 let LATEST_CACHE = { data: null, lastUpdate: 0 };
+let FEATURED_CACHE = { data: null, lastUpdate: 0 };
 
 const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36';
 
@@ -45,6 +46,113 @@ app.get('/latest', async (req, res) => {
         LATEST_CACHE = { data: results.slice(0, 24), lastUpdate: ahora };
         res.json(LATEST_CACHE.data);
     } catch (e) { res.json([]); }
+});
+
+// 1.5. FEATURED / CAROUSEL (Home) - Axios + Cheerio
+app.get('/featured', async (req, res) => {
+    const ahora = Date.now();
+    if (FEATURED_CACHE.data && (ahora - FEATURED_CACHE.lastUpdate < 600000)) return res.json(FEATURED_CACHE.data);
+    try {
+        const $ = await fetchAndParse('https://animeav1.com/');
+        const scripts = $('script').map((i, el) => $(el).html()).get();
+        const allScripts = scripts.join('');
+        
+        // Find the featured section by looking for the pattern
+        const featuredStart = allScripts.indexOf('featured:[{');
+        if (featuredStart === -1) {
+            console.log('Featured section not found');
+            return res.json([]);
+        }
+        
+        // Extract each anime item by finding slug patterns
+        const results = [];
+        const slugRegex = /slug:"([^"]+)"[^}]*?synopsis:"([\s\S]*?)"[^}]*?title:"([^"]+)"/g;
+        let m;
+        
+        // We need to search in a limited portion that contains featured
+        const featuredSection = allScripts.substring(featuredStart, featuredStart + 50000);
+        
+        while ((m = slugRegex.exec(featuredSection)) !== null) {
+            const slug = m[1];
+            const synopsis = m[2].replace(/\\n/g, ' ').trim();
+            const titulo = m[3];
+            
+            // Get the id from nearby context
+            const beforeMatch = featuredSection.substring(Math.max(0, m.index - 100), m.index);
+            const idMatch = beforeMatch.match(/id:(\d+),/);
+            const id = idMatch ? idMatch[1] : '';
+            
+            // Get type from nearby context
+            const typeMatch = beforeMatch.match(/name:"([^"]+)"[^}]*\}/);
+            const tipo = typeMatch ? typeMatch[1] : '';
+            
+            // Extract genres (up to 4)
+            const contextAround = featuredSection.substring(m.index, m.index + 500);
+            const genres = [];
+            const genreRegex = /name:"([^"]+)"/g;
+            let gm;
+            let genreCount = 0;
+            while ((gm = genreRegex.exec(contextAround)) !== null && genreCount < 6) {
+                const name = gm[1];
+                if (name !== tipo && name.length > 2 && !['Anime', 'accion', 'drama', 'fantasia', 'aventura', 'shounen', 'seinen', 'comedia', 'romance', 'misterio', 'terror', 'ciencia-ficcion', 'recuentos-de-la-vida', 'sobrenatural', 'suspenso', 'deportes', 'escolares', 'isekai', 'mecha', 'militar', 'musica', 'parodia', 'psicologico', 'samurai', 'superpoderes', 'vampiros', 'harem', 'ecchi', 'gore', 'infantil', 'gourmet', 'detectives', 'historico', 'mitologia', 'espacial', 'mahou-shoujo', 'josei', 'shoujo', 'shoujo-ai', 'shounen-ai', 'juegos-estrategia', 'idols-hombre', 'idols-mujer', 'carreras', 'artes-marciales', 'antropomorfico'].includes(name.toLowerCase())) {
+                    continue;
+                }
+                if (name !== tipo && genres.length < 4) {
+                    genres.push(name);
+                }
+                genreCount++;
+            }
+            
+            if (slug && titulo && id) {
+                results.push({
+                    titulo,
+                    slug,
+                    id,
+                    backdrop: `https://cdn.animeav1.com/backdrops/${id}.jpg`,
+                    tipo,
+                    anio: '',
+                    status: 0,
+                    synopsis,
+                    generos: genres
+                });
+            }
+        }
+        
+        // Better approach: use JSON-like parsing
+        if (results.length === 0) {
+            // Try alternative parsing - extract each object block
+            const itemRegex = /\{category:\{id:(\d+),name:"([^"]+)"\},genres:(\[[\s\S]*?\]),id:(\d+),slug:"([^"]+)",startDate:"([^"]+)",status:(\d+),synopsis:"([\s\S]*?)",title:"([^"]+)"/g;
+            let m2;
+            while ((m2 = itemRegex.exec(featuredSection)) !== null) {
+                const genresRaw = m2[3];
+                const genreNames = [];
+                const genreRegex = /name:"([^"]+)"/g;
+                let gm;
+                while ((gm = genreRegex.exec(genresRaw)) !== null) {
+                    genreNames.push(gm[1]);
+                }
+                
+                results.push({
+                    titulo: m2[9],
+                    slug: m2[5],
+                    id: m2[4],
+                    backdrop: `https://cdn.animeav1.com/backdrops/${m2[4]}.jpg`,
+                    tipo: m2[2],
+                    anio: m2[6].split('-')[0],
+                    status: parseInt(m2[7]),
+                    synopsis: m2[8].replace(/\\n/g, ' ').replace(/\\r/g, '').trim(),
+                    generos: genreNames.slice(0, 4)
+                });
+            }
+        }
+        
+        console.log(`Featured: found ${results.length} items`);
+        FEATURED_CACHE = { data: results, lastUpdate: ahora };
+        res.json(FEATURED_CACHE.data);
+    } catch (e) { 
+        console.error('Error en /featured:', e.message);
+        res.json([]); 
+    }
 });
 
 // 2. BUSCADOR
