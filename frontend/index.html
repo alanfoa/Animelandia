@@ -30,32 +30,85 @@
             color: var(--text-color);
             font-family: 'Open Sans', sans-serif;
             margin: 0;
+            padding-top: 80px;
             scroll-behavior: smooth;
             transition: 0.3s;
         }
 
-        header {
+        /* NAVBAR - Single horizontal bar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
             background: var(--header-bg);
-            padding: 10px;
+            padding: 10px 20px;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
             border-bottom: 3px solid var(--racing-celeste);
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            position: relative;
+            gap: 20px;
         }
 
-        header img {
-            height: 150px;
+        .nav-logo img {
+            height: 60px;
             width: auto;
             cursor: pointer;
             transition: 0.3s;
         }
 
-        /* BOTÓN MODO NOCTURNO TIRADO A LA DERECHA */
+        .nav-search {
+            display: flex;
+            flex: 1;
+            max-width: 500px;
+            margin: 0 20px;
+        }
+
+        .nav-search input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px 0 0 8px;
+            border: 1px solid #ddd;
+            border-right: none;
+            outline: none;
+            background: var(--card-bg);
+            color: var(--text-color);
+        }
+
+        .nav-search .btn-nav {
+            border-radius: 0 8px 8px 0;
+            border-left: none;
+            margin: 0;
+        }
+
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Unified button style (celeste background) */
+        .btn-nav {
+            padding: 12px 25px;
+            cursor: pointer;
+            background: var(--racing-celeste);
+            color: white;
+            font-weight: bold;
+            border-radius: 8px;
+            border: none;
+            text-transform: uppercase;
+            transition: 0.2s;
+        }
+
+        .btn-nav:hover {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+
+        /* Theme toggle - keep circular */
         .btn-mode {
-            position: absolute;
-            right: 30px;
             background: var(--racing-celeste);
             border: none;
             color: white;
@@ -71,15 +124,9 @@
             transition: 0.3s;
         }
 
-        .search-box {
-            background: var(--box-bg);
-            padding: 20px;
-            text-align: center;
-            border-bottom: 1px solid #ddd;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
+        .btn-mode:hover {
+            opacity: 0.9;
+            transform: scale(1.05);
         }
 
         input[type="text"] {
@@ -90,36 +137,6 @@
             outline: none;
             background: var(--card-bg);
             color: var(--text-color);
-        }
-
-        .btn-main {
-            padding: 12px 25px;
-            cursor: pointer;
-            background: var(--racing-celeste);
-            color: white;
-            font-weight: bold;
-            border-radius: 8px;
-            border: none;
-            text-transform: uppercase;
-            transition: 0.2s;
-        }
-
-        .btn-inicio {
-            background: #6c757d;
-        }
-
-        .btn-catalogo {
-            background: #0056b3;
-        }
-
-        .btn-fav-nav {
-            background: #ffc107;
-            color: #000;
-        }
-
-        .btn-main:hover {
-            opacity: 0.9;
-            transform: scale(1.05);
         }
 
         /* CAROUSEL STYLES */
@@ -410,7 +427,7 @@
                 width: 90%;
             }
 
-            .btn-main {
+            .btn-nav {
                 width: 100%;
             }
 
@@ -427,23 +444,27 @@
 </head>
 
 <body>
-    <header>
-        <a href="index.html">
+    <nav class="navbar">
+        <!-- LEFT: Logo -->
+        <a href="index.html" class="nav-logo">
             <img src="assets/img/Logo.png" alt="Logo"
                 onerror="this.src='https://via.placeholder.com/280x100?text=Animelandia'">
         </a>
-    </header>
 
-    <div class="search-box">
-        <button class="btn-main btn-inicio" onclick="window.location.href='index.html'">INICIO</button>
-        <input type="text" id="input-buscador" placeholder="Busque su anime favorito..."
-            onkeyup="if(event.key === 'Enter') buscarAnime()">
-        <button class="btn-main" onclick="buscarAnime()">BUSCAR</button>
-        <button class="btn-main btn-catalogo" onclick="window.location.href='explorar.html'">CATALOGO</button>
-        <button class="btn-main btn-fav-nav" onclick="document.getElementById('seccion-favoritos').scrollIntoView();">⭐
-            FAVORITOS</button>
-        <button class="btn-mode" id="theme-toggle" onclick="toggleTheme()">🌙</button>
-    </div>
+        <!-- CENTER: Search bar -->
+        <div class="nav-search">
+            <input type="text" id="input-buscador" placeholder="Busque su anime favorito..."
+                onkeyup="if(event.key === 'Enter') buscarAnime()">
+            <button class="btn-nav" onclick="buscarAnime()">BUSCAR</button>
+        </div>
+
+        <!-- RIGHT: Menu buttons -->
+        <div class="nav-menu">
+            <button class="btn-nav" onclick="window.location.href='explorar.html'">CATALOGO</button>
+            <button class="btn-nav" onclick="document.getElementById('seccion-favoritos').scrollIntoView();">⭐ FAVORITOS</button>
+            <button class="btn-mode" id="theme-toggle" onclick="toggleTheme()">🌙</button>
+        </div>
+    </nav>
 
     <div class="carousel-container" id="carousel">
         <div class="carousel-track" id="carousel-track"></div>
@@ -690,7 +711,7 @@
                 card.className = 'card';
                 card.onclick = () => irADetalle(anime.slug, anime.titulo, anime.imagen);
                 card.innerHTML = `<img src="${anime.imagen}"><div class="card-info"><b>${anime.titulo}</b></div>
-                    <button class="btn-main" style="width:100%; border-radius:0; background:#666;" onclick="event.stopPropagation(); borrar(${i})">QUITAR</button>`;
+                    <button class="btn-nav" style="width:100%; border-radius:0; background:#666;" onclick="event.stopPropagation(); borrar(${i})">QUITAR</button>`;
                 listaDiv.appendChild(card);
             });
         }
