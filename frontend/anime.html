@@ -264,17 +264,11 @@
         <div class="info-header">
             <img id="img-anime" src="">
             <div style="flex:1; min-width:300px;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <h1 id="titulo-anime">Cargando...</h1>
-                    <button id="btn-fav-anime" class="btn-fav" style="width:40px; height:40px; border-radius:50%; font-size:20px; cursor:pointer; flex-shrink:0;" onclick="toggleFavorito()">⭐</button>
-                </div>
+                <h1 id="titulo-anime">Cargando...</h1>
                 <div class="meta-info">
                     <div class="rating-tag">⭐ <span id="rating-val">0.0</span></div>
                     <div id="lista-generos" style="display: flex; gap:5px; flex-wrap: wrap;"></div>
                 </div>
-                <p id="sinopsis">Buscando información...</p>
-            </div>
-        </div>
                 <p id="sinopsis">Buscando información...</p>
             </div>
         </div>
@@ -315,9 +309,7 @@
             setTimeout(() => { document.getElementById('theme-toggle').innerText = '☀️'; }, 100);
         }
 
-        // LÓGICA DE FAVORITOS EN ANIME.HTML
-        function toggleFavorito() {
-            const slug = params.get('slug');
+        const slug = params.get('slug');
             const titulo = decodeURIComponent(params.get('titulo') || '');
             const imagen = decodeURIComponent(params.get('imagen') || '');
             const btn = document.getElementById('btn-fav-anime');
