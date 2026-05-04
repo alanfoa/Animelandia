@@ -636,27 +636,31 @@
             const toggleCircle = document.getElementById('toggle-circle');
             
             if (html.getAttribute('data-theme') === 'dark') {
+                // Cambiar a modo claro
                 html.removeAttribute('data-theme');
                 toggleCircle.style.left = '4px';
-                toggleCircle.innerHTML = '🌙';
+                toggleCircle.innerHTML = '☀️';
                 localStorage.setItem('theme', 'light');
             } else {
+                // Cambiar a modo oscuro
                 html.setAttribute('data-theme', 'dark');
                 toggleCircle.style.left = 'calc(100% - 30px)';
-                toggleCircle.innerHTML = '☀️';
+                toggleCircle.innerHTML = '🌙';
                 localStorage.setItem('theme', 'dark');
             }
         }
 
         // CARGAR TEMA GUARDADO AL INICIAR
         if (localStorage.getItem('theme') === 'light') {
+            // Modo claro: sol a la izquierda
             document.documentElement.removeAttribute('data-theme');
             document.getElementById('toggle-circle').style.left = '4px';
-            document.getElementById('toggle-circle').innerHTML = '🌙';
+            document.getElementById('toggle-circle').innerHTML = '☀️';
         } else {
+            // Default to dark mode: luna a la derecha
             document.documentElement.setAttribute('data-theme', 'dark');
             document.getElementById('toggle-circle').style.left = 'calc(100% - 30px)';
-            document.getElementById('toggle-circle').innerHTML = '☀️';
+            document.getElementById('toggle-circle').innerHTML = '🌙';
         }
         }
 
