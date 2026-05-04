@@ -681,19 +681,6 @@
             document.getElementById('toggle-circle').style.left = 'calc(100% - 30px)';
             document.getElementById('toggle-circle').innerHTML = '🌙';
         }
-        }
-
-        // APLICAR TEMA GUARDADO AL CARGAR - Default is dark
-        if (localStorage.getItem('theme') === 'light') {
-            document.documentElement.removeAttribute('data-theme');
-            document.getElementById('toggle-circle').style.left = '4px';
-            document.getElementById('toggle-circle').innerHTML = '🌙';
-        } else {
-            // Default to dark mode
-            document.documentElement.setAttribute('data-theme', 'dark');
-            document.getElementById('toggle-circle').style.left = 'calc(100% - 30px)';
-            document.getElementById('toggle-circle').innerHTML = '☀️';
-        }
 
         renderizarLista();
 
