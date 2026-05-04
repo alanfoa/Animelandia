@@ -293,45 +293,28 @@
     <script>
         // MODO OSCURO SINCRONIZADO
         function toggleTheme() {
-            const body = document.body;
+            const html = document.documentElement;
             const btn = document.getElementById('theme-toggle');
-            if (body.getAttribute('data-theme') === 'dark') {
-                body.removeAttribute('data-theme');
+            if (html.getAttribute('data-theme') === 'dark') {
+                html.removeAttribute('data-theme');
                 btn.innerText = '🌙';
                 localStorage.setItem('theme', 'light');
             } else {
-                body.setAttribute('data-theme', 'dark');
+                html.setAttribute('data-theme', 'dark');
                 btn.innerText = '☀️';
                 localStorage.setItem('theme', 'dark');
             }
         }
 
-        if (localStorage.getItem('theme') === 'dark') {
-            document.body.setAttribute('data-theme', 'dark');
+        if (localStorage.getItem('theme') === 'light') {
+            document.documentElement.removeAttribute('data-theme');
+            document.getElementById('theme-toggle').innerText = '🌙';
+        } else {
+            document.documentElement.setAttribute('data-theme', 'dark');
             setTimeout(() => { document.getElementById('theme-toggle').innerText = '☀️'; }, 100);
         }
 
-        const slug = params.get('slug');
-            const titulo = decodeURIComponent(params.get('titulo') || '');
-            const imagen = decodeURIComponent(params.get('imagen') || '');
-            const btn = document.getElementById('btn-fav-anime');
-            
-            const existe = favoritos.some(f => f.slug === slug);
-            if (!existe) {
-                favoritos.push({ slug, titulo, imagen });
-                localStorage.setItem('misAnimes', JSON.stringify(favoritos));
-                btn.classList.add('btn-fav-active');
-                btn.classList.remove('btn-fav');
-                alert(`¡${titulo} guardado!`);
-            } else {
-                favoritos = favoritos.filter(f => f.slug !== slug);
-                localStorage.setItem('misAnimes', JSON.stringify(favoritos));
-                btn.classList.remove('btn-fav-active');
-                btn.classList.add('btn-fav');
-                alert(`¡${titulo} eliminado!`);
-            }
-        }
-
+        const params = new URLSearchParams(window.location.search);
         const slug = params.get('slug');
         const titulo = decodeURIComponent(params.get('titulo') || 'Anime');
         const imagenUrl = decodeURIComponent(params.get('imagen') || '');
@@ -343,6 +326,11 @@
         document.getElementById('titulo-anime').innerText = titulo;
         document.getElementById('img-anime').src = imagenUrl;
 
+        function buscarYRedirigir() {
+            const q = document.getElementById('input-buscador').value;
+            if (q) window.location.href = `index.html?search=${encodeURIComponent(q)}`;
+        }
+
         // Verificar si ya es favorito al cargar
         window.addEventListener('load', () => {
             const btn = document.getElementById('btn-fav-anime');
@@ -352,16 +340,11 @@
             }
         });
         
-        function buscarYRedirigir() {
-            const q = document.getElementById('input-buscador').value;
-            if (q) window.location.href = `index.html?search=${encodeURIComponent(q)}`;
-        }
-        
         window.onload = async () => {
             renderizarFavoritosDetalle();
             if (!slug) return;
             try {
-                const res = await fetch(`https://animelandia-api-6wp2.onrender.com/anime-info?slug=${slug}`);
+                const res = await fetch(`http://localhost:3000/anime-info?slug=${slug}`);
                 const data = await res.json();
                 document.getElementById('sinopsis').innerText = data.descripcion || "Sin descripción.";
                 document.getElementById('rating-val').innerText = data.rating || "0.0";
