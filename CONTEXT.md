@@ -1,7 +1,7 @@
 # Animelandia - Context File
 
 > Proyecto creado en verano 2025 (Argentina)
-> Última actualización: Mayo 2026 (Pagination fixed!)
+> Última actualización: Mayo 2026 (Navbar unificada en anime.html)
 
 ## Descripción General
 
@@ -100,6 +100,7 @@ E:\Github\Animelandia\
 - Botón de cambio de tema
 
 ### Frontend: `frontend/anime.html`
+- Navbar unificada idéntica a `index.html` (fixed, logo, búsqueda, CATALOGO, FAVORITOS, toggle tema)
 - Info de anime (sinopsis, rating, géneros, año)
 - Grilla de episodios con thumbnails
 - Búsqueda/filtro de episodios
@@ -283,9 +284,20 @@ E:\Github\Animelandia\
 - ✅ Últimos Estrenos funcionando (`/latest` arreglado)
 - ✅ Buscador funcionando (`/search` maneja ambos formatos)
 - ✅ Sin errores de `file://` al usar Netlify (CORS solucionado)
+- ✅ Navbar unificada en `anime.html` idéntica a `index.html`
 
-### Problema conocido:
-- Al abrir `explorar.html` directamente desde el filesystem (`file://`), el navegador bloquea peticiones por CORS. Solución: servir con un servidor local o usar Live Server.
+### ✅ Navbar Unificada (Mayo 2026)
+- Copiada navbar de `index.html` a `anime.html` (CSS y HTML idénticos)
+- Estructura: `.navbar`, `.nav-left`, `.nav-search`, `.nav-menu`
+- Posición fija con `z-index: 1000`
+- Botones: CATALOGO, ⭐ FAVORITOS (scroll), toggle tema
+- Tema inicializado idéntico a `index.html` (default: dark mode)
+
+### Ejecución Local
+- **Backend**: `cd backend` → `npm start` (puerto 3000)
+- **Frontend**: Servir `frontend/` con Live Server (VS Code) o `npx serve frontend`
+- `index.html` usa `http://localhost:3000` para API calls
+- `anime.html` y `explorar.html` usan `https://animelandia-api-6wp2.onrender.com` (cambiar a localhost para desarrollo)
 
 ---
 
