@@ -462,13 +462,54 @@
         const listaDiv = document.getElementById('miLista');
         let favoritos = JSON.parse(localStorage.getItem('misAnimes')) || [];
 
-        // CAROUSEL STATE
+        // CAROUSEL STATE - HARDCODED FOR RELIABILITY
         let carouselIndex = 0;
-        let carouselData = [];
         let carouselInterval;
 
+        const carouselData = [
+            {
+                titulo: "Gintama",
+                slug: "gintama-season-5",
+                backdrop: "https://4kwallpapers.com/images/wallpapers/gintama-ultrawide-4400x2160-16169.jpg",
+                tipo: "TV Anime",
+                anio: "2017",
+                status: 2,
+                synopsis: "La historia sigue a Gintoki Sakata, un samurái excéntrico que vive en una versión alternativa de Edo donde los alienígenas han invadido. Trabaja como freelancer junto a Shimura Shinpachi y Kagura.",
+                generos: ["Comedia", "Acción", "Ciencia Ficción"]
+            },
+            {
+                titulo: "Naruto",
+                slug: "naruto",
+                backdrop: "https://imgsrv.crunchyroll.com/cdn-cgi/image/fit=cover,format=auto,quality=85,width=1920/keyart/GY9PJ5KWR-backdrop_wide",
+                tipo: "TV Anime",
+                anio: "2002",
+                status: 2,
+                synopsis: "Naruto Uzumaki es un joven ninja que busca reconocimiento y sueña con convertirse en el Hokage, el líder de su aldea. Posee al Zorro de Nueve Colas, un poderoso demonio sellado en su interior.",
+                generos: ["Acción", "Aventura", "Shounen"]
+            },
+            {
+                titulo: "One Piece",
+                slug: "one-piece",
+                backdrop: "https://4kwallpapers.com/images/wallpapers/one-piece-character-3840x2160-15328.jpeg",
+                tipo: "TV Anime",
+                anio: "1999",
+                status: 0,
+                synopsis: "Monkey D. Luffy, un joven que accidentalmente adquirió poderes de goma tras comer una Fruta del Diablo, se embarca en una aventura para encontrar el tesoro más grande del mundo: el One Piece.",
+                generos: ["Acción", "Aventura", "Fantasía", "Shounen"]
+            },
+            {
+                titulo: "Chainsaw Man",
+                slug: "chainsaw-man",
+                backdrop: "https://images.wallpapersden.com/image/download/anime-chainsaw-man-denji-4k-art_bWxubG6UmZqaraWkpJRobWxnrWZuZ20.jpg",
+                tipo: "TV Anime",
+                anio: "2022",
+                status: 2,
+                synopsis: "Denji es un joven pobre que trabaja para la Yakuza cazando demonios junto a su compañero Pochita. Tras ser traicionado y asesinado, renace gracias al sacrificio de Pochita uniéndose en uno solo.",
+                generos: ["Acción", "Horror", "Shounen"]
+            }
+        ];
+
         function moveCarousel(direction) {
-            if (carouselData.length === 0) return;
             carouselIndex = (carouselIndex + direction + carouselData.length) % carouselData.length;
             updateCarousel();
             resetCarouselTimer();
@@ -494,32 +535,17 @@
             carouselInterval = setInterval(() => moveCarousel(1), 6000);
         }
 
-        async function loadCarousel() {
-            try {
-                const res = await fetch('https://animelandia-api-6wp2.onrender.com/featured');
-                carouselData = await res.json();
-                if (!carouselData || carouselData.length === 0) {
-                    document.getElementById('carousel').style.display = 'none';
-                    return;
-                }
-                renderCarousel();
-                resetCarouselTimer();
-            } catch (e) {
-                document.getElementById('carousel').style.display = 'none';
-            }
-        }
-
         function renderCarousel() {
             const track = document.getElementById('carousel-track');
             const indicators = document.getElementById('carousel-indicators');
 
-            track.innerHTML = carouselData.map(anime => {
+            track.innerHTML = carouselData.map((anime, index) => {
                 const statusText = anime.status === 0 ? 'En emisión' : anime.status === 2 ? 'Finalizado' : 'Próximamente';
                 const statusClass = anime.status === 0 ? 'status-airing' : '';
                 const synopsis = anime.synopsis.length > 200 ? anime.synopsis.substring(0, 200) + '...' : anime.synopsis;
 
                 return `
-                <div class="carousel-slide" onclick="irADetalle('${anime.slug}', '${anime.titulo.replace(/'/g, "\\'")}', 'https://cdn.animeav1.com/covers/${anime.id}.jpg')">
+                <div class="carousel-slide" data-index="${index}">
                     <img class="carousel-backdrop" src="${anime.backdrop}" loading="lazy" alt="${anime.titulo} Backdrop"
                          onerror="this.src='https://via.placeholder.com/1280x720?text=Animelandia'">
                     <div class="carousel-content">
@@ -531,14 +557,40 @@
                             ${anime.generos.map(g => `<span>${g}</span>`).join('')}
                         </div>
                         <p class="carousel-synopsis">${synopsis}</p>
-                        <button class="carousel-btn">Ver Anime</button>
+                        <button class="carousel-btn" data-index="${index}">Ver Anime</button>
                     </div>
                 </div>`;
             }).join('');
 
             indicators.innerHTML = carouselData.map((_, i) => 
-                `<button class="carousel-indicator ${i === 0 ? 'active' : ''}" onclick="goToSlide(${i})"></button>`
+                `<button class="carousel-indicator ${i === 0 ? 'active' : ''}" data-index="${i}"></button>`
             ).join('');
+
+            // Add event listeners safely
+            track.querySelectorAll('.carousel-slide').forEach(slide => {
+                slide.addEventListener('click', (e) => {
+                    if (e.target.closest('.carousel-btn')) return;
+                    const idx = parseInt(slide.dataset.index);
+                    const anime = carouselData[idx];
+                    irADetalle(anime.slug, anime.titulo, `https://cdn.animeav1.com/covers/${anime.id}.jpg`);
+                });
+            });
+
+            track.querySelectorAll('.carousel-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const idx = parseInt(btn.dataset.index);
+                    const anime = carouselData[idx];
+                    irADetalle(anime.slug, anime.titulo, `https://cdn.animeav1.com/covers/${anime.id}.jpg`);
+                });
+            });
+
+            indicators.querySelectorAll('.carousel-indicator').forEach(dot => {
+                dot.addEventListener('click', () => {
+                    const idx = parseInt(dot.dataset.index);
+                    goToSlide(idx);
+                });
+            });
         }
 
         // LÓGICA MODO OSCURO (NUEVO)
@@ -571,7 +623,8 @@
                 document.getElementById('input-buscador').value = searchQuery;
                 buscarAnime();
             } else {
-                await loadCarousel();
+                renderCarousel();
+                resetCarouselTimer();
                 await cargarEstrenos();
             }
         };
@@ -579,7 +632,7 @@
         async function cargarEstrenos() {
             const container = document.getElementById('ultimos-lanzamientos');
             try {
-                const res = await fetch('https://animelandia-api-6wp2.onrender.com/latest');
+                const res = await fetch('http://localhost:3000/latest');
                 const data = await res.json();
                 renderizarEstrenos(data);
             } catch (e) { container.innerHTML = '<p>Error de conexión.</p>'; }
@@ -614,7 +667,7 @@
             container.innerHTML = 'Buscando...';
             document.getElementById('titulo-seccion').innerText = `Resultados para: ${query}`;
             try {
-                const res = await fetch(`https://animelandia-api-6wp2.onrender.com/search?q=${query}`);
+                const res = await fetch(`http://localhost:3000/search?q=${query}`);
                 const data = await res.json();
                 // Manejar tanto formato nuevo { results, pagination } como antiguo []
                 const episodios = data.results || data;

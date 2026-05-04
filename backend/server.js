@@ -57,93 +57,295 @@ app.get('/featured', async (req, res) => {
         const scripts = $('script').map((i, el) => $(el).html()).get();
         const allScripts = scripts.join('');
         
-        // Find the featured section by looking for the pattern
-        const featuredStart = allScripts.indexOf('featured:[{');
-        if (featuredStart === -1) {
+        const featuredArrayStart = allScripts.indexOf('featured:[');
+        if (featuredArrayStart === -1) {
             console.log('Featured section not found');
             return res.json([]);
         }
         
-        // Extract each anime item by finding slug patterns
-        const results = [];
-        const slugRegex = /slug:"([^"]+)"[^}]*?synopsis:"([\s\S]*?)"[^}]*?title:"([^"]+)"/g;
-        let m;
+        const featuredArrayEnd = allScripts.indexOf('],latestEpisodes:', featuredArrayStart);
+        if (featuredArrayEnd === -1) {
+            return res.json([]);
+        }
         
-        // We need to search in a limited portion that contains featured
-        const featuredSection = allScripts.substring(featuredStart, featuredStart + 50000);
+        // Extract just the array content (without 'featured:[' prefix)
+        const featuredArrayStr = allScripts.substring(featuredArrayStart + 'featured:['.length, featuredArrayEnd);
         
-        while ((m = slugRegex.exec(featuredSection)) !== null) {
-            const slug = m[1];
-            const synopsis = m[2].replace(/\\n/g, ' ').trim();
-            const titulo = m[3];
+        // Split into individual items by finding balanced braces
+        const items = [];
+        let depth = 0;
+        let itemStart = 0;
+        let inString = false;
+        let escapeNext = false;
+        
+        for (let i = 0; i < featuredArrayStr.length; i++) {
+            const ch = featuredArrayStr[i];
             
-            // Get the id from nearby context
-            const beforeMatch = featuredSection.substring(Math.max(0, m.index - 100), m.index);
-            const idMatch = beforeMatch.match(/id:(\d+),/);
-            const id = idMatch ? idMatch[1] : '';
-            
-            // Get type from nearby context
-            const typeMatch = beforeMatch.match(/name:"([^"]+)"[^}]*\}/);
-            const tipo = typeMatch ? typeMatch[1] : '';
-            
-            // Extract genres (up to 4)
-            const contextAround = featuredSection.substring(m.index, m.index + 500);
-            const genres = [];
-            const genreRegex = /name:"([^"]+)"/g;
-            let gm;
-            let genreCount = 0;
-            while ((gm = genreRegex.exec(contextAround)) !== null && genreCount < 6) {
-                const name = gm[1];
-                if (name !== tipo && name.length > 2 && !['Anime', 'accion', 'drama', 'fantasia', 'aventura', 'shounen', 'seinen', 'comedia', 'romance', 'misterio', 'terror', 'ciencia-ficcion', 'recuentos-de-la-vida', 'sobrenatural', 'suspenso', 'deportes', 'escolares', 'isekai', 'mecha', 'militar', 'musica', 'parodia', 'psicologico', 'samurai', 'superpoderes', 'vampiros', 'harem', 'ecchi', 'gore', 'infantil', 'gourmet', 'detectives', 'historico', 'mitologia', 'espacial', 'mahou-shoujo', 'josei', 'shoujo', 'shoujo-ai', 'shounen-ai', 'juegos-estrategia', 'idols-hombre', 'idols-mujer', 'carreras', 'artes-marciales', 'antropomorfico'].includes(name.toLowerCase())) {
-                    continue;
-                }
-                if (name !== tipo && genres.length < 4) {
-                    genres.push(name);
-                }
-                genreCount++;
+            if (escapeNext) {
+                escapeNext = false;
+                continue;
             }
             
-            if (slug && titulo && id) {
-                results.push({
-                    titulo,
-                    slug,
-                    id,
-                    backdrop: `https://cdn.animeav1.com/backdrops/${id}.jpg`,
-                    tipo,
-                    anio: '',
-                    status: 0,
-                    synopsis,
-                    generos: genres
-                });
+            if (ch === '\\' && inString) {
+                escapeNext = true;
+                continue;
+            }
+            
+            if (ch === '"' ) {
+                inString = !inString;
+                continue;
+            }
+            
+            if (!inString) {
+                if (ch === '{') {
+                    if (depth === 0) itemStart = i;
+                    depth++;
+                } else if (ch === '}') {
+                    depth--;
+                    if (depth === 0) {
+                        items.push(featuredArrayStr.substring(itemStart, i + 1));
+                    }
+                }
             }
         }
         
-        // Better approach: use JSON-like parsing
-        if (results.length === 0) {
-            // Try alternative parsing - extract each object block
-            const itemRegex = /\{category:\{id:(\d+),name:"([^"]+)"\},genres:(\[[\s\S]*?\]),id:(\d+),slug:"([^"]+)",startDate:"([^"]+)",status:(\d+),synopsis:"([\s\S]*?)",title:"([^"]+)"/g;
-            let m2;
-            while ((m2 = itemRegex.exec(featuredSection)) !== null) {
-                const genresRaw = m2[3];
-                const genreNames = [];
-                const genreRegex = /name:"([^"]+)"/g;
-                let gm;
-                while ((gm = genreRegex.exec(genresRaw)) !== null) {
-                    genreNames.push(gm[1]);
+        // Helper to extract a string value for a given key (only top-level, not nested)
+        function extractString(objStr, key) {
+            const search = key + ':"';
+            let pos = 0;
+            while (pos < objStr.length) {
+                const idx = objStr.indexOf(search, pos);
+                if (idx === -1) return '';
+                
+                // Check if this occurrence is at the top level (depth 0)
+                let depth = 0;
+                let inString = false;
+                let escapeNext = false;
+                let isTopLevel = true;
+                
+                for (let i = 0; i < idx; i++) {
+                    const ch = objStr[i];
+                    if (escapeNext) { escapeNext = false; continue; }
+                    if (ch === '\\' && inString) { escapeNext = true; continue; }
+                    if (ch === '"') { inString = !inString; continue; }
+                    if (!inString) {
+                        if (ch === '{') depth++;
+                        else if (ch === '}') depth--;
+                    }
                 }
                 
-                results.push({
-                    titulo: m2[9],
-                    slug: m2[5],
-                    id: m2[4],
-                    backdrop: `https://cdn.animeav1.com/backdrops/${m2[4]}.jpg`,
-                    tipo: m2[2],
-                    anio: m2[6].split('-')[0],
-                    status: parseInt(m2[7]),
-                    synopsis: m2[8].replace(/\\n/g, ' ').replace(/\\r/g, '').trim(),
-                    generos: genreNames.slice(0, 4)
-                });
+                if (depth === 0) {
+                    // Found at top level, extract the value
+                    const start = idx + search.length;
+                    let result = '';
+                    let escaped = false;
+                    for (let i = start; i < objStr.length; i++) {
+                        const ch = objStr[i];
+                        if (escaped) {
+                            result += ch;
+                            escaped = false;
+                            continue;
+                        }
+                        if (ch === '\\') {
+                            escaped = true;
+                            continue;
+                        }
+                        if (ch === '"') break;
+                        result += ch;
+                    }
+                    return result;
+                }
+                
+                // Not at top level, skip past this match and continue searching
+                pos = idx + search.length;
             }
+            return '';
+        }
+        
+        // Helper to extract a numeric value for a given key (only top-level, not nested)
+        function extractNumber(objStr, key) {
+            const search = key + ':';
+            let pos = 0;
+            while (pos < objStr.length) {
+                const idx = objStr.indexOf(search, pos);
+                if (idx === -1) return 0;
+                
+                // Check if this occurrence is at the top level (depth 0)
+                let depth = 0;
+                let inString = false;
+                let escapeNext = false;
+                let isTopLevel = true;
+                
+                for (let i = 0; i < idx; i++) {
+                    const ch = objStr[i];
+                    if (escapeNext) { escapeNext = false; continue; }
+                    if (ch === '\\' && inString) { escapeNext = true; continue; }
+                    if (ch === '"') { inString = !inString; continue; }
+                    if (!inString) {
+                        if (ch === '{') depth++;
+                        else if (ch === '}') depth--;
+                    }
+                }
+                
+                if (depth === 0) {
+                    // Found at top level, extract the value
+                    const start = idx + search.length;
+                    const match = objStr.substring(start).match(/^(\d+)/);
+                    return match ? parseInt(match[1]) : 0;
+                }
+                
+                // Not at top level, skip past this match and continue searching
+                pos = idx + search.length;
+            }
+            return 0;
+        }
+        
+        const results = [];
+        
+        // Helper to extract top-level string value
+        function extractTopLevelString(objStr, key) {
+            const search = key + ':"';
+            let pos = 0;
+            while (pos < objStr.length) {
+                const idx = objStr.indexOf(search, pos);
+                if (idx === -1) return '';
+                
+                // Check if this is at top level (depth 0)
+                let depth = 0;
+                let inString = false;
+                let escapeNext = false;
+                
+                for (let i = 0; i < idx; i++) {
+                    const ch = objStr[i];
+                    if (escapeNext) { escapeNext = false; continue; }
+                    if (ch === '\\' && inString) { escapeNext = true; continue; }
+                    if (ch === '"') { inString = !inString; continue; }
+                    if (!inString) {
+                        if (ch === '{' || ch === '[') depth++;
+                        else if (ch === '}' || ch === ']') depth--;
+                    }
+                }
+                
+                if (depth === 0) {
+                    // Extract the string value
+                    const start = idx + search.length;
+                    let result = '';
+                    let escaped = false;
+                    for (let i = start; i < objStr.length; i++) {
+                        const ch = objStr[i];
+                        if (escaped) {
+                            result += ch;
+                            escaped = false;
+                            continue;
+                        }
+                        if (ch === '\\') {
+                            escaped = true;
+                            continue;
+                        }
+                        if (ch === '"') break;
+                        result += ch;
+                    }
+                    return result;
+                }
+                
+                pos = idx + search.length;
+            }
+            return '';
+        }
+        
+        // Helper to extract top-level numeric value
+        function extractTopLevelNumber(objStr, key) {
+            const search = key + ':';
+            let pos = 0;
+            while (pos < objStr.length) {
+                const idx = objStr.indexOf(search, pos);
+                if (idx === -1) return 0;
+                
+                // Check if this is at top level (depth 0)
+                let depth = 0;
+                let inString = false;
+                let escapeNext = false;
+                
+                for (let i = 0; i < idx; i++) {
+                    const ch = objStr[i];
+                    if (escapeNext) { escapeNext = false; continue; }
+                    if (ch === '\\' && inString) { escapeNext = true; continue; }
+                    if (ch === '"') { inString = !inString; continue; }
+                    if (!inString) {
+                        if (ch === '{' || ch === '[') depth++;
+                        else if (ch === '}' || ch === ']') depth--;
+                    }
+                }
+                
+                if (depth === 0) {
+                    const start = idx + search.length;
+                    const match = objStr.substring(start).match(/^(\d+)/);
+                    return match ? parseInt(match[1]) : 0;
+                }
+                
+                pos = idx + search.length;
+            }
+            return 0;
+        }
+        
+        for (const itemStr of items) {
+            // Extract fields using depth-tracking to get top-level properties only
+            const id = extractTopLevelNumber(itemStr, 'id');
+            const slug = extractTopLevelString(itemStr, 'slug');
+            const title = extractTopLevelString(itemStr, 'title');
+            const synopsis = extractTopLevelString(itemStr, 'synopsis');
+            const startDate = extractTopLevelString(itemStr, 'startDate');
+            const status = extractTopLevelNumber(itemStr, 'status');
+            
+            // Extract category name from category:{id:N,name:"Tipo"}
+            let categoryType = '';
+            const catMatch = itemStr.match(/category:\s*\{[^}]*name:\s*"([^"]+)"/);
+            if (catMatch) categoryType = catMatch[1];
+            
+            // Extract genre names from genres array
+            const genreNames = [];
+            const genresMatch = itemStr.match(/genres:\s*\[([\s\S]*?)\]/);
+            if (genresMatch) {
+                const genreRegex = /name:"([^"]+)"/g;
+                let gm;
+                const genresStr = genresMatch[1];
+                while ((gm = genreRegex.exec(genresStr)) !== null) {
+                    genreNames.push(gm[1]);
+                }
+            }
+            
+            // Use cover image as backdrop since backdrops may not exist
+            results.push({
+                titulo: title,
+                slug: slug,
+                id: id,
+                backdrop: `https://cdn.animeav1.com/covers/${id}.jpg`,
+                tipo: categoryType,
+                anio: startDate.split('-')[0],
+                status: status,
+                synopsis: synopsis.replace(/\\n/g, ' ').replace(/\\r/g, '').trim(),
+                generos: genreNames.slice(0, 4)
+            });
+        }
+        
+        function findArrayEnd(str, arrayStartPos) {
+            let depth = 0;
+            let inString = false;
+            let escapeNext = false;
+            for (let i = arrayStartPos; i < str.length; i++) {
+                const ch = str[i];
+                if (escapeNext) { escapeNext = false; continue; }
+                if (ch === '\\' && inString) { escapeNext = true; continue; }
+                if (ch === '"') { inString = !inString; continue; }
+                if (!inString) {
+                    if (ch === '[') depth++;
+                    else if (ch === ']') {
+                        depth--;
+                        if (depth === 0) return i;
+                    }
+                }
+            }
+            return str.length - 1;
         }
         
         console.log(`Featured: found ${results.length} items`);
