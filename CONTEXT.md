@@ -1,7 +1,7 @@
 # Animelandia - Context File
 
 > Proyecto creado en verano 2025 (Argentina)
-> Última actualización: Mayo 2026 (Navbar unificada en anime.html)
+> Última actualización: Mayo 2026 (Tipo de anime en detalles y fix API_URL Live Server)
 
 ## Descripción General
 
@@ -101,7 +101,7 @@ E:\Github\Animelandia\
 
 ### Frontend: `frontend/anime.html`
 - Navbar unificada idéntica a `index.html` (fixed, logo, búsqueda, CATALOGO, FAVORITOS, toggle tema)
-- Info de anime (sinopsis, rating, géneros, año)
+- Info de anime (sinopsis, rating, **tipo** (TV Anime/Película/OVA/Especial), géneros, año)
 - Grilla de episodios con thumbnails
 - Búsqueda/filtro de episodios
 - Reproductor con selección de servidor
@@ -285,6 +285,8 @@ E:\Github\Animelandia\
 - ✅ Buscador funcionando (`/search` maneja ambos formatos)
 - ✅ Sin errores de `file://` al usar Netlify (CORS solucionado)
 - ✅ Navbar unificada en `anime.html` idéntica a `index.html`
+- ✅ Tipo de anime (TV Anime/Película/OVA/Especial) mostrado en detalles
+- ✅ API_URL detecta Live Server (127.0.0.1) para desarrollo local
 
 ### ✅ Navbar Unificada (Mayo 2026)
 - Copiada navbar de `index.html` a `anime.html` (CSS y HTML idénticos)
@@ -293,11 +295,22 @@ E:\Github\Animelandia\
 - Botones: CATALOGO, ⭐ FAVORITOS (scroll), toggle tema
 - Tema inicializado idéntico a `index.html` (default: dark mode)
 
+### ✅ Tipo de Anime en Detalles + Fix API_URL (Mayo 2026)
+- **feat: agregar tipo de anime en detalles** (commit `b70176e`)
+  - Backend: Agregado `tipo` en `/anime-info` (extrae `category.name` de scripts)
+  - Frontend: Tag morado `.type-tag` en `anime.html` (TV Anime/Película/OVA/Especial)
+  - Muestra el tipo antes del año y géneros
+
+- **fix: corregir API_URL para Live Server** (commit `b70176e`)
+  - Detecta `127.0.0.1` además de `localhost` en los 3 HTML
+  - Soluciona que Live Server use `127.0.0.1` y apunte a Render incorrectamente
+  - Archivos: `index.html`, `anime.html`, `explorar.html`
+
 ### Ejecución Local
 - **Backend**: `cd backend` → `npm start` (puerto 3000)
 - **Frontend**: Servir `frontend/` con Live Server (VS Code) o `npx serve frontend`
-- `index.html` usa `http://localhost:3000` para API calls
-- `anime.html` y `explorar.html` usan `https://animelandia-api-6wp2.onrender.com` (cambiar a localhost para desarrollo)
+- **API_URL actualizado**: Los 3 HTML detectan `localhost` y `127.0.0.1` (Live Server usa 127.0.0.1)
+- En desarrollo apuntan a `http://localhost:3000`, en producción a `https://animelandia-api-6wp2.onrender.com`
 
 ---
 
