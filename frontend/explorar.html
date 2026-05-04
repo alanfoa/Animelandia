@@ -650,7 +650,7 @@
 
     <script>
         // API URL: usa localhost en desarrollo, Render en producción
-        const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://animelandia-api-6wp2.onrender.com';
+        const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://localhost:3000' : 'https://animelandia-api-6wp2.onrender.com';
 
         // Modo Nocturno
         // LÓGICA MODO OSCURO
