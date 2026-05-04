@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
@@ -52,6 +52,13 @@
             gap: 20px;
         }
 
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+
         .nav-logo img {
             height: 60px;
             width: auto;
@@ -62,8 +69,7 @@
         .nav-search {
             display: flex;
             flex: 1;
-            max-width: 500px;
-            margin: 0 20px;
+            max-width: 400px;
         }
 
         .nav-search input[type="text"] {
@@ -445,24 +451,25 @@
 
 <body>
     <nav class="navbar">
-        <!-- LEFT: Logo -->
-        <a href="index.html" class="nav-logo">
-            <img src="assets/img/Logo.png" alt="Logo"
-                onerror="this.src='https://via.placeholder.com/280x100?text=Animelandia'">
-        </a>
+        <!-- LEFT: Logo + Search -->
+        <div class="nav-left">
+            <a href="index.html" class="nav-logo">
+                <img src="assets/img/Logo.png" alt="Logo"
+                    onerror="this.src='https://via.placeholder.com/280x100?text=Animelandia'">
+            </a>
 
-        <!-- CENTER: Search bar -->
-        <div class="nav-search">
-            <input type="text" id="input-buscador" placeholder="Busque su anime favorito..."
-                onkeyup="if(event.key === 'Enter') buscarAnime()">
-            <button class="btn-nav" onclick="buscarAnime()">BUSCAR</button>
+            <div class="nav-search">
+                <input type="text" id="input-buscador" placeholder="Busque su anime favorito..."
+                    onkeyup="if(event.key === 'Enter') buscarAnime()">
+                <button class="btn-nav" onclick="buscarAnime()">BUSCAR</button>
+            </div>
         </div>
 
         <!-- RIGHT: Menu buttons -->
         <div class="nav-menu">
             <button class="btn-nav" onclick="window.location.href='explorar.html'">CATALOGO</button>
             <button class="btn-nav" onclick="document.getElementById('seccion-favoritos').scrollIntoView();">⭐ FAVORITOS</button>
-            <button class="btn-mode" id="theme-toggle" onclick="toggleTheme()">🌙</button>
+            <button class="btn-mode" id="theme-toggle" onclick="toggleTheme()">☀️</button>
         </div>
     </nav>
 
@@ -618,24 +625,28 @@
             });
         }
 
-        // LÓGICA MODO OSCURO (NUEVO)
+        // LÓGICA MODO OSCURO (NUEVO) - Default: Dark mode
         function toggleTheme() {
-            const body = document.body;
+            const html = document.documentElement;
             const btn = document.getElementById('theme-toggle');
-            if (body.getAttribute('data-theme') === 'dark') {
-                body.removeAttribute('data-theme');
+            if (html.getAttribute('data-theme') === 'dark') {
+                html.removeAttribute('data-theme');
                 btn.innerText = '🌙';
                 localStorage.setItem('theme', 'light');
             } else {
-                body.setAttribute('data-theme', 'dark');
+                html.setAttribute('data-theme', 'dark');
                 btn.innerText = '☀️';
                 localStorage.setItem('theme', 'dark');
             }
         }
 
-        // APLICAR TEMA GUARDADO AL CARGAR
-        if (localStorage.getItem('theme') === 'dark') {
-            document.body.setAttribute('data-theme', 'dark');
+        // APLICAR TEMA GUARDADO AL CARGAR - Default is dark
+        if (localStorage.getItem('theme') === 'light') {
+            document.documentElement.removeAttribute('data-theme');
+            document.getElementById('theme-toggle').innerText = '🌙';
+        } else {
+            // Default to dark mode
+            document.documentElement.setAttribute('data-theme', 'dark');
             document.getElementById('theme-toggle').innerText = '☀️';
         }
 
