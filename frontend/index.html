@@ -501,6 +501,9 @@
         <div class="carousel-indicators" id="carousel-indicators"></div>
     </div>
 
+    <div id="btn-volver" style="padding: 20px 50px 0; display: none;">
+        <button class="btn-nav" onclick="volverInicio()">← VOLVER AL INICIO</button>
+    </div>
     <h2 id="titulo-seccion" style="padding: 20px 50px 0; color: var(--racing-celeste);">Ultimos Estrenos:</h2>
     <div id="ultimos-lanzamientos" class="container">Cargando animes...</div>
 
@@ -728,9 +731,19 @@
             });
         }
 
+        function volverInicio() {
+            document.getElementById('carousel').style.display = '';
+            document.getElementById('input-buscador').value = '';
+            document.getElementById('titulo-seccion').innerText = 'Ultimos Estrenos:';
+            document.getElementById('btn-volver').style.display = 'none';
+            cargarEstrenos();
+        }
+
         async function buscarAnime() {
             const query = document.getElementById('input-buscador').value.trim();
             if (!query) return;
+            document.getElementById('carousel').style.display = 'none';
+            document.getElementById('btn-volver').style.display = 'inline-block';
             const container = document.getElementById('ultimos-lanzamientos');
             container.innerHTML = 'Buscando...';
             document.getElementById('titulo-seccion').innerText = `Resultados para: ${query}`;

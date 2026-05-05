@@ -168,10 +168,14 @@
         }
 
         .meta-info { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; }
-        .genre-tag { background: #e0e0e0; color: #333; padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: bold; }
-        .rating-tag { background: #ffc107; color: #000; padding: 5px 12px; border-radius: 15px; font-size: 13px; font-weight: bold; display: flex; align-items: center; gap: 5px; }
-        .year-tag { background: var(--racing-celeste); color: white; padding: 5px 12px; border-radius: 15px; font-size: 13px; font-weight: bold; }
-        .type-tag { background: #6f42c1; color: white; padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+        .genre-tag { background: #e0e0e0; color: #333; padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: bold; transition: 0.2s; cursor: default; }
+        .genre-tag:hover { background: #a0a0a0; transform: scale(1.08); }
+        .rating-tag { background: #ffc107; color: #000; padding: 5px 12px; border-radius: 15px; font-size: 13px; font-weight: bold; display: flex; align-items: center; gap: 5px; transition: 0.2s; cursor: default; }
+        .rating-tag:hover { background: #b38600; transform: scale(1.08); }
+        .year-tag { background: var(--racing-celeste); color: white; padding: 5px 12px; border-radius: 15px; font-size: 13px; font-weight: bold; transition: 0.2s; cursor: default; }
+        .year-tag:hover { background: #007b9a; transform: scale(1.08); }
+        .type-tag { background: #6f42c1; color: white; padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: bold; text-transform: uppercase; transition: 0.2s; cursor: default; }
+        .type-tag:hover { background: #3d1f7a; transform: scale(1.08); }
 
         #reproductor { display: none; margin-bottom: 25px; background: #000; padding: 15px; border-radius: 12px; border: 4px solid var(--racing-celeste); }
         .lista-servidores { display: flex; justify-content: center; gap: 8px; margin: 15px 0; flex-wrap: wrap; }
@@ -235,6 +239,10 @@
             </button>
         </div>
     </nav>
+
+    <div style="max-width: 1100px; margin: 20px auto 0; padding: 0 20px;">
+        <button class="btn-nav" onclick="window.location.href='index.html'">← VOLVER AL INICIO</button>
+    </div>
 
     <div class="content">
         <div id="reproductor">

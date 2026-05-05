@@ -240,6 +240,26 @@ E:\Github\Animelandia\
 
 ## Cambios Recientes (Mayo 2026 - Completados y Pusheados a Main)
 
+### ✅ Mejoras de UI - Botón Volver y Efectos Hover (Mayo 2026 - Pendiente de Push)
+
+1. **feat: ocultar carrusel al buscar en index.html**
+   - Al hacer clic en BUSCAR, el carrusel se oculta con `display: none`
+   - Aparece botón "← VOLVER AL INICIO" arriba de los resultados
+   - Al hacer clic en volver, se restaura el carrusel y últimos estrenos
+
+2. **feat: agregar botón volver en explorar.html**
+   - Botón "← VOLVER AL INICIO" ubicado arriba del panel "Filtros de Catálogo"
+   - Redirige a `index.html` sin parámetros de búsqueda
+
+3. **feat: agregar botón volver en anime.html**
+   - Botón "← VOLVER AL INICIO" ubicado arriba de la tarjeta de información del anime
+   - Redirige a `index.html`
+
+4. **feat: efecto hover en etiquetas de anime.html**
+   - Etiquetas (género, rating, año, tipo) ahora tienen hover notable
+   - Cambio de color más brusco + `transform: scale(1.08)`
+   - Colores hover: genre `#a0a0a0`, rating `#b38600`, year `#007b9a`, type `#3d1f7a`
+
 ### ✅ Paginación Profesional Implementada (Merge a main: commit `1586c11`)
 
 **Historial de la rama `feature/pagination`:**
