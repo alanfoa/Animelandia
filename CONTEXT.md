@@ -1,7 +1,7 @@
 # Animelandia - Context File
 
 > Proyecto creado en verano 2025 (Argentina)
-> Última actualización: Mayo 2026 (Tipo de anime en detalles y fix API_URL Live Server)
+> Última actualización: Mayo 2026 (Icono SVG de Favoritos con Animación y Mejoras de Paginación)
 
 ## Descripción General
 
@@ -96,22 +96,25 @@ E:\Github\Animelandia\
 ### Frontend: `frontend/index.html`
 - Muestra últimos episodios en grilla
 - Barra de búsqueda con soporte para tecla Enter
-- Sección de favoritos
+- Sección de favoritos con icono SVG (marcador + estrella)
 - Botón de cambio de tema
+- Navbar: solo icono amarillo de favoritos (sin texto)
 
 ### Frontend: `frontend/anime.html`
-- Navbar unificada idéntica a `index.html` (fixed, logo, búsqueda, CATALOGO, FAVORITOS, toggle tema)
-- Info de anime (sinopsis, rating, **tipo** (TV Anime/Película/OVA/Especial), géneros, año)
-- Grilla de episodios con thumbnails
+- Navbar unificada idéntica a `index.html` (fixed, logo, búsqueda, CATALOGO, icono favoritos, toggle tema)
+- Info de anime (sinopsis, rating con ⭐ amarillo sobre fondo blanco, **tipo** (TV Anime/Película/OVA/Especial), géneros, año)
+- Grilla de episodios con thumbnails y paginación deslizante (5 botones + botones < > >>)
 - Búsqueda/filtro de episodios
 - Reproductor con selección de servidor
 - Muestra favoritos
+- Botón de favoritos sobre imagen de portada (icono SVG animado)
 
 ### Frontend: `frontend/explorar.html`
 - Filtros avanzados: género (46 opciones), año (1990-2026), tipo, estado, orden, letra
 - Resultados paginados con paginación profesional (1,2,3,...,N,>>)
 - Paginación dinámica que muestra rango alrededor de la página actual + ellipsis
 - Limpieza de resultados al cambiar de página (evita acumulación)
+- Botón de favoritos en tarjetas (icono SVG animado)
 
 ---
 
@@ -240,7 +243,28 @@ E:\Github\Animelandia\
 
 ## Cambios Recientes (Mayo 2026 - Completados y Pusheados a Main)
 
-### ✅ Mejoras de UI - Botón Volver y Efectos Hover (Mayo 2026 - Pendiente de Push)
+### ✅ Icono SVG de Favoritos con Animación (Mayo 2026 - Commit `2a7036b`)
+
+1. **feat: reemplazar estrella por icono SVG de favoritos**
+   - Nuevo icono de marcador bookmark con estrella calada (SVG)
+   - Estado inactivo: gris sólido (#808080) con estrella blanca
+   - Estado activo: amarillo (#FFB800) con estrella blanca
+   - Transición suave de 0.3s en todas las propiedades
+   - Posicionamiento absoluto en esquina superior derecha (top:10px, right:10px, z-index:30)
+
+2. **fix: mejoras visuales en icono de favoritos**
+   - Navbar: solo icono amarillo (sin texto "FAVORITOS")
+   - Sección "Mis Favoritos": texto + icono amarillo
+   - Rating tag en anime.html: fondo blanco con estrella ⭐ amarilla
+   - Eliminado botón "QUITAR" redundante en lista de favoritos
+
+3. **feat: mejoras en paginación de episodios en anime.html**
+   - Agregado botón "<" para ir a página anterior
+   - Ventana deslizante fija de 5 botones (no crece, se mueve)
+   - Eliminado scroll hacia arriba al usar paginación
+   - Botones > y >> con prevención de scroll nativo
+
+### ✅ Mejoras de UI - Botón Volver y Efectos Hover (Mayo 2026)
 
 1. **feat: ocultar carrusel al buscar en index.html**
    - Al hacer clic en BUSCAR, el carrusel se oculta con `display: none`
@@ -307,6 +331,8 @@ E:\Github\Animelandia\
 - ✅ Navbar unificada en `anime.html` idéntica a `index.html`
 - ✅ Tipo de anime (TV Anime/Película/OVA/Especial) mostrado en detalles
 - ✅ API_URL detecta Live Server (127.0.0.1) para desarrollo local
+- ✅ Icono SVG de favoritos con animación (marcador + estrella)
+- ✅ Paginación de episodios con ventana deslizante y sin scroll
 
 ### ✅ Navbar Unificada (Mayo 2026)
 - Copiada navbar de `index.html` a `anime.html` (CSS y HTML idénticos)
@@ -331,6 +357,7 @@ E:\Github\Animelandia\
 - **Frontend**: Servir `frontend/` con Live Server (VS Code) o `npx serve frontend`
 - **API_URL actualizado**: Los 3 HTML detectan `localhost` y `127.0.0.1` (Live Server usa 127.0.0.1)
 - En desarrollo apuntan a `http://localhost:3000`, en producción a `https://animelandia-api-6wp2.onrender.com`
+- **Icono Favoritos**: Click en el marcador SVG agrega/quita favoritos con animación (sin alerts)
 
 ---
 
