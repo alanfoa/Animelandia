@@ -197,6 +197,73 @@
         
         #btn-cargar-mas { width: 100%; margin-top: 20px; padding: 15px; background: #eee; color: #333; border: 2px dashed #ccc; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .caps-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 30px; }
+
+        /* Paginación para episodios */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 30px 20px;
+        }
+
+        .pagination-container a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            height: 40px;
+            padding: 0 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            background: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid #ddd;
+        }
+
+        .pagination-container a:hover {
+            background: var(--racing-celeste);
+            color: white;
+            border-color: var(--racing-celeste);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 174, 239, 0.3);
+        }
+
+        .pagination-container a.active {
+            background: var(--racing-celeste);
+            color: white;
+            border-color: var(--racing-celeste);
+            pointer-events: none;
+        }
+
+        .pagination-container span {
+            color: var(--text-color);
+            opacity: 0.5;
+        }
+
+        .pagination-container a.next-btn,
+        .pagination-container a.last-btn {
+            font-weight: bold;
+            min-width: 50px;
+        }
+
+        @media (max-width: 768px) {
+            .pagination-container {
+                gap: 4px;
+                padding: 20px 10px;
+            }
+            
+            .pagination-container a {
+                min-width: 35px;
+                height: 35px;
+                font-size: 12px;
+                padding: 0 8px;
+            }
+        }
         .search-cap-container { display: flex; align-items: center; gap: 8px; background: var(--dark-bg); padding: 8px 15px; border-radius: 25px; border: 1px solid #ddd; }
         .search-cap-container input { border: none; background: transparent; outline: none; width: 120px; font-size: 14px; font-weight: bold; color: var(--text-color); }
 
@@ -272,7 +339,7 @@
         </div>
 
         <div id="grid-caps" class="grid-caps"></div>
-        <button id="btn-cargar-mas" style="display:none;" onclick="mostrarMasCaps()">CARGAR MÁS EPISODIOS</button>
+        <div id="pagination-caps" class="pagination-container"></div>
 
         <h3 id="seccion-favoritos" style="color: var(--racing-celeste); border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 50px;">Mis Favoritos ⭐</h3>
         <div id="lista-favoritos-detalle" class="container-favs"></div>
@@ -285,7 +352,8 @@
         // Variables globales
         let favoritos = [];
         let allEpisodes = [];
-        let currentShown = 50;
+        let capsPage = 1;
+        const capsPerPage = 50;
         let slug = '';
         let titulo = '';
         let imagenUrl = '';
@@ -383,10 +451,12 @@
         function filtrarCapitulos() {
             const val = document.getElementById('input-busca-cap').value;
             const grid = document.getElementById('grid-caps');
-            const btn = document.getElementById('btn-cargar-mas');
+            const pagContainer = document.getElementById('pagination-caps');
+            capsPage = 1;
             if (val === "") { renderCaps(); return; }
             const filtrados = allEpisodes.filter(ep => ep.numero.toString() === val);
             grid.innerHTML = '';
+            pagContainer.innerHTML = '';
             if (filtrados.length > 0) {
                 filtrados.forEach(ep => {
                     const card = document.createElement('div');
@@ -395,17 +465,19 @@
                     card.onclick = () => buscarOpciones(ep.numero);
                     grid.appendChild(card);
                 });
-                btn.style.display = 'none';
             } else {
                 grid.innerHTML = '<p style="color:gray; padding:20px;">Episodio no encontrado.</p>';
-                btn.style.display = 'none';
             }
         }
 
         function renderCaps() {
             const grid = document.getElementById('grid-caps');
-            const btn = document.getElementById('btn-cargar-mas');
-            const slice = allEpisodes.slice(0, currentShown);
+            const pagContainer = document.getElementById('pagination-caps');
+            const totalPages = Math.ceil(allEpisodes.length / capsPerPage);
+            const start = (capsPage - 1) * capsPerPage;
+            const end = start + capsPerPage;
+            const slice = allEpisodes.slice(start, end);
+
             grid.innerHTML = '';
             slice.forEach(ep => {
                 const card = document.createElement('div');
@@ -414,11 +486,59 @@
                 card.onclick = () => buscarOpciones(ep.numero);
                 grid.appendChild(card);
             });
-            btn.style.display = (currentShown < allEpisodes.length) ? 'block' : 'none';
-            if (currentShown < allEpisodes.length) btn.innerText = `CARGAR MÁS (QUEDAN ${allEpisodes.length - currentShown})`;
+
+            // Renderizar paginación
+            pagContainer.innerHTML = '';
+            if (totalPages > 1) {
+                pagContainer.appendChild(createCapsPageLink(1, capsPage, '1'));
+
+                let startPage = Math.max(2, capsPage - 3);
+                let endPage = Math.min(totalPages - 1, capsPage + 3);
+
+                if (startPage > 2) {
+                    pagContainer.appendChild(document.createTextNode('...'));
+                }
+
+                for (let i = startPage; i <= endPage; i++) {
+                    pagContainer.appendChild(createCapsPageLink(i, capsPage, i.toString()));
+                }
+
+                if (endPage < totalPages - 1) {
+                    pagContainer.appendChild(document.createTextNode('...'));
+                }
+
+                if (totalPages > 1) {
+                    pagContainer.appendChild(createCapsPageLink(totalPages, capsPage, totalPages.toString()));
+                }
+
+                if (capsPage < totalPages) {
+                    const nextBtn = createCapsPageLink(capsPage + 1, capsPage, '>', 'next-btn');
+                    pagContainer.appendChild(nextBtn);
+                    const lastBtn = createCapsPageLink(totalPages, capsPage, '>>', 'last-btn');
+                    pagContainer.appendChild(lastBtn);
+                }
+            }
         }
 
-        function mostrarMasCaps() { currentShown += 50; renderCaps(); }
+        function createCapsPageLink(pageNum, currentPage, text, extraClass = '') {
+            const a = document.createElement('a');
+            a.innerText = text;
+            if (extraClass) a.className = extraClass;
+            if (pageNum === currentPage) {
+                a.className += ' active';
+                a.style.pointerEvents = 'none';
+            } else {
+                a.href = '#';
+                a.onclick = (e) => { e.preventDefault(); irACapsPage(pageNum); };
+            }
+            return a;
+        }
+
+        function irACapsPage(num) {
+            capsPage = num;
+            renderCaps();
+            document.getElementById('grid-caps').scrollIntoView({ behavior: 'smooth' });
+        }
 
         function renderizarFavoritosDetalle() {
             const container = document.getElementById('lista-favoritos-detalle');
