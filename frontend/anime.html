@@ -326,27 +326,147 @@
             fill: #FFF;
             stroke: none;
         }
+
+        /* HAMBURGER MENU STYLES */
+        .hamburger-btn {
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 30px;
+            height: 21px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .hamburger-btn span {
+            width: 100%;
+            height: 3px;
+            background: var(--text-color);
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger-btn.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .hamburger-btn.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger-btn.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -6px);
+        }
+
+        @media (min-width: 769px) {
+            /* En desktop, la búsqueda vuelve a la izquierda */
+            .nav-left {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                flex: 1;
+            }
+            .nav-menu .nav-search {
+                display: flex !important;
+                flex: 1;
+                max-width: 400px;
+                margin-right: 20px;
+            }
+            .nav-menu {
+                display: flex !important;
+                position: static;
+                flex-direction: row;
+                padding: 0;
+                gap: 10px;
+                border: none;
+                box-shadow: none;
+                background: transparent;
+            }
+            .nav-menu .btn-nav,
+            .nav-menu .toggle-container {
+                flex-shrink: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hamburger-btn {
+                display: flex;
+            }
+
+            .nav-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--header-bg);
+                flex-direction: column;
+                padding: 20px;
+                gap: 15px;
+                border-bottom: 3px solid var(--racing-celeste);
+                box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+                z-index: 999;
+            }
+
+            .nav-menu.active {
+                display: flex !important;
+            }
+
+            .mobile-search-wrapper {
+                display: none !important;
+            }
+
+            .nav-menu.active .mobile-search-wrapper {
+                display: table !important;
+                width: 100% !important;
+                order: -1;
+                border-collapse: collapse;
+            }
+
+            .nav-menu .btn-nav {
+                width: 100% !important;
+            }
+
+            .nav-logo img {
+                height: 40px;
+            }
+        }
     </style>
 </head>
 
 <body>
     <nav class="navbar">
-        <!-- LEFT: Logo + Search -->
+        <!-- LEFT: Logo -->
         <div class="nav-left">
             <a href="index.html" class="nav-logo">
                 <img src="assets/img/Logo.png" alt="Logo"
                     onerror="this.src='https://via.placeholder.com/280x100?text=Animelandia'">
             </a>
-
-            <div class="nav-search">
-                <input type="text" id="input-buscador" placeholder="Busque su anime favorito..."
-                    onkeyup="if(event.key === 'Enter') buscarYRedirigir()">
-                <button class="btn-nav" onclick="buscarYRedirigir()">BUSCAR</button>
-            </div>
         </div>
 
-        <!-- RIGHT: Menu buttons -->
-        <div class="nav-menu">
+        <!-- Hamburger Button (Mobile) -->
+        <button class="hamburger-btn" id="hamburger-btn" aria-label="Abrir menú">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <!-- RIGHT: Menu buttons (includes search on mobile) -->
+        <div class="nav-menu" id="nav-menu">
+            <!-- Mobile search (only visible inside hamburger menu on mobile) -->
+            <table class="mobile-search-wrapper"><tr>
+                <td style="width:100%;padding:0;">
+                    <input type="text" id="input-buscador-mobile" placeholder="Busque su anime favorito..."
+                        onkeyup="if(event.key === 'Enter') buscarYRedirigirMobile()"
+                        style="width:100%;padding:12px;border:1px solid #ddd;border-right:none;border-radius:8px 0 0 8px;box-sizing:border-box;background:var(--card-bg);color:var(--text-color);margin:0;">
+                </td>
+                <td style="padding:0;white-space:nowrap;">
+                    <button onclick="buscarYRedirigirMobile()" 
+                        style="padding:12px 15px;border:1px solid var(--racing-celeste);border-left:none;border-radius:0 8px 8px 0;background:var(--racing-celeste);color:white;font-weight:bold;text-transform:uppercase;cursor:pointer;margin:0;">BUSCAR</button>
+                </td>
+            </tr></table>
             <button class="btn-nav" onclick="window.location.href='explorar.html'">CATALOGO</button>
             <button class="btn-nav" onclick="document.getElementById('seccion-favoritos').scrollIntoView();">
                 <svg class="favorite-icon active" viewBox="0 0 24 36" xmlns="http://www.w3.org/2000/svg" style="width:16px;height:24px;vertical-align:middle;">
@@ -647,7 +767,7 @@
             rep.style.display = 'block';
             divServidores.innerHTML = '🔍 Buscando servidores...';
             tituloViendo.innerText = `Cargando Episodio ${cap}...`;
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.scrollTo({ top:0, behavior: 'smooth' });
             try {
                 const res = await fetch(`${API_URL}/get-video?slug=${slug}&cap=${cap}`);
                 const data = await res.json();
@@ -667,6 +787,30 @@
                     });
                 } else { divServidores.innerHTML = '⚠️ No hay reproductores disponibles.'; }
             } catch (e) { tituloViendo.innerText = "❌ Error encontrando."; }
+        }
+
+        // Mobile search function
+        function buscarYRedirigirMobile() {
+            const q = document.getElementById('input-buscador-mobile').value;
+            if (q) window.location.href = `index.html?search=${encodeURIComponent(q)}`;
+        }
+
+        // HAMBURGER MENU LOGIC
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        const navMenu = document.getElementById('nav-menu');
+
+        if (hamburgerBtn && navMenu) {
+            hamburgerBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                navMenu.classList.toggle('active');
+                hamburgerBtn.classList.toggle('active');
+            });
+            document.addEventListener('click', (e) => {
+                if (!hamburgerBtn.contains(e.target) && !navMenu.contains(e.target)) {
+                    navMenu.classList.remove('active');
+                    hamburgerBtn.classList.remove('active');
+                }
+            });
         }
     </script>
     <footer style="text-align:center; padding:10px; font-size:12px; color:#666; background:#1a1a1a; margin-top:20px;">
