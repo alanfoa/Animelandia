@@ -278,6 +278,52 @@
             #titulo-anime { font-size: 1.5rem !important; margin-bottom: 5px; color: var(--text-color); }
             #sinopsis { font-size: 14px; line-height: 1.4; color: var(--text-color); }
         }
+
+        .btn-fav {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            padding: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+        }
+
+        .favorite-icon {
+            width: 24px;
+            height: 36px;
+            transition: all 0.3s ease;
+        }
+
+        .favorite-icon .marker {
+            fill: #808080;
+            stroke: #808080;
+            stroke-width: 2;
+            stroke-linejoin: round;
+            transition: all 0.3s ease;
+        }
+
+        .favorite-icon .star {
+            fill: #FFF;
+            stroke: #FFF;
+            stroke-width: 2;
+            stroke-linejoin: round;
+            transition: all 0.3s ease;
+        }
+
+        .favorite-icon.active .marker {
+            fill: #FFB800;
+            stroke: #FFB800;
+        }
+
+        .favorite-icon.active .star {
+            fill: #FFF;
+            stroke: none;
+        }
     </style>
 </head>
 
@@ -300,7 +346,13 @@
         <!-- RIGHT: Menu buttons -->
         <div class="nav-menu">
             <button class="btn-nav" onclick="window.location.href='explorar.html'">CATALOGO</button>
-            <button class="btn-nav" onclick="document.getElementById('seccion-favoritos').scrollIntoView();">⭐ FAVORITOS</button>
+            <button class="btn-nav" onclick="document.getElementById('seccion-favoritos').scrollIntoView();">
+                <svg class="favorite-icon" viewBox="0 0 24 36" xmlns="http://www.w3.org/2000/svg" style="width:16px;height:24px;vertical-align:middle;margin-right:4px;">
+                    <path class="marker" d="M5,2 L19,2 Q22,2 22,5 L22,28 L12,34 L2,28 L2,5 Q2,2 5,2 Z" />
+                    <path class="star" d="M12,10 L14,13 L18,14 L15,16 L16,20 L12,18 L8,20 L9,16 L6,14 L10,13 Z" />
+                </svg>
+                FAVORITOS
+            </button>
             <button class="toggle-container" id="theme-toggle" onclick="toggleTheme()">
                 <div class="toggle-circle" id="toggle-circle">☀️</div>
             </button>
@@ -319,11 +371,25 @@
         </div>
 
         <div class="info-header">
-            <img id="img-anime" src="">
+            <div style="position: relative; display: inline-block;">
+                <img id="img-anime" src="">
+                <button id="btn-fav-anime" class="btn-fav" onclick="toggleFavAnime()">
+                    <svg class="favorite-icon" viewBox="0 0 24 36" xmlns="http://www.w3.org/2000/svg">
+                        <path class="marker" d="M5,2 L19,2 Q22,2 22,5 L22,28 L12,34 L2,28 L2,5 Q2,2 5,2 Z" />
+                        <path class="star" d="M12,10 L14,13 L18,14 L15,16 L16,20 L12,18 L8,20 L9,16 L6,14 L10,13 Z" />
+                    </svg>
+                </button>
+            </div>
             <div style="flex:1; min-width: 300px;">
                 <h1 id="titulo-anime">Cargando...</h1>
                 <div class="meta-info">
-                    <div class="rating-tag">⭐ <span id="rating-val">0.0</span></div>
+                    <div class="rating-tag">
+                        <svg class="favorite-icon" viewBox="0 0 24 36" xmlns="http://www.w3.org/2000/svg" style="width:14px;height:21px;vertical-align:middle;margin-right:4px;">
+                            <path class="marker" d="M5,2 L19,2 Q22,2 22,5 L22,28 L12,34 L2,28 L2,5 Q2,2 5,2 Z" />
+                            <path class="star" d="M12,10 L14,13 L18,14 L15,16 L16,20 L12,18 L8,20 L9,16 L6,14 L10,13 Z" />
+                        </svg>
+                        <span id="rating-val">0.0</span>
+                    </div>
                     <div id="lista-generos" style="display: flex; gap: 5px; flex-wrap: wrap;"></div>
                 </div>
                 <p id="sinopsis">Buscando información...</p>
@@ -341,7 +407,12 @@
         <div id="grid-caps" class="grid-caps"></div>
         <div id="pagination-caps" class="pagination-container"></div>
 
-        <h3 id="seccion-favoritos" style="color: var(--racing-celeste); border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 50px;">Mis Favoritos ⭐</h3>
+        <h3 id="seccion-favoritos" style="color: var(--racing-celeste); border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 50px;">Mis Favoritos
+            <svg class="favorite-icon" viewBox="0 0 24 36" xmlns="http://www.w3.org/2000/svg" style="width:20px;height:30px;vertical-align:middle;margin-left:6px;">
+                <path class="marker" d="M5,2 L19,2 Q22,2 22,5 L22,28 L12,34 L2,28 L2,5 Q2,2 5,2 Z" />
+                <path class="star" d="M12,10 L14,13 L18,14 L15,16 L16,20 L12,18 L8,20 L9,16 L6,14 L10,13 Z" />
+            </svg>
+        </h3>
         <div id="lista-favoritos-detalle" class="container-favs"></div>
     </div>
 
@@ -405,9 +476,9 @@
 
             // Verificar si ya es favorito al cargar
             const btnFav = document.getElementById('btn-fav-anime');
+            const favIcon = btnFav ? btnFav.querySelector('.favorite-icon') : null;
             if (btnFav && favoritos.some(f => f.slug === slug)) {
-                btnFav.classList.add('btn-fav-active');
-                btnFav.classList.remove('btn-fav');
+                if (favIcon) favIcon.classList.add('active');
             }
 
             renderizarFavoritosDetalle();
@@ -551,6 +622,25 @@
                 card.innerHTML = `<img src="${anime.imagen}"><div class="card-fav-info"><b>${anime.titulo}</b></div>`;
                 container.appendChild(card);
             });
+        }
+
+        function toggleFavAnime() {
+            const btnFav = document.getElementById('btn-fav-anime');
+            const favIcon = btnFav.querySelector('.favorite-icon');
+            const titulo = document.getElementById('titulo-anime').innerText;
+            const imagen = document.getElementById('img-anime').src;
+            const idx = favoritos.findIndex(f => f.slug === slug);
+            if (idx === -1) {
+                favoritos.push({ slug, titulo, imagen });
+                localStorage.setItem('misAnimes', JSON.stringify(favoritos));
+                if (favIcon) favIcon.classList.add('active');
+                renderizarFavoritosDetalle();
+            } else {
+                favoritos.splice(idx, 1);
+                localStorage.setItem('misAnimes', JSON.stringify(favoritos));
+                if (favIcon) favIcon.classList.remove('active');
+                renderizarFavoritosDetalle();
+            }
         }
 
         async function buscarOpciones(cap) {

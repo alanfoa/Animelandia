@@ -468,12 +468,9 @@
             position: absolute;
             top: 10px;
             right: 10px;
-            background: white;
-            border: 2px solid var(--racing-celeste);
-            border-radius: 50%;
-            width: 35px;
-            height: 35px;
-            font-size: 18px;
+            background: none;
+            border: none;
+            padding: 4px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -481,10 +478,36 @@
             z-index: 30;
         }
 
-        .btn-fav-active {
-            background: #ffc107;
-            border-color: #ffc107;
-            color: #000;
+        .favorite-icon {
+            width: 24px;
+            height: 36px;
+            transition: all 0.3s ease;
+        }
+
+        .favorite-icon .marker {
+            fill: #808080;
+            stroke: #808080;
+            stroke-width: 2;
+            stroke-linejoin: round;
+            transition: all 0.3s ease;
+        }
+
+        .favorite-icon .star {
+            fill: #FFF;
+            stroke: #FFF;
+            stroke-width: 2;
+            stroke-linejoin: round;
+            transition: all 0.3s ease;
+        }
+
+        .favorite-icon.active .marker {
+            fill: #FFB800;
+            stroke: #FFB800;
+        }
+
+        .favorite-icon.active .star {
+            fill: #FFF;
+            stroke: none;
         }
     </style>
 </head>
@@ -506,7 +529,13 @@
         <!-- RIGHT: Menu buttons -->
         <div class="nav-menu">
             <button class="btn-nav" onclick="window.location.href='explorar.html'">CATÁLOGO</button>
-            <button class="btn-nav" onclick="window.location.href='index.html#seccion-favoritos'">⭐ FAVORITOS</button>
+            <button class="btn-nav" onclick="window.location.href='index.html#seccion-favoritos'">
+                <svg class="favorite-icon" viewBox="0 0 24 36" xmlns="http://www.w3.org/2000/svg" style="width:16px;height:24px;vertical-align:middle;margin-right:4px;">
+                    <path class="marker" d="M5,2 L19,2 Q22,2 22,5 L22,28 L12,34 L2,28 L2,5 Q2,2 5,2 Z" />
+                    <path class="star" d="M12,10 L14,13 L18,14 L15,16 L16,20 L12,18 L8,20 L9,16 L6,14 L10,13 Z" />
+                </svg>
+                FAVORITOS
+            </button>
             <button class="toggle-container" id="theme-toggle" onclick="toggleTheme()">
                 <div class="toggle-circle" id="toggle-circle">🌙</div>
             </button>
@@ -786,10 +815,19 @@
 
                     card.innerHTML = `
         ${anime.anio ? `<div class="card-year">${anime.anio}</div>` : ''}
-        <button class="btn-fav" style="position:absolute; top:10px; right:10px; z-index:30;" data-slug="${anime.slug}" onclick="toggleFavDesdeExplorar(this, '${anime.slug}', '${anime.titulo}', '${anime.imagen}')">⭐</button>
+        <button class="btn-fav" data-slug="${anime.slug}" onclick="event.stopPropagation(); toggleFavDesdeExplorar(this, '${anime.slug}', '${anime.titulo}', '${anime.imagen}')">
+            <svg class="favorite-icon" viewBox="0 0 24 36" xmlns="http://www.w3.org/2000/svg">
+                <path class="marker" d="M5,2 L19,2 Q22,2 22,5 L22,28 L12,34 L2,28 L2,5 Q2,2 5,2 Z" />
+                <path class="star" d="M12,10 L14,13 L18,14 L15,16 L16,20 L12,18 L8,20 L9,16 L6,14 L10,13 Z" />
+            </svg>
+        </button>
         <img src="${anime.imagen}" loading="lazy" onerror="this.src='https://via.placeholder.com/200x280?text=Sin+Imagen'">
         <div class="card-info"><b>${anime.titulo}</b></div>
     `;
+                    if (favoritos.some(f => f.slug === anime.slug)) {
+                        const favIcon = card.querySelector('.favorite-icon');
+                        if (favIcon) favIcon.classList.add('active');
+                    }
                     container.appendChild(card);
                 });
 
@@ -875,18 +913,15 @@
 
         function toggleFavDesdeExplorar(btn, slug, titulo, imagen) {
             const existe = favoritos.some(f => f.slug === slug);
+            const favIcon = btn.querySelector('.favorite-icon');
             if (!existe) {
                 favoritos.push({ slug, titulo, imagen });
                 localStorage.setItem('misAnimes', JSON.stringify(favoritos));
-                btn.classList.add('btn-fav-active');
-                btn.classList.remove('btn-fav');
-                alert(`¡${titulo} guardado!`);
+                if (favIcon) favIcon.classList.add('active');
             } else {
                 favoritos = favoritos.filter(f => f.slug !== slug);
                 localStorage.setItem('misAnimes', JSON.stringify(favoritos));
-                btn.classList.remove('btn-fav-active');
-                btn.classList.add('btn-fav');
-                alert(`¡${titulo} eliminado!`);
+                if (favIcon) favIcon.classList.remove('active');
             }
         }
 
