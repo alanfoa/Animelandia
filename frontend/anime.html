@@ -170,8 +170,8 @@
         .meta-info { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; }
         .genre-tag { background: #e0e0e0; color: #333; padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: bold; transition: 0.2s; cursor: default; }
         .genre-tag:hover { background: #a0a0a0; transform: scale(1.08); }
-        .rating-tag { background: #ffc107; color: #000; padding: 5px 12px; border-radius: 15px; font-size: 13px; font-weight: bold; display: flex; align-items: center; gap: 5px; transition: 0.2s; cursor: default; }
-        .rating-tag:hover { background: #b38600; transform: scale(1.08); }
+        .rating-tag { background: #FFF; color: #000; padding: 5px 12px; border-radius: 15px; font-size: 13px; font-weight: bold; display: flex; align-items: center; gap: 5px; transition: 0.2s; cursor: default; }
+        .rating-tag:hover { background: #f0f0f0; transform: scale(1.08); }
         .year-tag { background: var(--racing-celeste); color: white; padding: 5px 12px; border-radius: 15px; font-size: 13px; font-weight: bold; transition: 0.2s; cursor: default; }
         .year-tag:hover { background: #007b9a; transform: scale(1.08); }
         .type-tag { background: #6f42c1; color: white; padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: bold; text-transform: uppercase; transition: 0.2s; cursor: default; }
@@ -347,11 +347,10 @@
         <div class="nav-menu">
             <button class="btn-nav" onclick="window.location.href='explorar.html'">CATALOGO</button>
             <button class="btn-nav" onclick="document.getElementById('seccion-favoritos').scrollIntoView();">
-                <svg class="favorite-icon" viewBox="0 0 24 36" xmlns="http://www.w3.org/2000/svg" style="width:16px;height:24px;vertical-align:middle;margin-right:4px;">
+                <svg class="favorite-icon active" viewBox="0 0 24 36" xmlns="http://www.w3.org/2000/svg" style="width:16px;height:24px;vertical-align:middle;">
                     <path class="marker" d="M5,2 L19,2 Q22,2 22,5 L22,28 L12,34 L2,28 L2,5 Q2,2 5,2 Z" />
                     <path class="star" d="M12,10 L14,13 L18,14 L15,16 L16,20 L12,18 L8,20 L9,16 L6,14 L10,13 Z" />
                 </svg>
-                FAVORITOS
             </button>
             <button class="toggle-container" id="theme-toggle" onclick="toggleTheme()">
                 <div class="toggle-circle" id="toggle-circle">☀️</div>
@@ -383,13 +382,7 @@
             <div style="flex:1; min-width: 300px;">
                 <h1 id="titulo-anime">Cargando...</h1>
                 <div class="meta-info">
-                    <div class="rating-tag">
-                        <svg class="favorite-icon" viewBox="0 0 24 36" xmlns="http://www.w3.org/2000/svg" style="width:14px;height:21px;vertical-align:middle;margin-right:4px;">
-                            <path class="marker" d="M5,2 L19,2 Q22,2 22,5 L22,28 L12,34 L2,28 L2,5 Q2,2 5,2 Z" />
-                            <path class="star" d="M12,10 L14,13 L18,14 L15,16 L16,20 L12,18 L8,20 L9,16 L6,14 L10,13 Z" />
-                        </svg>
-                        <span id="rating-val">0.0</span>
-                    </div>
+                    <div class="rating-tag">⭐ <span id="rating-val">0.0</span></div>
                     <div id="lista-generos" style="display: flex; gap: 5px; flex-wrap: wrap;"></div>
                 </div>
                 <p id="sinopsis">Buscando información...</p>
