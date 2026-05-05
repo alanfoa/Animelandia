@@ -245,8 +245,10 @@
             opacity: 0.5;
         }
 
+        .pagination-container a.prev-btn,
         .pagination-container a.next-btn,
-        .pagination-container a.last-btn {
+        .pagination-container a.last-btn,
+        .pagination-container a.first-btn {
             font-weight: bold;
             min-width: 50px;
         }
@@ -551,35 +553,37 @@
                 grid.appendChild(card);
             });
 
-            // Renderizar paginación
+            // Renderizar paginación con ventana deslizante
             pagContainer.innerHTML = '';
             if (totalPages > 1) {
-                pagContainer.appendChild(createCapsPageLink(1, capsPage, '1'));
-
-                let startPage = Math.max(2, capsPage - 3);
-                let endPage = Math.min(totalPages - 1, capsPage + 3);
-
-                if (startPage > 2) {
-                    pagContainer.appendChild(document.createTextNode('...'));
+                // Botón anterior
+                if (capsPage > 1) {
+                    const prevBtn = createCapsPageLink(capsPage - 1, capsPage, '<', 'prev-btn');
+                    pagContainer.appendChild(prevBtn);
                 }
-
+                
+                // Ventana fija de 5 páginas que se desliza
+                let startPage = Math.max(1, capsPage - 2);
+                let endPage = Math.min(totalPages, startPage + 4);
+                
+                // Ajustar si estamos cerca del final
+                if (endPage - startPage < 4) {
+                    startPage = Math.max(1, endPage - 4);
+                }
+                
                 for (let i = startPage; i <= endPage; i++) {
                     pagContainer.appendChild(createCapsPageLink(i, capsPage, i.toString()));
                 }
-
-                if (endPage < totalPages - 1) {
-                    pagContainer.appendChild(document.createTextNode('...'));
-                }
-
-                if (totalPages > 1) {
-                    pagContainer.appendChild(createCapsPageLink(totalPages, capsPage, totalPages.toString()));
-                }
-
+                
+                // Botón siguiente y último
                 if (capsPage < totalPages) {
                     const nextBtn = createCapsPageLink(capsPage + 1, capsPage, '>', 'next-btn');
                     pagContainer.appendChild(nextBtn);
-                    const lastBtn = createCapsPageLink(totalPages, capsPage, '>>', 'last-btn');
-                    pagContainer.appendChild(lastBtn);
+                    
+                    if (capsPage < totalPages - 1) {
+                        const lastBtn = createCapsPageLink(totalPages, capsPage, '>>', 'last-btn');
+                        pagContainer.appendChild(lastBtn);
+                    }
                 }
             }
         }
@@ -592,7 +596,6 @@
                 a.className += ' active';
                 a.style.pointerEvents = 'none';
             } else {
-                a.href = '#';
                 a.onclick = (e) => { e.preventDefault(); irACapsPage(pageNum); };
             }
             return a;
@@ -601,7 +604,6 @@
         function irACapsPage(num) {
             capsPage = num;
             renderCaps();
-            document.getElementById('grid-caps').scrollIntoView({ behavior: 'smooth' });
         }
 
         function renderizarFavoritosDetalle() {
