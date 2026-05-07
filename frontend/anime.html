@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
@@ -67,6 +67,39 @@
 
         .nav-search {
             display: flex;
+            flex-direction: row;
+        }
+
+        .nav-search input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px 0 0 8px;
+            border: 1px solid #ddd;
+            border-right: none;
+            outline: none;
+            background: var(--card-bg);
+            color: var(--text-color);
+        }
+
+        .nav-search .btn-nav {
+            border-radius: 0 8px 8px 0;
+            border-left: none;
+            margin: 0;
+        }
+
+        /* Desktop search - in nav-left */
+        .nav-search-desktop {
+            flex: 1;
+            max-width: 400px;
+        }
+        
+        /* Mobile search wrapper - hidden everywhere by default */
+        .mobile-search-wrapper {
+            display: none;
+        }
+
+        /* Desktop search - in nav-left */
+        .nav-search-desktop {
             flex: 1;
             max-width: 400px;
         }
@@ -360,19 +393,18 @@
             transform: rotate(-45deg) translate(7px, -6px);
         }
 
-        @media (min-width: 769px) {
-            /* En desktop, la búsqueda vuelve a la izquierda */
+         @media (min-width: 769px) {
             .nav-left {
-                display: flex;
+                display: flex !important;
                 align-items: center;
                 gap: 15px;
                 flex: 1;
             }
-            .nav-menu .nav-search {
+            .nav-search-desktop {
                 display: flex !important;
-                flex: 1;
-                max-width: 400px;
-                margin-right: 20px;
+            }
+            .mobile-search-wrapper {
+                display: none !important;
             }
             .nav-menu {
                 display: flex !important;
@@ -414,7 +446,7 @@
                 display: flex !important;
             }
 
-            .mobile-search-wrapper {
+            .nav-search-desktop {
                 display: none !important;
             }
 
@@ -438,12 +470,18 @@
 
 <body>
     <nav class="navbar">
-        <!-- LEFT: Logo -->
+        <!-- LEFT: Logo + Search (Desktop) -->
         <div class="nav-left">
             <a href="index.html" class="nav-logo">
                 <img src="assets/img/Logo.png" alt="Logo"
                     onerror="this.src='https://via.placeholder.com/280x100?text=Animelandia'">
             </a>
+
+            <div class="nav-search nav-search-desktop">
+                <input type="text" id="input-buscador" placeholder="Busque su anime favorito..."
+                    onkeyup="if(event.key === 'Enter') buscarYRedirigir()">
+                <button class="btn-nav" onclick="buscarYRedirigir()">BUSCAR</button>
+            </div>
         </div>
 
         <!-- Hamburger Button (Mobile) -->
@@ -453,7 +491,7 @@
             <span></span>
         </button>
 
-        <!-- RIGHT: Menu buttons (includes search on mobile) -->
+        <!-- RIGHT: Menu buttons (always visible on desktop) -->
         <div class="nav-menu" id="nav-menu">
             <!-- Mobile search (only visible inside hamburger menu on mobile) -->
             <table class="mobile-search-wrapper"><tr>
@@ -467,6 +505,7 @@
                         style="padding:12px 15px;border:1px solid var(--racing-celeste);border-left:none;border-radius:0 8px 8px 0;background:var(--racing-celeste);color:white;font-weight:bold;text-transform:uppercase;cursor:pointer;margin:0;">BUSCAR</button>
                 </td>
             </tr></table>
+
             <button class="btn-nav" onclick="window.location.href='explorar.html'">CATALOGO</button>
             <button class="btn-nav" onclick="document.getElementById('seccion-favoritos').scrollIntoView();">
                 <svg class="favorite-icon active" viewBox="0 0 24 36" xmlns="http://www.w3.org/2000/svg" style="width:16px;height:24px;vertical-align:middle;">
@@ -475,7 +514,7 @@
                 </svg>
             </button>
             <button class="toggle-container" id="theme-toggle" onclick="toggleTheme()">
-                <div class="toggle-circle" id="toggle-circle">☀️</div>
+                <div class="toggle-circle" id="toggle-circle">🌙</div>
             </button>
         </div>
     </nav>

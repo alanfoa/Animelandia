@@ -63,8 +63,36 @@
 
         .nav-search {
             display: flex;
+            flex-direction: row;
+        }
+
+        .nav-search input[type="text"],
+        .nav-search select {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px 0 0 8px;
+            border: 1px solid #ddd;
+            border-right: none;
+            outline: none;
+            background: var(--card-bg);
+            color: var(--text-color);
+        }
+
+        .nav-search .btn-nav {
+            border-radius: 0 8px 8px 0;
+            border-left: none;
+            margin: 0;
+        }
+
+        /* Desktop search - in nav-left */
+        .nav-search-desktop {
             flex: 1;
             max-width: 400px;
+        }
+        
+        /* Mobile search wrapper - hidden everywhere by default */
+        .mobile-search-wrapper {
+            display: none;
         }
 
         .nav-search input[type="text"],
@@ -549,18 +577,20 @@
         }
 
         @media (min-width: 769px) {
-            /* En desktop, la búsqueda se integra en el menú a la izquierda */
+            /* Desktop: show search in nav-left, hide mobile search */
             .nav-left {
-                display: flex;
+                display: flex !important;
                 align-items: center;
                 gap: 15px;
                 flex: 1;
             }
-            .nav-menu .nav-search {
+            .nav-search-desktop {
                 display: flex !important;
                 flex: 1;
                 max-width: 400px;
-                margin-right: 20px;
+            }
+            .nav-search-mobile {
+                display: none !important;
             }
             .nav-menu {
                 display: flex !important;
@@ -602,19 +632,32 @@
                 display: flex !important;
             }
 
-            .mobile-search-wrapper {
+            /* Hide nav-search-desktop on mobile */
+            .nav-search-desktop {
                 display: none !important;
             }
 
-            .nav-menu.active .mobile-search-wrapper {
-                display: table !important;
+            .nav-search-mobile input[type="text"] {
+                display: table-cell !important;
                 width: 100% !important;
-                order: -1;
-                border-collapse: collapse;
+                border-radius: 8px 0 0 8px !important;
+                border-right: none !important;
+                box-sizing: border-box !important;
             }
 
-            .nav-menu .btn-nav {
-                width: 100% !important;
+            .nav-search-mobile .btn-nav {
+                display: table-cell !important;
+                width: 1% !important;
+                white-space: nowrap;
+                border-radius: 0 8px 8px 0 !important;
+                border-left: none !important;
+                padding: 12px 15px !important;
+                margin: 0 !important;
+            }
+
+            /* Hide desktop search on mobile */
+            .nav-search-desktop {
+                display: none !important;
             }
 
             .nav-logo img {
@@ -626,11 +669,17 @@
 
 <body>
     <nav class="navbar">
-        <!-- LEFT: Logo -->
+        <!-- LEFT: Logo + Search (Desktop) -->
         <div class="nav-left">
             <a href="index.html" class="nav-logo">
                 <img src="assets/img/Logo.png" alt="Logo" onerror="this.src='https://via.placeholder.com/280x100?text=Animelandia'">
             </a>
+
+            <div class="nav-search nav-search-desktop">
+                <input type="text" id="input-buscador" placeholder="Busque su anime favorito..."
+                    onkeyup="if(event.key === 'Enter') buscarYRedirigir()">
+                <button class="btn-nav" onclick="buscarYRedirigir()">BUSCAR</button>
+            </div>
         </div>
 
         <!-- Hamburger Button (Mobile) -->
@@ -640,12 +689,12 @@
             <span></span>
         </button>
 
-        <!-- RIGHT: Menu buttons (includes search on mobile) -->
+        <!-- RIGHT: Menu buttons (always visible on desktop) -->
         <div class="nav-menu" id="nav-menu">
             <!-- Mobile search (only visible inside hamburger menu on mobile) -->
             <table class="mobile-search-wrapper"><tr>
                 <td style="width:100%;padding:0;">
-                    <input type="text" id="input-buscador-mobile" placeholder="Buscá tu anime favorito..."
+                    <input type="text" id="input-buscador-mobile" placeholder="Busque su anime favorito..."
                         onkeyup="if(event.key === 'Enter') buscarYRedirigirMobile()"
                         style="width:100%;padding:12px;border:1px solid #ddd;border-right:none;border-radius:8px 0 0 8px;box-sizing:border-box;background:var(--card-bg);color:var(--text-color);margin:0;">
                 </td>
@@ -654,7 +703,7 @@
                         style="padding:12px 15px;border:1px solid var(--racing-celeste);border-left:none;border-radius:0 8px 8px 0;background:var(--racing-celeste);color:white;font-weight:bold;text-transform:uppercase;cursor:pointer;margin:0;">BUSCAR</button>
                 </td>
             </tr></table>
-            <button class="btn-nav" onclick="window.location.href='explorar.html'">CATÁLOGO</button>
+            <button class="btn-nav" onclick="window.location.href='explorar.html'">CATALOGO</button>
             <button class="btn-nav" onclick="window.location.href='index.html#seccion-favoritos'">
                 <svg class="favorite-icon active" viewBox="0 0 24 36" xmlns="http://www.w3.org/2000/svg" style="width:16px;height:24px;vertical-align:middle;">
                     <path class="marker" d="M5,2 L19,2 Q22,2 22,5 L22,28 L12,34 L2,28 L2,5 Q2,2 5,2 Z" />
