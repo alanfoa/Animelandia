@@ -38,10 +38,10 @@ app.get('/latest', async (req, res) => {
         
         const results = [];
         // Nuevo regex para formato actual: media:{id:123,slug:"slug",title:"Titulo"},number:16
-        const regex = /media:\s*\{id:\s*(\d+),\s*slug:\s*"([^"]+)",\s*title:\s*"([^"]+)"[^}]*\},\s*number:\s*(\d+)/g;
+        const regex = /media:\s*\{id:\s*(\d+),\s*slug:\s*"([^"]+)",\s*title:\s*"((?:[^"\\]|\\.)+)"[^}]*\},\s*number:\s*(\d+)/g;
         let m;
         while ((m = regex.exec(target)) !== null) {
-            results.push({ titulo: m[3], imagen: `https://cdn.animeav1.com/covers/${m[1]}.jpg`, slug: m[2], cap: m[4] });
+            results.push({ titulo: m[3].replace(/\\"/g, '"'), imagen: `https://cdn.animeav1.com/covers/${m[1]}.jpg`, slug: m[2], cap: m[4] });
         }
         LATEST_CACHE = { data: results.slice(0, 24), lastUpdate: ahora };
         res.json(LATEST_CACHE.data);
@@ -452,7 +452,7 @@ app.get('/anime-info', async (req, res) => {
         }
         
         const info = {
-            descripcion: scripts.match(/synopsis:"([\s\S]*?)",/)?.[1]?.replace(/\\n/g, ' ') || "Sin descripción.",
+            descripcion: scripts.match(/synopsis:"((?:[^"\\]|\\.)*?)",/)?.[1]?.replace(/\\n/g, ' ').replace(/\\"/g, '"') || "Sin descripción.",
             rating: scripts.match(/score:(\d+\.?\d*)/)?.[1] || "0.0",
             anio: scripts.match(/startDate:"(\d{4})/)?.[1] || "",
             tipo: scripts.match(/category:\s*\{[^}]*name:\s*"([^"]+)"/)?.[1] || "",
