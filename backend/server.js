@@ -6,6 +6,9 @@ const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const http = require('http');
 const https = require('https');
+require('dotenv').config();
+
+const SCRAPING_TARGET = process.env.SCRAPING_TARGET || 'https://animeav1.com';
 
 const httpAgent = new http.Agent({ keepAlive: true, keepAliveMsecs: 30000 });
 const httpsAgent = new https.Agent({ keepAlive: true, keepAliveMsecs: 30000 });
@@ -65,7 +68,7 @@ async function getHomepage() {
         return HOMEPAGE_CACHE.$;
     }
     if (homepagePromise) return homepagePromise;
-    homepagePromise = fetchAndParse('https://animeav1.com/').then($ => {
+    homepagePromise = fetchAndParse(`${SCRAPING_TARGET}/`).then($ => {
         HOMEPAGE_CACHE = { $, lastUpdate: Date.now() };
         homepagePromise = null;
         return $;
@@ -287,8 +290,8 @@ app.get('/search', async (req, res) => {
 
         const queryString = params.toString();
         const urlDestino = queryString
-            ? `https://animeav1.com/catalogo?${queryString}&page=${page}`
-            : `https://animeav1.com/catalogo?page=${page}`;
+            ? `${SCRAPING_TARGET}/catalogo?${queryString}&page=${page}`
+            : `${SCRAPING_TARGET}/catalogo?page=${page}`;
         console.log('URL destino:', urlDestino);
 
         if (SEARCH_CACHE.has(urlDestino) && (ahora - SEARCH_CACHE.get(urlDestino).time < 300000)) {
@@ -350,7 +353,7 @@ app.get('/anime-info', async (req, res) => {
     const ahora = Date.now();
     if (INFO_CACHE.has(slug) && (ahora - INFO_CACHE.get(slug).time < 3600000)) return res.json(INFO_CACHE.get(slug).data);
     try {
-        const $ = await fetchAndParse(`https://animeav1.com/media/${slug.split('/')[0]}`);
+        const $ = await fetchAndParse(`${SCRAPING_TARGET}/media/${slug.split('/')[0]}`);
         const scripts = $('script').map((i, el) => $(el).html()).get().join('');
         
         const mediaId = scripts.match(/media:\{id:(\d+)/)?.[1];
@@ -384,7 +387,7 @@ app.get('/get-video', async (req, res) => {
     const ahora = Date.now();
     if (VIDEO_CACHE.has(cacheKey) && (ahora - VIDEO_CACHE.get(cacheKey).time < 1800000)) return res.json(VIDEO_CACHE.get(cacheKey).data);
     try {
-        const $ = await fetchAndParse(`https://animeav1.com/media/${slug}/${cap}`);
+        const $ = await fetchAndParse(`${SCRAPING_TARGET}/media/${slug}/${cap}`);
         const scripts = $('script').map((i, el) => $(el).html()).get();
         const script = scripts.find(s => s.includes('embeds'));
         if (!script) return res.json({ servidores: [] });
