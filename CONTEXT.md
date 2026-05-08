@@ -1,7 +1,7 @@
 # Animelandia - Context File
 
 > Proyecto creado en verano 2025 (Argentina)
-> Última actualización: Mayo 2026 (Icono SVG de Favoritos con Animación y Mejoras de Paginación)
+> Última actualización: Mayo 2026 (Optimización total: backend cache, prefetch, rate limit, env vars)
 
 ## Descripción General
 
@@ -26,17 +26,19 @@ Animelandia es una aplicación web full-stack de streaming y descubrimiento de a
 - **Web Scraping**:
   - Axios (v1.13.3) - Peticiones HTTP rápidas
   - Cheerio (v1.2.0) - Parsing de HTML del lado del servidor
-- **Middleware**: CORS (v2.8.6)
+- **Middleware**: CORS, compression (gzip), express-rate-limit
+- **Utilidades**: axios-retry (reintentos con backoff), dotenv (variables de entorno)
 
 ### Frontend
 - **Lenguajes**: HTML5, CSS3, JavaScript Vanilla (sin frameworks)
 - **Estilos**: CSS con Variables CSS para theming
-- **Almacenamiento**: localStorage para favoritos y preferencias de tema
+- **Almacenamiento**: localStorage para favoritos y preferencias de tema, sessionStorage para caché de anime-info
 
 ### Deployment
 - **Plataforma**: Render (Backend) + Netlify (Frontend)
 - **URL de API**: `https://animelandia-api-6wp2.onrender.com`
-- **URL de Frontend**: `https://animelandia1.netlify.app` (verificar en Netlify)
+- **URL de Frontend Netlify**: `https://animelandia-oficial.netlify.app`
+- **URL de Frontend anterior**: `https://animelandia1.netlify.app`
 - **Containerización**: Docker con imagen base Node.js 20
 
 ---
@@ -45,21 +47,23 @@ Animelandia es una aplicación web full-stack de streaming y descubrimiento de a
 
 ```
 E:\Github\Animelandia\
-├── CONTEXT.md             # Este archivo de contexto
-├── backend\               # Servidor y lógica de scraping
-│   ├── server.js          # Servidor Express con scraping de Axios + Cheerio
-│   ├── package.json       # Dependencias y scripts
-│   ├── package-lock.json  # Lock file de dependencias
-│   ├── Dockerfile         # Configuración Docker
-│   ├── render-build.sh    # Script de build (para Render.com, no usado)
-│   └── .gitignore         # Ignora node_modules/ y .env
-└── frontend\              # Interfaz de usuario
-    ├── index.html         # Homepage - últimos episodios
-    ├── anime.html         # Página de detalles de anime
-    ├── explorar.html      # Catálogo con filtros
+├── CONTEXT.md               # Este archivo de contexto
+├── .gitignore               # Ignora node_modules/, .env y aprendizaje.md
+├── backend\                 # Servidor y lógica de scraping
+│   ├── server.js            # Servidor Express con scraping de Axios + Cheerio
+│   ├── package.json         # Dependencias y scripts
+│   ├── package-lock.json    # Lock file de dependencias
+│   ├── Dockerfile           # Configuración Docker
+│   ├── .env                 # Variables de entorno (no subido a git)
+│   └── render-build.sh      # Script de build (para Render.com, no usado)
+└── frontend\                # Interfaz de usuario
+    ├── index.html           # Homepage - últimos episodios + carrusel fijo
+    ├── anime.html           # Página de detalles de anime
+    ├── explorar.html        # Catálogo con filtros
     └── assets\
         └── img\
-            └── Logo.png   # Logo del proyecto
+            ├── Logo.png     # Logo del proyecto
+            └── Sharingam.png # Spinner de carga animado
 ```
 
 **Nota**: Proyecto separado en backend/ y frontend/ para mejor organización.
@@ -68,13 +72,13 @@ E:\Github\Animelandia\
 
 ## API Endpoints (server.js)
 
-| Endpoint | Método | Propósito | Cache |
-|----------|--------|-----------|-------|
-| `/health` | GET | Health check (monitoreo) | Sin cache |
-| `/latest` | GET | Obtener últimos episodios | 10 minutos |
-| `/search?q=&page=&...` | GET | Buscar anime (texto o filtros) + paginación | Sin cache |
-| `/anime-info?slug=` | GET | Detalles de anime y episodios | 1 hora |
-| `/get-video?slug=&cap=` | GET | Servidores de video para episodio | Sin cache |
+| Endpoint | Método | Propósito | Cache | Validación |
+|----------|--------|-----------|-------|------------|
+| `/health` | GET | Health check (monitoreo) | Sin cache | - |
+| `/latest` | GET | Obtener últimos episodios | 10 minutos | - |
+| `/search?q=&page=&...` | GET | Buscar anime (texto o filtros) + paginación | **5 minutos** | `page` debe ser número positivo |
+| `/anime-info?slug=` | GET | Detalles de anime y episodios | 1 hora | requiere `slug` |
+| `/get-video?slug=&cap=` | GET | Servidores de video para episodio | **30 minutos** | requiere `slug` y `cap` |
 
 ### Detalles de `/search`
 - Soporta parámetros individuales (`genre`, `category`, `status`, `order`, `letter`, `minYear`, `maxYear`, `page`)
@@ -92,6 +96,7 @@ E:\Github\Animelandia\
 - Implementa 5 endpoints de API (ver tabla arriba)
 - Usa caching con `Map` y timestamps
 - Maneja parámetros individuales y formato legacy `q` en `/search`
+- **SCRAPING_TARGET** configurable via `.env` (default: `https://animeav1.com`)
 
 ### Frontend: `frontend/index.html`
 - Muestra últimos episodios en grilla
@@ -99,6 +104,8 @@ E:\Github\Animelandia\
 - Sección de favoritos con icono SVG (marcador + estrella)
 - Botón de cambio de tema
 - Navbar: solo icono amarillo de favoritos (sin texto)
+- **Carrusel fijo** con datos hardcodeados en 4K
+- **Error visual** con botón REINTENTAR y spinner Sharingam
 
 ### Frontend: `frontend/anime.html`
 - Navbar unificada idéntica a `index.html` (fixed, logo, búsqueda, CATALOGO, icono favoritos, toggle tema)
@@ -108,6 +115,9 @@ E:\Github\Animelandia\
 - Reproductor con selección de servidor
 - Muestra favoritos
 - Botón de favoritos sobre imagen de portada (icono SVG animado)
+- **sessionStorage**: cachea la info del anime para carga instantánea al volver
+- **Título dinámico**: la pestaña muestra el nombre del anime
+- **Error visual** con botón REINTENTAR y spinner Sharingam
 
 ### Frontend: `frontend/explorar.html`
 - Filtros avanzados: género (46 opciones), año (1990-2026), tipo, estado, orden, letra
@@ -115,13 +125,15 @@ E:\Github\Animelandia\
 - Paginación dinámica que muestra rango alrededor de la página actual + ellipsis
 - Limpieza de resultados al cambiar de página (evita acumulación)
 - Botón de favoritos en tarjetas (icono SVG animado)
+- **Prefetch anticipado**: al pasar mouse sobre un número de página, carga en background
+- **Error visual** con botón REINTENTAR y spinner Sharingam
 
 ---
 
 ## Detalles de Implementación
 
 ### Scraping
-- **Target**: animeav1.com
+- **Target**: Configurable via `SCRAPING_TARGET` en `.env`
 - **Métodos**:
   - Axios para peticiones HTTP rápidas
   - Cheerio para extraer datos del HTML
@@ -131,6 +143,14 @@ E:\Github\Animelandia\
 - Usa caché en memoria con `Map` de JavaScript y verificación de timestamps
 - **No persistente** entre reinicios del servidor
 - Tiempos configurados por endpoint (ver tabla de API)
+- **Promise caching** en `getHomepage()`: si expira el caché y llegan múltiples requests, solo 1 fetch a animeav1.com
+
+### Optimizaciones de Red
+- **keepAlive agents**: Reutiliza conexiones TCP (~30% más rápido en requests consecutivos)
+- **axios-retry**: 3 reintentos con exponential backoff en errores de red/timeout
+- **compression middleware**: Respuestas JSON comprimidas con gzip (~70% más pequeñas)
+- **Cache-Control headers**: `public, max-age=300` en todas las respuestas
+- **Rate Limiting**: 100 requests por ventana de 15 minutos
 
 ### Headers
 - Usa User-Agent personalizado para evitar bloqueos básicos
@@ -141,13 +161,30 @@ E:\Github\Animelandia\
 ### Sin Proceso de Build
 - HTML/CSS/JS puro sin transpilación o bundling
 
+### Validación de Parámetros
+- Todos los endpoints validan parámetros requeridos y devuelven errores 400/500 descriptivos con `e.message`
+
 ---
 
 ## Deployment
 
-### Render (Producción)
+### Render (Producción) - Backend
 - URL: `https://animelandia-api-6wp2.onrender.com`
 - Referenciada en archivos HTML frontend para llamadas API
+
+#### Variable de Entorno Requerida en Render
+Agregar en Render Dashboard → Environment:
+- Key: `SCRAPING_TARGET`
+- Value: `https://animeav1.com`
+
+#### Mantener Despierto con UptimeRobot
+Render duerme el servicio gratis tras 15 min de inactividad. Para mantenerlo activo:
+1. Crear cuenta en https://uptimerobot.com
+2. Add New Monitor → HTTP(s)
+3. Friendly Name: `Animelandia API`
+4. URL: `https://animelandia-api-6wp2.onrender.com/health`
+5. Interval: 5 minutes
+6. Crear monitor
 
 ### Docker
 - Base: Node.js 20
@@ -155,9 +192,6 @@ E:\Github\Animelandia\
 - Expone puerto 3000
 - WORKDIR: `/app/backend`
 - Entry point: `node server.js`
-
-### Archivo No Usado
-- `render-build.sh` - Leftover de intento previo con Render.com (ya no se usa)
 
 ---
 
@@ -168,196 +202,19 @@ E:\Github\Animelandia\
 3. **Sin TypeScript**: Proyecto en JavaScript puro
 4. **Estructura Separada**: Backend y frontend organizados en carpetas dedicadas (backend/ y frontend/)
 5. **Dependencias de Scraping**: Si animeav1.com cambia su estructura HTML, el scraping se romperá
-6. **Variables de Entorno**: Las URLs de API están hardcodeadas en archivos HTML (Pendiente: usar .env)
-7. **Caché Volátil**: El caché se pierde con reinicios del servidor
-8. **Sin Puppeteer**: Migrado a Axios + Cheerio para mayor velocidad (67% más rápido)
+6. **Caché Volátil**: El caché en memoria se pierde con reinicios del servidor
+7. **Sin Puppeteer**: Migrado a Axios + Cheerio para mayor velocidad (67% más rápido)
+8. **Sharingam.png**: Debe estar commiteado en git para que Netlify lo sirva
+9. **SCRAPING_TARGET**: En producción (Render), debe configurarse como variable de entorno
 
 ---
 
-## Objetivos y Mejoras Futuras (Próximas Sesiones)
+## Ejecución Local
 
-> Última actualización: Mayo 2026 (Paginación profesional completada y pusheada a main)
-
-### 🔧 Backend (backend/server.js) - Prioridad Alta
-
-1. **Variables de Entorno (.env)** - *Recomendado para mañana*
-   - Problema: Cambiar de sitio de scraping requiere editar código
-   - Solución: Crear `backend/.env` con `SCRAPING_TARGET=https://animeav1.com` y `API_URL`
-   - Dependencias: `dotenv`
-   - Impacto: Facilita deploy y configuración
-
-2. **Validación de Parámetros** - *Recomendado para mañana*
-   - Problema: Llamadas sin `?slug=` en `/anime-info` o `/get-video` causan errores
-   - Solución: 
-     ```javascript
-     if (!slug) return res.status(400).json({ error: "Falta el parámetro slug" });
-     ```
-   - Impacto: Mejor manejo de errores
-
-3. **Reintentos (Retry) con Axios** (Prioridad: Alta)
-   - Problema: Si animeav1.com falla, usuario ve error vacío
-   - Solución: Agregar `axios-retry` con 3 reintentos y exponential backoff
-   - Impacto: Mayor resiliencia sin cambios visibles
-
-4. **Logger Estructurado** (Prioridad: Baja)
-   - Problema: `console.log` sin timestamps ni niveles
-   - Solución: Usar `winston` o formato consistente con timestamps
-
-5. **Rate Limiting** (Prioridad: Media)
-   - Problema: Alguien puede tumbar el servicio gratuito con bucles
-   - Solución: Agregar `express-rate-limit` (100 requests/15 min)
-   - Dependencias: `express-rate-limit`
-
-### 🎨 Frontend (frontend/) - Prioridad Media
-
-6. **Loading States (Spinners)** - *Recomendado para mañana*
-   - Problema: Pantalla en blanco mientras carga el catálogo o anime
-   - Solución: Agregar spinners CSS en `index.html`, `anime.html`, `explorar.html`
-   - Implementación: CSS puro + clase `.loading`
-   - Impacto: UX mucho más profesional
-
-7. **Manejo de Errores Visual** (Prioridad: Media)
-   - Problema: Los errores son textos planos poco amigables
-   - Solución: Mensajes con botón "Reintentar" y estilos consistentes
-   - Implementación: `<div id="error-container">` oculto por defecto
-
-8. **Título Dinámico** (Prioridad: Baja)
-   - Problema: La pestaña siempre dice "Animelandia" incluso en detalles de anime
-   - Solución: `document.title = \`${titulo} - Animelandia\`;`
-   - Impacto: Detalle pequeño pero pulido
-
-9. **Modo Offline Básico** (Prioridad: Baja)
-   - Problema: Si backend cae, frontend no sirve
-   - Solución: Cachear resultados en `localStorage` y mostrarlos si falla la red
-
-### 📊 Infraestructura
-
-10. **Monitoreo con UptimeRobot** (Prioridad: Baja)
-    - Problema: Servicio gratuito de Render se "duerme" por inactividad
-    - Solución: Ping cada 14 min al endpoint `/health`
-    - Impacto: Mantiene el servicio despierto
-
----
-
----
-
-## Cambios Recientes (Mayo 2026 - Completados y Pusheados a Main)
-
-### ✅ Icono SVG de Favoritos con Animación (Mayo 2026 - Commit `2a7036b`)
-
-1. **feat: reemplazar estrella por icono SVG de favoritos**
-   - Nuevo icono de marcador bookmark con estrella calada (SVG)
-   - Estado inactivo: gris sólido (#808080) con estrella blanca
-   - Estado activo: amarillo (#FFB800) con estrella blanca
-   - Transición suave de 0.3s en todas las propiedades
-   - Posicionamiento absoluto en esquina superior derecha (top:10px, right:10px, z-index:30)
-
-2. **fix: mejoras visuales en icono de favoritos**
-   - Navbar: solo icono amarillo (sin texto "FAVORITOS")
-   - Sección "Mis Favoritos": texto + icono amarillo
-   - Rating tag en anime.html: fondo blanco con estrella ⭐ amarilla
-   - Eliminado botón "QUITAR" redundante en lista de favoritos
-
-3. **feat: mejoras en paginación de episodios en anime.html**
-   - Agregado botón "<" para ir a página anterior
-   - Ventana deslizante fija de 5 botones (no crece, se mueve)
-   - Eliminado scroll hacia arriba al usar paginación
-   - Botones > y >> con prevención de scroll nativo
-
-### ✅ Mejoras de UI - Botón Volver y Efectos Hover (Mayo 2026)
-
-1. **feat: ocultar carrusel al buscar en index.html**
-   - Al hacer clic en BUSCAR, el carrusel se oculta con `display: none`
-   - Aparece botón "← VOLVER AL INICIO" arriba de los resultados
-   - Al hacer clic en volver, se restaura el carrusel y últimos estrenos
-
-2. **feat: agregar botón volver en explorar.html**
-   - Botón "← VOLVER AL INICIO" ubicado arriba del panel "Filtros de Catálogo"
-   - Redirige a `index.html` sin parámetros de búsqueda
-
-3. **feat: agregar botón volver en anime.html**
-   - Botón "← VOLVER AL INICIO" ubicado arriba de la tarjeta de información del anime
-   - Redirige a `index.html`
-
-4. **feat: efecto hover en etiquetas de anime.html**
-   - Etiquetas (género, rating, año, tipo) ahora tienen hover notable
-   - Cambio de color más brusco + `transform: scale(1.08)`
-   - Colores hover: genre `#a0a0a0`, rating `#b38600`, year `#007b9a`, type `#3d1f7a`
-
-### ✅ Paginación Profesional Implementada (Merge a main: commit `1586c11`)
-
-**Historial de la rama `feature/pagination`:**
-
-1. **feat: agregar filtro de Tipo (TV Anime, Película, OVA, Especial) en catálogo**
-   - Agregado dropdown de "Tipo" en `frontend/explorar.html`
-
-2. **feat: expandir filtro de géneros a 46 opciones**
-   - Actualizado select de "Género" con todos los slugs de animeav1.com
-
-3. **feat: agregar filtro de Estado (Finalizado, En emisión, Próximamente)**
-   - Dropdown de "Estado" con valores: `finished`, `airing`, `upcoming`
-
-4. **feat: agregar filtros Ordenar por y Filtro Alfabético A-Z**
-   - Dropdowns de orden y letras A-Z
-
-5. **feat: implementar paginación profesional tipo animeav1**
-   - Reemplazado botón "Cargar Más" con paginación numérica: 1,2,3,...,N,>>
-   - Backend devuelve `pagination.totalPages` extraído de scripts embebidos
-   - Corregido envío de filtros al backend (sin doble encodeo)
-
-6. **fix: corregir paginación y envío de filtros al backend**
-   - Solucionado bug de acumulación de resultados
-   - `createPageLink()` marca página activa correctamente
-   - Backend maneja parámetros individuales y formato legacy `q=`
-
-7. **fix: cambiar URL de backend a producción para Netlify**
-   - `explorar.html` apunta a `https://animelandia-api-6wp2.onrender.com`
-
-**Commits posteriores (pusheados a main):**
-- **fix: actualizar /latest para nuevo formato de animeav1.com** (commit `eb729cf`)
-  - Cambiado regex para extraer `latestEpisodes` del nuevo formato SvelteKit
-  - Endpoint devuelve 20 episodios correctamente
-
-- **fix: manejar nuevo formato de /search en index.html** (commit `2fc6f2f`)
-  - Maneja tanto formato nuevo `{ results, pagination }` como antiguo `[]`
-  - Solucionado "Error en la búsqueda" por mismatch de formatos
-
-**Estado actual:**
-- ✅ Paginación funcionando en producción (Netlify + Render)
-- ✅ Catálogo con filtros avanzados y paginación profesional
-- ✅ Últimos Estrenos funcionando (`/latest` arreglado)
-- ✅ Buscador funcionando (`/search` maneja ambos formatos)
-- ✅ Sin errores de `file://` al usar Netlify (CORS solucionado)
-- ✅ Navbar unificada en `anime.html` idéntica a `index.html`
-- ✅ Tipo de anime (TV Anime/Película/OVA/Especial) mostrado en detalles
-- ✅ API_URL detecta Live Server (127.0.0.1) para desarrollo local
-- ✅ Icono SVG de favoritos con animación (marcador + estrella)
-- ✅ Paginación de episodios con ventana deslizante y sin scroll
-
-### ✅ Navbar Unificada (Mayo 2026)
-- Copiada navbar de `index.html` a `anime.html` (CSS y HTML idénticos)
-- Estructura: `.navbar`, `.nav-left`, `.nav-search`, `.nav-menu`
-- Posición fija con `z-index: 1000`
-- Botones: CATALOGO, ⭐ FAVORITOS (scroll), toggle tema
-- Tema inicializado idéntico a `index.html` (default: dark mode)
-
-### ✅ Tipo de Anime en Detalles + Fix API_URL (Mayo 2026)
-- **feat: agregar tipo de anime en detalles** (commit `b70176e`)
-  - Backend: Agregado `tipo` en `/anime-info` (extrae `category.name` de scripts)
-  - Frontend: Tag morado `.type-tag` en `anime.html` (TV Anime/Película/OVA/Especial)
-  - Muestra el tipo antes del año y géneros
-
-- **fix: corregir API_URL para Live Server** (commit `b70176e`)
-  - Detecta `127.0.0.1` además de `localhost` en los 3 HTML
-  - Soluciona que Live Server use `127.0.0.1` y apunte a Render incorrectamente
-  - Archivos: `index.html`, `anime.html`, `explorar.html`
-
-### Ejecución Local
 - **Backend**: `cd backend` → `npm start` (puerto 3000)
 - **Frontend**: Servir `frontend/` con Live Server (VS Code) o `npx serve frontend`
-- **API_URL actualizado**: Los 3 HTML detectan `localhost` y `127.0.0.1` (Live Server usa 127.0.0.1)
+- **API_URL**: Los 3 HTML detectan `localhost` y `127.0.0.1` (Live Server usa 127.0.0.1)
 - En desarrollo apuntan a `http://localhost:3000`, en producción a `https://animelandia-api-6wp2.onrender.com`
-- **Icono Favoritos**: Click en el marcador SVG agrega/quita favoritos con animación (sin alerts)
 
 ---
 
@@ -386,3 +243,48 @@ Fue escrito como una clase completa que cubre:
 - Lecciones para el mercado laboral
 - Plan de estudio para mañana (variables de entorno, spinners, etc.)
 - Mensaje de motivación personalizado 💪
+
+---
+
+## Cambios Recientes - Sesión de Optimización (Mayo 2026)
+
+> Todos los commits pusheados a `main`.
+
+### 🚀 Backend - Velocidad de Scraping
+
+| Commit | Descripción |
+|--------|-------------|
+| `cc22947` | **feat: homepage cache + keepAlive + axios-retry** — Homepage cache compartido entre `/latest` y `/featured`. keepAlive agents reusan conexiones TCP. axios-retry con 3 reintentos y exponential backoff. |
+| `d525c41` | **refactor: simplificar parser de /featured** — Reducción de ~200 a ~50 líneas. Eliminadas 4 funciones duplicadas (`extractString`, `extractNumber`, `extractTopLevelString`, `extractTopLevelNumber`) reemplazadas por 1 helper compartido. |
+| `5f772f9` | **feat: cache de 30min en /get-video** — Los servidores de video se cachean 30 min. Volver a un episodio ya visto es instantáneo. |
+| `97bf4dd` | **feat: promise caching en getHomepage** — Si expira el caché y llegan requests simultáneos, solo 1 fetch a animeav1.com. El resto espera la misma Promise. |
+| `e0c98f5` | **feat: compression middleware gzip** — Respuestas JSON ~70% más pequeñas al cliente. |
+| `1d99f2f` | **feat: cache de 5min en /search** — Búsquedas repetidas no vuelven a scrapear. |
+| `40d9e12` | **feat: validación de parámetros + errores detallados** — Todos los endpoints devuelven errores 400/500 descriptivos con `e.message`. |
+| `4fd5a59` | **feat: rate limiting** — 100 requests por 15 minutos. Protege el servicio gratuito de Render. |
+| `f82d51b` | **feat: variables de entorno (.env)** — `SCRAPING_TARGET` configurable via `.env`. Ya no hay URLs hardcodeadas. |
+
+### 🎨 Frontend - Experiencia de Usuario
+
+| Commit | Descripción |
+|--------|-------------|
+| `b71496d` | **feat: prefetch en catálogo** — `mouseenter` sobre un link de página fetchea en background. Navegación instantánea. |
+| `e7221bc` | **feat: fadeIn en cards** — Animación CSS `fadeIn` (opacity 0→1, translateY 8px→0) en 0.3s. Cards aparecen suaves. |
+| `0566107` | **feat: dns-prefetch + preconnect** — Tags en `<head>` para anticipar conexión a API y CDN de imágenes. |
+| `c20087f` | **feat: sessionStorage en anime-info** — La info del anime se guarda en sessionStorage. Al volver a un anime visto, carga instantáneo sin fetch. |
+| `be559e3` | **feat: manejo de errores visual** — Contenedor de error estilizado (rojo) con botón REINTENTAR y spinner Sharingam en los 3 HTMLs. |
+| `7124950` | **feat: título dinámico** — La pestaña muestra "Naruto - Animelandia" en vez de "Animelandia - Detalles". |
+| `dee8fde` | **fix: Sharingam.png faltante** — El archivo no estaba commiteado en git. Netlify no lo servía. |
+
+### Resumen de Estado Actual
+
+- ✅ Todos los endpoints con caché y validación
+- ✅ Scraping optimizado: keepAlive, retry, compression, promise dedup
+- ✅ Rate limiting protegiendo el backend
+- ✅ Variables de entorno para scraping target
+- ✅ Errores visuales con reintentar en frontend
+- ✅ Prefetch en paginación de catálogo
+- ✅ sessionStorage para carga instantánea en anime-info
+- ✅ FadeIn en cards + dns-prefetch
+- ✅ Título dinámico en pestaña
+- ✅ Spinner Sharingam funcionando en producción
