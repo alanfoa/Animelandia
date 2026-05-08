@@ -671,6 +671,35 @@
                 height: 40px;
             }
         }
+
+        /* LOADING SPINNER SHARINGAN */
+        .loading-spinner {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 20px;
+        }
+
+        .loading-spinner img {
+            width: 100px;
+            height: 100px;
+            animation: sharingan-loading 5s ease-in-out infinite;
+        }
+
+        @keyframes sharingan-loading {
+            0% { transform: rotate(0deg); }
+            22% { transform: rotate(180deg); }
+            45% { transform: rotate(180deg); }
+            67% { transform: rotate(360deg); }
+            90% { transform: rotate(360deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .loading-spinner { padding: 40px 10px; }
+            .loading-spinner img { width: 70px; height: 70px; }
+        }
     </style>
 </head>
 
@@ -943,7 +972,7 @@
             const container = document.getElementById('resultados');
             const paginationContainer = document.getElementById('pagination');
 
-            container.innerHTML = '<div style="grid-column: 1/-1; text-align:center;"><p> Buscando... </p></div>';
+            container.innerHTML = '<div class="loading-spinner"><img src="assets/img/Sharingam.png" alt="Buscando..."></div>';
             if (paginationContainer) paginationContainer.innerHTML = '';
             paginaCargar = 1;
 
@@ -955,8 +984,7 @@
             const container = document.getElementById('resultados');
             const paginationContainer = document.getElementById('pagination');
 
-            // Limpiar resultados y paginación siempre (tanto nueva búsqueda como cambio de página)
-            container.innerHTML = '<div style="grid-column: 1/-1; text-align:center;"><p> Buscando... </p></div>';
+            // Limpiar paginación siempre
             if (paginationContainer) paginationContainer.innerHTML = '';
 
             try {

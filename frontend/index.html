@@ -705,6 +705,35 @@
                 margin: 0 10px;
             }
         }
+
+        /* LOADING SPINNER SHARINGAN */
+        .loading-spinner {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 20px;
+        }
+
+        .loading-spinner img {
+            width: 100px;
+            height: 100px;
+            animation: sharingan-loading 5s ease-in-out infinite;
+        }
+
+        @keyframes sharingan-loading {
+            0% { transform: rotate(0deg); }
+            22% { transform: rotate(180deg); }
+            45% { transform: rotate(180deg); }
+            67% { transform: rotate(360deg); }
+            90% { transform: rotate(360deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .loading-spinner { padding: 40px 10px; }
+            .loading-spinner img { width: 70px; height: 70px; }
+        }
     </style>
 </head>
 
@@ -770,7 +799,7 @@
         <button class="btn-nav" onclick="volverInicio()">← VOLVER AL INICIO</button>
     </div>
     <h2 id="titulo-seccion" style="padding: 20px 50px 0; color: var(--racing-celeste);">Ultimos Estrenos:</h2>
-    <div id="ultimos-lanzamientos" class="container">Cargando animes...</div>
+    <div id="ultimos-lanzamientos" class="container"><div class="loading-spinner"><img src="assets/img/Sharingam.png" alt="Cargando..."></div></div>
 
     <h2 id="seccion-favoritos" style="padding: 20px 50px 0; color: var(--racing-celeste);">
         Favoritos
