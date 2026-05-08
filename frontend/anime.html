@@ -650,8 +650,16 @@
             if (!slug) return;
             
             try {
-                const res = await fetch(`${API_URL}/anime-info?slug=${slug}`);
-                const data = await res.json();
+                let data;
+                const cacheKey = `anime-info-${slug}`;
+                const cached = sessionStorage.getItem(cacheKey);
+                if (cached) {
+                    data = JSON.parse(cached);
+                } else {
+                    const res = await fetch(`${API_URL}/anime-info?slug=${slug}`);
+                    data = await res.json();
+                    sessionStorage.setItem(cacheKey, JSON.stringify(data));
+                }
                 document.getElementById('sinopsis').innerText = data.descripcion || "Sin descripción.";
                 document.getElementById('rating-val').innerText = data.rating || "0.0";
                 const genreDiv = document.getElementById('lista-generos');
