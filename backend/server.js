@@ -2,6 +2,21 @@ const express = require('express');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const cors = require('cors');
+const http = require('http');
+const https = require('https');
+
+const httpAgent = new http.Agent({ keepAlive: true, keepAliveMsecs: 30000 });
+const httpsAgent = new https.Agent({ keepAlive: true, keepAliveMsecs: 30000 });
+const axiosRetry = require('axios-retry');
+
+axiosRetry.default(axios, {
+    retries: 3,
+    retryDelay: axiosRetry.exponentialDelay,
+    retryCondition: (error) => {
+        return axiosRetry.isNetworkOrIdempotentRequestError(error)
+            || error.code === 'ECONNABORTED';
+    }
+});
 
 const app = express();
 app.use(cors());
@@ -12,15 +27,27 @@ app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: Date.now() 
 let INFO_CACHE = new Map();
 let LATEST_CACHE = { data: null, lastUpdate: 0 };
 let FEATURED_CACHE = { data: null, lastUpdate: 0 };
+let HOMEPAGE_CACHE = { $: null, lastUpdate: 0 };
 
 const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36';
 
 async function fetchAndParse(url) {
     const response = await axios.get(url, {
         headers: { 'User-Agent': USER_AGENT },
-        timeout: 15000
+        timeout: 15000,
+        httpAgent, httpsAgent
     });
     return cheerio.load(response.data);
+}
+
+async function getHomepage() {
+    const ahora = Date.now();
+    if (HOMEPAGE_CACHE.$ && (ahora - HOMEPAGE_CACHE.lastUpdate < 600000)) {
+        return HOMEPAGE_CACHE.$;
+    }
+    const $ = await fetchAndParse('https://animeav1.com/');
+    HOMEPAGE_CACHE = { $, lastUpdate: ahora };
+    return $;
 }
 
 const port = process.env.PORT || 3000;
@@ -31,7 +58,7 @@ app.get('/latest', async (req, res) => {
     const ahora = Date.now();
     if (LATEST_CACHE.data && (ahora - LATEST_CACHE.lastUpdate < 600000)) return res.json(LATEST_CACHE.data);
     try {
-        const $ = await fetchAndParse('https://animeav1.com/');
+        const $ = await getHomepage();
         const scripts = $('script').map((i, el) => $(el).html()).get();
         const target = scripts.find(s => s.includes('latestEpisodes'));
         if (!target) return res.json([]);
@@ -53,7 +80,7 @@ app.get('/featured', async (req, res) => {
     const ahora = Date.now();
     if (FEATURED_CACHE.data && (ahora - FEATURED_CACHE.lastUpdate < 600000)) return res.json(FEATURED_CACHE.data);
     try {
-        const $ = await fetchAndParse('https://animeav1.com/');
+        const $ = await getHomepage();
         const scripts = $('script').map((i, el) => $(el).html()).get();
         const allScripts = scripts.join('');
         
