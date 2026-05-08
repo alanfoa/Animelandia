@@ -23,6 +23,11 @@ const app = express();
 app.use(cors());
 app.use(compression());
 
+app.use((req, res, next) => {
+    res.set('Cache-Control', 'public, max-age=300');
+    next();
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: Date.now() }));
 
