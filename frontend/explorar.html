@@ -418,11 +418,18 @@
             pointer-events: none;
         }
 
+        .pagination-container a.disabled {
+            opacity: 0.4;
+            pointer-events: none;
+            cursor: default;
+        }
+
         .pagination-container span {
             color: var(--text-color);
             opacity: 0.5;
         }
 
+        .pagination-container a.prev-btn,
         .pagination-container a.next-btn,
         .pagination-container a.last-btn {
             font-weight: bold;
@@ -1029,7 +1036,10 @@
 
             let html = '';
             
-            // Lógica de paginación: mostrar 1, 2, 3, 4, 5, 6, 7, ..., totalPages, >, >>
+            // Lógica de paginación: mostrar <, 1, 2, 3, 4, 5, 6, 7, ..., totalPages, >, >>
+            // Botón "<" (anterior) - siempre visible
+            html += createPageLink(Math.max(1, currentPage - 1), currentPage, '<', 'prev-btn', currentPage <= 1);
+            
             // Siempre mostrar primera página
             html += createPageLink(1, currentPage, '1');
             
@@ -1057,22 +1067,19 @@
                 html += createPageLink(totalPages, currentPage, totalPages.toString());
             }
             
-            // Botón ">" (siguiente)
-            if (currentPage < totalPages) {
-                html += createPageLink(currentPage + 1, currentPage, '>', 'next-btn');
-            }
+            // Botón ">" (siguiente) - siempre visible
+            html += createPageLink(Math.min(totalPages, currentPage + 1), currentPage, '>', 'next-btn', currentPage >= totalPages);
             
-            // Botón ">>" (última)
-            if (currentPage < totalPages) {
-                html += createPageLink(totalPages, currentPage, '>>', 'last-btn');
-            }
+            // Botón ">>" (última) - siempre visible
+            html += createPageLink(totalPages, currentPage, '>>', 'last-btn', currentPage >= totalPages);
             
             container.innerHTML = html;
         }
 
-        function createPageLink(pageNum, currentPage, text, extraClass = '') {
-            if (pageNum === currentPage) {
-                return '<a class="active ' + extraClass + '">' + text + '</a>';
+        function createPageLink(pageNum, currentPage, text, extraClass = '', disabled = false) {
+            if (disabled || pageNum === currentPage) {
+                let cls = disabled ? 'disabled ' : 'active ';
+                return '<a class="' + cls + extraClass + '">' + text + '</a>';
             }
             return '<a href="#" onclick="irAPagina(' + pageNum + '); return false;" class="' + extraClass + '">' + text + '</a>';
         }
