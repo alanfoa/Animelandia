@@ -653,6 +653,7 @@
             favoritos = JSON.parse(localStorage.getItem('misAnimes')) || [];
             
             document.getElementById('titulo-anime').innerText = titulo;
+            document.title = `${titulo} - Animelandia`;
             document.getElementById('img-anime').src = imagenUrl;
 
             // Verificar si ya es favorito al cargar
