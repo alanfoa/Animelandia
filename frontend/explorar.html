@@ -697,6 +697,18 @@
             animation: sharingan-loading 3.5s ease-in-out infinite;
         }
 
+        .error-container {
+            display: none;
+            text-align: center;
+            padding: 60px 20px;
+            grid-column: 1 / -1;
+        }
+        .error-container p {
+            color: #e74c3c;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
         @keyframes sharingan-loading {
             0% { transform: rotate(0deg); }
             22% { transform: rotate(180deg); }
@@ -897,6 +909,10 @@
         </div>
     </div>
 
+    <div id="error-container" class="error-container">
+        <p id="error-message"></p>
+        <button class="btn-nav" onclick="reintentar()">REINTENTAR</button>
+    </div>
     <div id="resultados" class="results-container"></div>
     <div id="pagination" class="pagination-container"></div>
 
@@ -991,6 +1007,20 @@
             await buscarPagina(paginaCargar, true);
         }
 
+        function showError(msg) {
+            document.getElementById('error-message').innerText = msg;
+            document.getElementById('error-container').style.display = 'block';
+            document.getElementById('resultados').innerHTML = '';
+            document.getElementById('pagination').innerHTML = '';
+        }
+        function hideError() {
+            document.getElementById('error-container').style.display = 'none';
+        }
+        function reintentar() {
+            hideError();
+            ejecutarFiltro();
+        }
+
         async function buscarPagina(num, esNuevaBusqueda) {
             const container = document.getElementById('resultados');
             const paginationContainer = document.getElementById('pagination');
@@ -1031,7 +1061,7 @@
 
             } catch (e) {
                 console.error(e);
-                container.innerHTML = '<p style="grid-column: 1/-1; text-align:center;">Error al cargar los resultados.</p>';
+                showError('Error al cargar los resultados. Verificá que el backend esté funcionando.');
             }
         }
 

@@ -731,6 +731,18 @@
             animation: sharingan-loading 3.5s ease-in-out infinite;
         }
 
+        .error-container {
+            display: none;
+            text-align: center;
+            padding: 60px 20px;
+            grid-column: 1 / -1;
+        }
+        .error-container p {
+            color: #e74c3c;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
         @keyframes sharingan-loading {
             0% { transform: rotate(0deg); }
             22% { transform: rotate(180deg); }
@@ -809,6 +821,10 @@
         <button class="btn-nav" onclick="volverInicio()">← VOLVER AL INICIO</button>
     </div>
     <h2 id="titulo-seccion" style="padding: 20px 50px 0; color: var(--racing-celeste);">Ultimos Estrenos:</h2>
+    <div id="error-container" class="error-container">
+        <p id="error-message"></p>
+        <button class="btn-nav" onclick="reintentar()">REINTENTAR</button>
+    </div>
     <div id="ultimos-lanzamientos" class="container"><div class="loading-spinner"><img src="assets/img/Sharingam.png" alt="Cargando..."></div></div>
 
     <h2 id="seccion-favoritos" style="padding: 20px 50px 0; color: var(--racing-celeste);">
@@ -998,13 +1014,27 @@
             }
         };
 
+        function showError(msg) {
+            document.getElementById('error-message').innerText = msg;
+            document.getElementById('error-container').style.display = 'block';
+            document.getElementById('ultimos-lanzamientos').innerHTML = '';
+        }
+        function hideError() {
+            document.getElementById('error-container').style.display = 'none';
+        }
+        function reintentar() {
+            hideError();
+            cargarEstrenos();
+        }
+
         async function cargarEstrenos() {
             const container = document.getElementById('ultimos-lanzamientos');
+            container.innerHTML = '<div class="loading-spinner"><img src="assets/img/Sharingam.png" alt="Cargando..."></div>';
             try {
                 const res = await fetch(`${API_URL}/latest`);
                 const data = await res.json();
                 renderizarEstrenos(data);
-            } catch (e) { container.innerHTML = '<p>Error de conexión.</p>'; }
+            } catch (e) { showError('Error de conexión. Verificá que el backend esté funcionando.'); }
         }
 
         function renderizarEstrenos(episodios) {
@@ -1055,7 +1085,7 @@
             document.getElementById('carousel').style.display = 'none';
             document.getElementById('btn-volver').style.display = 'inline-block';
             const container = document.getElementById('ultimos-lanzamientos');
-            container.innerHTML = 'Buscando...';
+            container.innerHTML = '<div class="loading-spinner"><img src="assets/img/Sharingam.png" alt="Buscando..."></div>';
             document.getElementById('titulo-seccion').innerText = `Resultados para: ${query}`;
             try {
                 const res = await fetch(`${API_URL}/search?q=${query}`);
@@ -1063,7 +1093,7 @@
                 // Manejar tanto formato nuevo { results, pagination } como antiguo []
                 const episodios = data.results || data;
                 renderizarEstrenos(episodios);
-            } catch (e) { container.innerHTML = 'Error en la búsqueda.'; }
+            } catch (e) { showError('Error en la búsqueda. Verificá que el backend esté funcionando.'); }
         }
 
         function irADetalle(slug, titulo, imagen) {
