@@ -939,6 +939,7 @@
 
         let currentQuery = "";
         let paginaCargar = 1;
+        let prefetchCache = {};
 
         // Función para la barra de búsqueda superior (igual que en index)
         function buscarYRedirigir() {
@@ -987,12 +988,20 @@
             // Limpiar paginación siempre
             if (paginationContainer) paginationContainer.innerHTML = '';
 
+            if (prefetchCache[num]) {
+                const data = prefetchCache[num];
+                delete prefetchCache[num];
+                const nuevosAnimes = data.results || [];
+                const pagination = data.pagination || { currentPage: num, totalPages: (nuevosAnimes.length >= 20 ? num + 1 : num), totalRecords: nuevosAnimes.length };
+                container.innerHTML = '';
+                renderizarResultados(nuevosAnimes, pagination, container, paginationContainer);
+                return;
+            }
+
             try {
-                // Construir URL con URLSearchParams para mayor claridad
                 const params = new URLSearchParams();
                 params.append('page', num);
 
-                // Agregar filtros actuales
                 if (currentQuery) {
                     const filtros = new URLSearchParams(currentQuery);
                     for (const [key, value] of filtros) {
@@ -1004,27 +1013,32 @@
                 const res = await fetch(url);
                 const data = await res.json();
 
-                // Manejar formato { results, pagination }
                 const nuevosAnimes = data.results || [];
                 const pagination = data.pagination || { currentPage: num, totalPages: (nuevosAnimes.length >= 20 ? num + 1 : num), totalRecords: nuevosAnimes.length };
 
-                // Limpiar el "Buscando..." y mostrar resultados
                 container.innerHTML = '';
+                renderizarResultados(nuevosAnimes, pagination, container, paginationContainer);
 
-                if (!nuevosAnimes || nuevosAnimes.length === 0) {
-                    container.innerHTML = '<p style="grid-column: 1/-1; text-align:center;">No hay resultados.</p>';
-                    return;
-                }
+            } catch (e) {
+                console.error(e);
+                container.innerHTML = '<p style="grid-column: 1/-1; text-align:center;">Error al cargar los resultados.</p>';
+            }
+        }
 
-                // Renderizar tarjetas
-                nuevosAnimes.forEach(anime => {
-                    const card = document.createElement('a');
-                    card.className = 'card';
-                    card.href = `anime.html?slug=${anime.slug}&titulo=${encodeURIComponent(anime.titulo)}&imagen=${encodeURIComponent(anime.imagen)}`;
-                    card.style.textDecoration = 'none';
-                    card.style.color = 'inherit';
+        function renderizarResultados(nuevosAnimes, pagination, container, paginationContainer) {
+            if (!nuevosAnimes || nuevosAnimes.length === 0) {
+                container.innerHTML = '<p style="grid-column: 1/-1; text-align:center;">No hay resultados.</p>';
+                return;
+            }
 
-                    card.innerHTML = `
+            nuevosAnimes.forEach(anime => {
+                const card = document.createElement('a');
+                card.className = 'card';
+                card.href = `anime.html?slug=${anime.slug}&titulo=${encodeURIComponent(anime.titulo)}&imagen=${encodeURIComponent(anime.imagen)}`;
+                card.style.textDecoration = 'none';
+                card.style.color = 'inherit';
+
+                card.innerHTML = `
         ${anime.anio ? `<div class="card-year">${anime.anio}</div>` : ''}
         <button class="btn-fav" data-slug="${anime.slug}" onclick="event.stopPropagation(); event.preventDefault(); toggleFavDesdeExplorar(this, '${anime.slug}', '${anime.titulo}', '${anime.imagen}')">
             <svg class="favorite-icon" viewBox="0 0 24 36" xmlns="http://www.w3.org/2000/svg">
@@ -1035,21 +1049,15 @@
         <img src="${anime.imagen}" loading="lazy" onerror="this.src='https://via.placeholder.com/200x280?text=Sin+Imagen'">
         <div class="card-info"><b>${anime.titulo}</b></div>
     `;
-                    if (favoritos.some(f => f.slug === anime.slug)) {
-                        const favIcon = card.querySelector('.favorite-icon');
-                        if (favIcon) favIcon.classList.add('active');
-                    }
-                    container.appendChild(card);
-                });
-
-                // Renderizar paginación profesional
-                if (pagination.totalPages > 1) {
-                    renderPagination(pagination);
+                if (favoritos.some(f => f.slug === anime.slug)) {
+                    const favIcon = card.querySelector('.favorite-icon');
+                    if (favIcon) favIcon.classList.add('active');
                 }
+                container.appendChild(card);
+            });
 
-            } catch (e) {
-                console.error(e);
-                container.innerHTML = '<p style="grid-column: 1/-1; text-align:center;">Error al cargar los resultados.</p>';
+            if (pagination.totalPages > 1) {
+                renderPagination(pagination);
             }
         }
 
@@ -1109,13 +1117,28 @@
                 let cls = disabled ? 'disabled ' : 'active ';
                 return '<a class="' + cls + extraClass + '">' + text + '</a>';
             }
-            return '<a href="#" onclick="irAPagina(' + pageNum + '); return false;" class="' + extraClass + '">' + text + '</a>';
+            return '<a href="#" onclick="irAPagina(' + pageNum + '); return false;" onmouseenter="prefetchPagina(' + pageNum + ')" class="' + extraClass + '">' + text + '</a>';
+        }
+
+        function prefetchPagina(num) {
+            if (prefetchCache[num]) return;
+            const params = new URLSearchParams();
+            params.append('page', num);
+            if (currentQuery) {
+                const filtros = new URLSearchParams(currentQuery);
+                for (const [key, value] of filtros) {
+                    params.append(key, value);
+                }
+            }
+            fetch(API_URL + '/search?' + params.toString())
+                .then(res => res.json())
+                .then(data => { prefetchCache[num] = data; })
+                .catch(() => {});
         }
 
         function irAPagina(num) {
             paginaCargar = num;
             buscarPagina(num);
-            // Scroll al inicio de resultados
             document.getElementById('resultados').scrollIntoView({ behavior: 'smooth' });
         }
 
