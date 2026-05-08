@@ -475,6 +475,25 @@
                 height: 40px;
             }
         }
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 80px 20px;
+        }
+        .loading-spinner img {
+            width: 70px;
+            height: 70px;
+            animation: sharingan-loading 3.5s ease-in-out infinite;
+        }
+        @keyframes sharingan-loading {
+            0% { transform: rotate(0deg); }
+            22% { transform: rotate(180deg); }
+            45% { transform: rotate(180deg); }
+            67% { transform: rotate(360deg); }
+            90% { transform: rotate(360deg); }
+            100% { transform: rotate(360deg); }
+        }
         .error-container {
             display: none;
             text-align: center;
