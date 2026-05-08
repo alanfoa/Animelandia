@@ -2,6 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const cors = require('cors');
+const compression = require('compression');
 const http = require('http');
 const https = require('https');
 
@@ -20,6 +21,7 @@ axiosRetry.default(axios, {
 
 const app = express();
 app.use(cors());
+app.use(compression());
 
 // Health check endpoint
 app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: Date.now() }));
