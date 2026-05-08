@@ -3,6 +3,7 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const cors = require('cors');
 const compression = require('compression');
+const rateLimit = require('express-rate-limit');
 const http = require('http');
 const https = require('https');
 
@@ -22,6 +23,13 @@ axiosRetry.default(axios, {
 const app = express();
 app.use(cors());
 app.use(compression());
+
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: { error: "Demasiadas solicitudes. Intentalo de nuevo en 15 minutos." }
+});
+app.use('/api/', limiter);
 
 app.use((req, res, next) => {
     res.set('Cache-Control', 'public, max-age=300');
