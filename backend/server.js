@@ -28,6 +28,7 @@ let INFO_CACHE = new Map();
 let LATEST_CACHE = { data: null, lastUpdate: 0 };
 let FEATURED_CACHE = { data: null, lastUpdate: 0 };
 let HOMEPAGE_CACHE = { $: null, lastUpdate: 0 };
+let VIDEO_CACHE = new Map();
 
 const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36';
 
@@ -348,6 +349,9 @@ app.get('/anime-info', async (req, res) => {
 // 4. REPRODUCTOR - Axios + Cheerio
 app.get('/get-video', async (req, res) => {
     const { slug, cap } = req.query;
+    const cacheKey = `${slug}/${cap}`;
+    const ahora = Date.now();
+    if (VIDEO_CACHE.has(cacheKey) && (ahora - VIDEO_CACHE.get(cacheKey).time < 1800000)) return res.json(VIDEO_CACHE.get(cacheKey).data);
     try {
         const $ = await fetchAndParse(`https://animeav1.com/media/${slug}/${cap}`);
         const scripts = $('script').map((i, el) => $(el).html()).get();
@@ -360,6 +364,7 @@ app.get('/get-video', async (req, res) => {
         while ((m = regex.exec(script)) !== null) {
             results.push({ nombre: m[1].toUpperCase(), url: m[2].replace(/\\u0023/g, '#') });
         }
+        VIDEO_CACHE.set(cacheKey, { data: { servidores: results }, time: ahora });
         res.json({ servidores: results });
     } catch (e) { res.json({ servidores: [] }); }
 });
