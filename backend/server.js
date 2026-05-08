@@ -136,184 +136,57 @@ app.get('/featured', async (req, res) => {
             }
         }
         
-        // Helper to extract a string value for a given key (only top-level, not nested)
-        function extractString(objStr, key) {
-            const search = key + ':"';
-            let pos = 0;
-            while (pos < objStr.length) {
-                const idx = objStr.indexOf(search, pos);
-                if (idx === -1) return '';
-                
-                // Check if this occurrence is at the top level (depth 0)
-                let depth = 0;
-                let inString = false;
-                let escapeNext = false;
-                let isTopLevel = true;
-                
-                for (let i = 0; i < idx; i++) {
-                    const ch = objStr[i];
-                    if (escapeNext) { escapeNext = false; continue; }
-                    if (ch === '\\' && inString) { escapeNext = true; continue; }
-                    if (ch === '"') { inString = !inString; continue; }
-                    if (!inString) {
-                        if (ch === '{') depth++;
-                        else if (ch === '}') depth--;
-                    }
-                }
-                
-                if (depth === 0) {
-                    // Found at top level, extract the value
-                    const start = idx + search.length;
-                    let result = '';
-                    let escaped = false;
-                    for (let i = start; i < objStr.length; i++) {
-                        const ch = objStr[i];
-                        if (escaped) {
-                            result += ch;
-                            escaped = false;
-                            continue;
-                        }
-                        if (ch === '\\') {
-                            escaped = true;
-                            continue;
-                        }
-                        if (ch === '"') break;
-                        result += ch;
-                    }
-                    return result;
-                }
-                
-                // Not at top level, skip past this match and continue searching
-                pos = idx + search.length;
-            }
-            return '';
-        }
-        
-        // Helper to extract a numeric value for a given key (only top-level, not nested)
-        function extractNumber(objStr, key) {
+        function getTopLevelValue(objStr, key) {
             const search = key + ':';
             let pos = 0;
             while (pos < objStr.length) {
                 const idx = objStr.indexOf(search, pos);
-                if (idx === -1) return 0;
+                if (idx === -1) return null;
                 
-                // Check if this occurrence is at the top level (depth 0)
-                let depth = 0;
-                let inString = false;
-                let escapeNext = false;
-                let isTopLevel = true;
-                
+                let depth = 0, inString = false, escapeNext = false;
                 for (let i = 0; i < idx; i++) {
                     const ch = objStr[i];
                     if (escapeNext) { escapeNext = false; continue; }
                     if (ch === '\\' && inString) { escapeNext = true; continue; }
                     if (ch === '"') { inString = !inString; continue; }
                     if (!inString) {
-                        if (ch === '{') depth++;
-                        else if (ch === '}') depth--;
+                        if (ch === '{' || ch === '[') depth++;
+                        else if (ch === '}' || ch === ']') depth--;
                     }
                 }
                 
                 if (depth === 0) {
-                    // Found at top level, extract the value
                     const start = idx + search.length;
+                    if (objStr[start] === '"') {
+                        let result = '', escaped = false;
+                        for (let i = start + 1; i < objStr.length; i++) {
+                            const ch = objStr[i];
+                            if (escaped) { result += ch; escaped = false; continue; }
+                            if (ch === '\\') { escaped = true; continue; }
+                            if (ch === '"') break;
+                            result += ch;
+                        }
+                        return result;
+                    }
                     const match = objStr.substring(start).match(/^(\d+)/);
-                    return match ? parseInt(match[1]) : 0;
+                    return match ? parseInt(match[1]) : null;
                 }
-                
-                // Not at top level, skip past this match and continue searching
                 pos = idx + search.length;
             }
-            return 0;
+            return null;
+        }
+        
+        function extractTopLevelString(objStr, key) {
+            const val = getTopLevelValue(objStr, key);
+            return typeof val === 'string' ? val : '';
+        }
+        
+        function extractTopLevelNumber(objStr, key) {
+            const val = getTopLevelValue(objStr, key);
+            return typeof val === 'number' ? val : 0;
         }
         
         const results = [];
-        
-        // Helper to extract top-level string value
-        function extractTopLevelString(objStr, key) {
-            const search = key + ':"';
-            let pos = 0;
-            while (pos < objStr.length) {
-                const idx = objStr.indexOf(search, pos);
-                if (idx === -1) return '';
-                
-                // Check if this is at top level (depth 0)
-                let depth = 0;
-                let inString = false;
-                let escapeNext = false;
-                
-                for (let i = 0; i < idx; i++) {
-                    const ch = objStr[i];
-                    if (escapeNext) { escapeNext = false; continue; }
-                    if (ch === '\\' && inString) { escapeNext = true; continue; }
-                    if (ch === '"') { inString = !inString; continue; }
-                    if (!inString) {
-                        if (ch === '{' || ch === '[') depth++;
-                        else if (ch === '}' || ch === ']') depth--;
-                    }
-                }
-                
-                if (depth === 0) {
-                    // Extract the string value
-                    const start = idx + search.length;
-                    let result = '';
-                    let escaped = false;
-                    for (let i = start; i < objStr.length; i++) {
-                        const ch = objStr[i];
-                        if (escaped) {
-                            result += ch;
-                            escaped = false;
-                            continue;
-                        }
-                        if (ch === '\\') {
-                            escaped = true;
-                            continue;
-                        }
-                        if (ch === '"') break;
-                        result += ch;
-                    }
-                    return result;
-                }
-                
-                pos = idx + search.length;
-            }
-            return '';
-        }
-        
-        // Helper to extract top-level numeric value
-        function extractTopLevelNumber(objStr, key) {
-            const search = key + ':';
-            let pos = 0;
-            while (pos < objStr.length) {
-                const idx = objStr.indexOf(search, pos);
-                if (idx === -1) return 0;
-                
-                // Check if this is at top level (depth 0)
-                let depth = 0;
-                let inString = false;
-                let escapeNext = false;
-                
-                for (let i = 0; i < idx; i++) {
-                    const ch = objStr[i];
-                    if (escapeNext) { escapeNext = false; continue; }
-                    if (ch === '\\' && inString) { escapeNext = true; continue; }
-                    if (ch === '"') { inString = !inString; continue; }
-                    if (!inString) {
-                        if (ch === '{' || ch === '[') depth++;
-                        else if (ch === '}' || ch === ']') depth--;
-                    }
-                }
-                
-                if (depth === 0) {
-                    const start = idx + search.length;
-                    const match = objStr.substring(start).match(/^(\d+)/);
-                    return match ? parseInt(match[1]) : 0;
-                }
-                
-                pos = idx + search.length;
-            }
-            return 0;
-        }
         
         for (const itemStr of items) {
             // Extract fields using depth-tracking to get top-level properties only
@@ -353,26 +226,6 @@ app.get('/featured', async (req, res) => {
                 synopsis: synopsis.replace(/\\n/g, ' ').replace(/\\r/g, '').trim(),
                 generos: genreNames.slice(0, 4)
             });
-        }
-        
-        function findArrayEnd(str, arrayStartPos) {
-            let depth = 0;
-            let inString = false;
-            let escapeNext = false;
-            for (let i = arrayStartPos; i < str.length; i++) {
-                const ch = str[i];
-                if (escapeNext) { escapeNext = false; continue; }
-                if (ch === '\\' && inString) { escapeNext = true; continue; }
-                if (ch === '"') { inString = !inString; continue; }
-                if (!inString) {
-                    if (ch === '[') depth++;
-                    else if (ch === ']') {
-                        depth--;
-                        if (depth === 0) return i;
-                    }
-                }
-            }
-            return str.length - 1;
         }
         
         console.log(`Featured: found ${results.length} items`);
