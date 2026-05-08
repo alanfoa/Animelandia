@@ -873,9 +873,10 @@
                 const statusText = anime.status === 0 ? 'En emisión' : anime.status === 2 ? 'Finalizado' : 'Próximamente';
                 const statusClass = anime.status === 0 ? 'status-airing' : '';
                 const synopsis = anime.synopsis.length > 200 ? anime.synopsis.substring(0, 200) + '...' : anime.synopsis;
+                const href = `anime.html?slug=${anime.slug}&titulo=${encodeURIComponent(anime.titulo)}&imagen=${encodeURIComponent('https://cdn.animeav1.com/covers/' + anime.id + '.jpg')}`;
 
                 return `
-                <div class="carousel-slide" data-index="${index}">
+                <a class="carousel-slide" href="${href}" data-index="${index}" style="display:block; text-decoration:none; color:inherit;">
                     <img class="carousel-backdrop" src="${anime.backdrop}" loading="lazy" alt="${anime.titulo} Backdrop"
                          onerror="this.src='https://via.placeholder.com/1280x720?text=Animelandia'">
                     <div class="carousel-content">
@@ -889,29 +890,16 @@
                         <p class="carousel-synopsis">${synopsis}</p>
                         <button class="carousel-btn" data-index="${index}">Ver Anime</button>
                     </div>
-                </div>`;
+                </a>`;
             }).join('');
 
             indicators.innerHTML = carouselData.map((_, i) => 
                 `<button class="carousel-indicator ${i === 0 ? 'active' : ''}" data-index="${i}"></button>`
             ).join('');
 
-            // Add event listeners safely
-            track.querySelectorAll('.carousel-slide').forEach(slide => {
-                slide.addEventListener('click', (e) => {
-                    if (e.target.closest('.carousel-btn')) return;
-                    const idx = parseInt(slide.dataset.index);
-                    const anime = carouselData[idx];
-                    irADetalle(anime.slug, anime.titulo, `https://cdn.animeav1.com/covers/${anime.id}.jpg`);
-                });
-            });
-
             track.querySelectorAll('.carousel-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    const idx = parseInt(btn.dataset.index);
-                    const anime = carouselData[idx];
-                    irADetalle(anime.slug, anime.titulo, `https://cdn.animeav1.com/covers/${anime.id}.jpg`);
                 });
             });
 
@@ -984,9 +972,11 @@
             const container = document.getElementById('ultimos-lanzamientos');
             container.innerHTML = '';
             episodios.forEach(ep => {
-                const card = document.createElement('div');
+                const card = document.createElement('a');
                 card.className = 'card';
-                card.onclick = () => irADetalle(ep.slug, ep.titulo, ep.imagen);
+                card.href = `anime.html?slug=${ep.slug}&titulo=${encodeURIComponent(ep.titulo)}&imagen=${encodeURIComponent(ep.imagen)}`;
+                card.style.textDecoration = 'none';
+                card.style.color = 'inherit';
 
                 // AGREGAMOS ESTA LÓGICA: Solo crea el HTML del tag si ep.cap tiene valor
                 const tagCap = ep.cap ? `<div class="ep-tag">${ep.cap}</div>` : '';
@@ -1007,7 +997,7 @@
                 if (favoritos.some(f => f.slug === ep.slug)) {
                     if (favIcon) favIcon.classList.add('active');
                 }
-                favBtn.onclick = (e) => { e.stopPropagation(); guardar(ep, favBtn); };
+                favBtn.onclick = (e) => { e.stopPropagation(); e.preventDefault(); guardar(ep, favBtn); };
                 container.appendChild(card);
             });
         }
@@ -1044,11 +1034,13 @@
         function renderizarLista() {
             listaDiv.innerHTML = '';
             favoritos.forEach((anime, i) => {
-                const card = document.createElement('div');
+                const card = document.createElement('a');
                 card.className = 'card';
-                card.onclick = () => irADetalle(anime.slug, anime.titulo, anime.imagen);
+                card.href = `anime.html?slug=${anime.slug}&titulo=${encodeURIComponent(anime.titulo)}&imagen=${encodeURIComponent(anime.imagen)}`;
+                card.style.textDecoration = 'none';
+                card.style.color = 'inherit';
                 card.innerHTML = `
-                    <button class="btn-fav btn-fav-active" style="position:absolute; top:10px; right:10px; z-index:30;" onclick="event.stopPropagation(); borrar(${i})">
+                    <button class="btn-fav btn-fav-active" style="position:absolute; top:10px; right:10px; z-index:30;" onclick="event.stopPropagation(); event.preventDefault(); borrar(${i})">
                         <svg class="favorite-icon active" viewBox="0 0 24 36" xmlns="http://www.w3.org/2000/svg">
                             <path class="marker" d="M5,2 L19,2 Q22,2 22,5 L22,28 L12,34 L2,28 L2,5 Q2,2 5,2 Z" />
                             <path class="star" d="M12,10 L14,13 L18,14 L15,16 L16,20 L12,18 L8,20 L9,16 L6,14 L10,13 Z" />
