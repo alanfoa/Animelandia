@@ -41,14 +41,23 @@ async function fetchAndParse(url) {
     return cheerio.load(response.data);
 }
 
+let homepagePromise = null;
+
 async function getHomepage() {
     const ahora = Date.now();
     if (HOMEPAGE_CACHE.$ && (ahora - HOMEPAGE_CACHE.lastUpdate < 600000)) {
         return HOMEPAGE_CACHE.$;
     }
-    const $ = await fetchAndParse('https://animeav1.com/');
-    HOMEPAGE_CACHE = { $, lastUpdate: ahora };
-    return $;
+    if (homepagePromise) return homepagePromise;
+    homepagePromise = fetchAndParse('https://animeav1.com/').then($ => {
+        HOMEPAGE_CACHE = { $, lastUpdate: Date.now() };
+        homepagePromise = null;
+        return $;
+    }).catch(e => {
+        homepagePromise = null;
+        throw e;
+    });
+    return homepagePromise;
 }
 
 const port = process.env.PORT || 3000;
