@@ -90,7 +90,7 @@ app.get('/latest', async (req, res) => {
         }
         LATEST_CACHE = { data: results.slice(0, 24), lastUpdate: ahora };
         res.json(LATEST_CACHE.data);
-    } catch (e) { res.json([]); }
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // 1.5. FEATURED / CAROUSEL (Home) - Axios + Cheerio
@@ -251,7 +251,7 @@ app.get('/featured', async (req, res) => {
         res.json(FEATURED_CACHE.data);
     } catch (e) { 
         console.error('Error en /featured:', e.message);
-        res.json([]); 
+        res.status(500).json({ error: e.message }); 
     }
 });
 
@@ -259,6 +259,7 @@ app.get('/featured', async (req, res) => {
 app.get('/search', async (req, res) => {
     const { q, page = 1, ...filters } = req.query;
     const ahora = Date.now();
+    if (page && (isNaN(page) || page < 1)) return res.status(400).json({ error: "'page' debe ser un número positivo" });
     try {
         const params = new URLSearchParams();
 
@@ -330,13 +331,14 @@ app.get('/search', async (req, res) => {
         res.json(responseData);
     } catch (e) {
         console.error('Error en /search:', e.message);
-        res.json({ results: [], pagination: { currentPage: 1, totalPages: 1, totalRecords: 0 } });
+        res.status(500).json({ results: [], pagination: { currentPage: 1, totalPages: 1, totalRecords: 0 }, error: e.message });
     }
 });
 
 // 3. INFO DEL ANIME (Detalles y Lista de Caps)
 app.get('/anime-info', async (req, res) => {
     const { slug } = req.query;
+    if (!slug) return res.status(400).json({ error: "Falta el parámetro 'slug'. Ejemplo: /anime-info?slug=naruto" });
     const ahora = Date.now();
     if (INFO_CACHE.has(slug) && (ahora - INFO_CACHE.get(slug).time < 3600000)) return res.json(INFO_CACHE.get(slug).data);
     try {
@@ -362,12 +364,14 @@ app.get('/anime-info', async (req, res) => {
         
         INFO_CACHE.set(slug, { data: info, time: ahora });
         res.json(info);
-    } catch (e) { res.json({ error: "Error" }); }
+    } catch (e) { res.status(500).json({ error: "Error al obtener info del anime: " + e.message }); }
 });
 
 // 4. REPRODUCTOR - Axios + Cheerio
 app.get('/get-video', async (req, res) => {
     const { slug, cap } = req.query;
+    if (!slug) return res.status(400).json({ error: "Falta el parámetro 'slug'" });
+    if (!cap) return res.status(400).json({ error: "Falta el parámetro 'cap'" });
     const cacheKey = `${slug}/${cap}`;
     const ahora = Date.now();
     if (VIDEO_CACHE.has(cacheKey) && (ahora - VIDEO_CACHE.get(cacheKey).time < 1800000)) return res.json(VIDEO_CACHE.get(cacheKey).data);
@@ -385,5 +389,5 @@ app.get('/get-video', async (req, res) => {
         }
         VIDEO_CACHE.set(cacheKey, { data: { servidores: results }, time: ahora });
         res.json({ servidores: results });
-    } catch (e) { res.json({ servidores: [] }); }
+    } catch (e) { res.status(500).json({ error: "Error al obtener video: " + e.message }); }
 });
