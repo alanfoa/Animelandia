@@ -31,6 +31,7 @@ let LATEST_CACHE = { data: null, lastUpdate: 0 };
 let FEATURED_CACHE = { data: null, lastUpdate: 0 };
 let HOMEPAGE_CACHE = { $: null, lastUpdate: 0 };
 let VIDEO_CACHE = new Map();
+let SEARCH_CACHE = new Map();
 
 const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36';
 
@@ -252,14 +253,13 @@ app.get('/featured', async (req, res) => {
 // 2. BUSCADOR
 app.get('/search', async (req, res) => {
     const { q, page = 1, ...filters } = req.query;
+    const ahora = Date.now();
     try {
         const params = new URLSearchParams();
 
         if (q) {
-            // Decodificar q por si viene encodeado
             const decodedQ = decodeURIComponent(q);
             if (decodedQ.includes('=') || decodedQ.includes('&')) {
-                // q es un string de parámetros (formato legacy)
                 const temp = new URLSearchParams(decodedQ);
                 for (const [key, value] of temp) params.append(key, value);
             } else {
@@ -267,7 +267,6 @@ app.get('/search', async (req, res) => {
             }
         }
 
-        // Agregar filtros individuales (tienen prioridad sobre q)
         for (const [key, value] of Object.entries(filters)) {
             params.append(key, value);
         }
@@ -277,6 +276,10 @@ app.get('/search', async (req, res) => {
             ? `https://animeav1.com/catalogo?${queryString}&page=${page}`
             : `https://animeav1.com/catalogo?page=${page}`;
         console.log('URL destino:', urlDestino);
+
+        if (SEARCH_CACHE.has(urlDestino) && (ahora - SEARCH_CACHE.get(urlDestino).time < 300000)) {
+            return res.json(SEARCH_CACHE.get(urlDestino).data);
+        }
 
         const $ = await fetchAndParse(urlDestino);
         const resultados = [];
@@ -300,7 +303,6 @@ app.get('/search', async (req, res) => {
             }
         });
 
-        // Extraer metadatos de paginación del script embebido
         let pagination = { currentPage: parseInt(page), totalPages: 1, totalRecords: resultados.length };
         try {
             const scripts = $('script').map((i, el) => $(el).html()).get();
@@ -311,7 +313,6 @@ app.get('/search', async (req, res) => {
             if (totalPagesMatch) pagination.totalPages = parseInt(totalPagesMatch[1]);
             if (totalRecordsMatch) pagination.totalRecords = parseInt(totalRecordsMatch[1]);
 
-            // Si no se encontró totalPages pero hay 20 resultados, estimar más páginas
             if (!totalPagesMatch && resultados.length >= 20) {
                 pagination.totalPages = parseInt(page) + 1;
             }
@@ -319,7 +320,9 @@ app.get('/search', async (req, res) => {
             console.error('Error extrayendo paginación:', e.message);
         }
 
-        res.json({ results: resultados, pagination });
+        const responseData = { results: resultados, pagination };
+        SEARCH_CACHE.set(urlDestino, { data: responseData, time: ahora });
+        res.json(responseData);
     } catch (e) {
         console.error('Error en /search:', e.message);
         res.json({ results: [], pagination: { currentPage: 1, totalPages: 1, totalRecords: 0 } });
