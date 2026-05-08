@@ -273,6 +273,12 @@
             pointer-events: none;
         }
 
+        .pagination-container a.disabled {
+            opacity: 0.4;
+            pointer-events: none;
+            cursor: default;
+        }
+
         .pagination-container span {
             color: var(--text-color);
             opacity: 0.5;
@@ -715,11 +721,9 @@
             // Renderizar paginación con ventana deslizante
             pagContainer.innerHTML = '';
             if (totalPages > 1) {
-                // Botón anterior
-                if (capsPage > 1) {
-                    const prevBtn = createCapsPageLink(capsPage - 1, capsPage, '<', 'prev-btn');
-                    pagContainer.appendChild(prevBtn);
-                }
+                // Botón anterior (siempre visible)
+                const prevBtn = createCapsPageLink(Math.max(1, capsPage - 1), capsPage, '<', 'prev-btn', capsPage <= 1);
+                pagContainer.appendChild(prevBtn);
                 
                 // Ventana fija de 5 páginas que se desliza
                 let startPage = Math.max(1, capsPage - 2);
@@ -734,25 +738,23 @@
                     pagContainer.appendChild(createCapsPageLink(i, capsPage, i.toString()));
                 }
                 
-                // Botón siguiente y último
-                if (capsPage < totalPages) {
-                    const nextBtn = createCapsPageLink(capsPage + 1, capsPage, '>', 'next-btn');
-                    pagContainer.appendChild(nextBtn);
-                    
-                    if (capsPage < totalPages - 1) {
-                        const lastBtn = createCapsPageLink(totalPages, capsPage, '>>', 'last-btn');
-                        pagContainer.appendChild(lastBtn);
-                    }
-                }
+                // Botón siguiente (siempre visible)
+                const nextBtn = createCapsPageLink(Math.min(totalPages, capsPage + 1), capsPage, '>', 'next-btn', capsPage >= totalPages);
+                pagContainer.appendChild(nextBtn);
+                
+                // Botón última página (siempre visible)
+                const lastBtn = createCapsPageLink(totalPages, capsPage, '>>', 'last-btn', capsPage >= totalPages);
+                pagContainer.appendChild(lastBtn);
             }
         }
 
-        function createCapsPageLink(pageNum, currentPage, text, extraClass = '') {
+        function createCapsPageLink(pageNum, currentPage, text, extraClass = '', disabled = false) {
             const a = document.createElement('a');
             a.innerText = text;
             if (extraClass) a.className = extraClass;
-            if (pageNum === currentPage) {
-                a.className += ' active';
+            if (disabled || pageNum === currentPage) {
+                if (disabled) a.className += ' disabled';
+                if (pageNum === currentPage) a.className += ' active';
                 a.style.pointerEvents = 'none';
             } else {
                 a.onclick = (e) => { e.preventDefault(); irACapsPage(pageNum); };
