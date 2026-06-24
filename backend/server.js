@@ -389,7 +389,8 @@ app.get('/anime-info', async (req, res) => {
             tipo: scripts.match(/category:\s*\{[^}]*name:\s*"([^"]+)"/)?.[1] || "",
             generos: [...new Set([...scripts.matchAll(/name:"([^"]+)"/g)].map(m => m[1]))].filter(n => n.length > 3 && !n.includes('Anime')).slice(0, 5),
             status: scripts.match(/status:(\d+)/)?.[1] || "0",
-            episodios: episodes.sort((a, b) => b.numero - a.numero)
+            episodios: episodes.sort((a, b) => b.numero - a.numero),
+            imagen: mediaId ? `https://cdn.animeav1.com/covers/${mediaId}.jpg` : ""
         };
         
         INFO_CACHE.set(slug, { data: info, time: ahora });
