@@ -418,7 +418,7 @@ app.get('/get-video', async (req, res) => {
         let episodeTitle = null;
         const pairRegex = /\{server:"([^"]+)",url:"([^"]+)"\}/g;
         
-        const embedMatch = script.match(/embeds:\{SUB:\[([^\]]*)\]\}/);
+        const embedMatch = script.match(/embeds:\{SUB:\[([^\]]*)\]/);
         if (embedMatch) {
             let m;
             while ((m = pairRegex.exec(embedMatch[1])) !== null) {
@@ -426,7 +426,7 @@ app.get('/get-video', async (req, res) => {
             }
         }
         
-        const downloadMatch = script.match(/downloads:\{SUB:\[([^\]]*)\]\}/);
+        const downloadMatch = script.match(/downloads:\{SUB:\[([^\]]*)\]/);
         if (downloadMatch) {
             let m;
             while ((m = pairRegex.exec(downloadMatch[1])) !== null) {
