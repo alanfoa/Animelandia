@@ -213,10 +213,19 @@
         .year-tag:hover { background: #007b9a; transform: scale(1.08); }
         .type-tag { background: #6f42c1; color: white; padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: bold; text-transform: uppercase; transition: 0.2s; cursor: default; }
         .type-tag:hover { background: #3d1f7a; transform: scale(1.08); }
+        .status-tag { padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: bold; transition: 0.2s; cursor: default; text-transform: uppercase; }
+        .status-tag.airing { background: #27ae60; color: white; }
+        .status-tag.finished { background: #e74c3c; color: white; }
+        .status-tag.upcoming { background: #f39c12; color: white; }
+        .status-tag.unknown { background: #95a5a6; color: white; }
 
         #reproductor { display: none; margin-bottom: 25px; background: #000; padding: 15px; border-radius: 12px; border: 4px solid var(--racing-celeste); }
         .lista-servidores { display: flex; justify-content: center; gap: 8px; margin: 15px 0; flex-wrap: wrap; }
         .btn-servidor { background: var(--racing-celeste); color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .nav-cap { display: flex; justify-content: center; gap: 12px; margin: 12px 0; }
+        .btn-nav-cap { background: var(--racing-celeste); color: white; border: none; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 13px; }
+        .btn-nav-cap:hover { opacity: 0.9; transform: scale(1.05); }
+        .btn-nav-cap:disabled { opacity: 0.4; cursor: default; transform: none; }
 
         .grid-caps { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
         .cap-card { position: relative; cursor: pointer; overflow: hidden; border-radius: 10px; transition: 0.3s; aspect-ratio: 16 / 9; background: #000; }
@@ -567,6 +576,10 @@
             <h4 id="viendo-titulo" style="color:white; text-align:center; margin-top:0;"></h4>
             <div id="contenedor-servidores" class="lista-servidores"></div>
             <iframe id="video-frame" src="" width="100%" height="500px" frameborder="0" allowfullscreen style="display:none; border-radius: 8px;"></iframe>
+            <div class="nav-cap">
+                <button id="btn-cap-prev" class="btn-nav-cap" onclick="capAnterior()" disabled>⬅ Anterior</button>
+                <button id="btn-cap-next" class="btn-nav-cap" onclick="capSiguiente()" disabled>Siguiente ➡</button>
+            </div>
         </div>
 
         <div id="loading-anime" class="loading-spinner" style="display: flex;"><img src="assets/img/Sharingam.png" alt="Cargando..."></div>
@@ -628,6 +641,7 @@
         let slug = '';
         let titulo = '';
         let imagenUrl = '';
+        let currentCap = null;
 
         // LÓGICA MODO OSCURO (NUEVO) - Default: Dark mode
         function toggleTheme() {
@@ -701,6 +715,17 @@
                 document.getElementById('rating-val').innerText = data.rating || "0.0";
                 const genreDiv = document.getElementById('lista-generos');
                 genreDiv.innerHTML = '';
+                
+                // Mostrar estado del anime (Finalizado, En emisión, Próximamente)
+                if (data.status !== undefined) {
+                    const statusSpan = document.createElement('span');
+                    statusSpan.className = 'status-tag';
+                    const statusMap = { '0': 'Finalizado', '1': 'Finalizado', '2': 'En emisión', '3': 'Próximamente' };
+                    const colorMap = { '0': 'finished', '1': 'finished', '2': 'airing', '3': 'upcoming' };
+                    statusSpan.innerText = statusMap[data.status] || 'Desconocido';
+                    statusSpan.classList.add(colorMap[data.status] || 'unknown');
+                    genreDiv.appendChild(statusSpan);
+                }
                 
                 // Mostrar tipo de anime (TV Anime, Película, OVA, Especial)
                 if (data.tipo) {
@@ -867,22 +892,31 @@
         }
 
         async function buscarOpciones(cap) {
+            currentCap = cap;
             const rep = document.getElementById('reproductor');
             const frame = document.getElementById('video-frame');
             const tituloViendo = document.getElementById('viendo-titulo');
             const divServidores = document.getElementById('contenedor-servidores');
+            const btnPrev = document.getElementById('btn-cap-prev');
+            const btnNext = document.getElementById('btn-cap-next');
             if (frame) { frame.src = ""; frame.style.display = "none"; }
             rep.style.display = 'block';
             divServidores.innerHTML = '🔍 Buscando servidores...';
             tituloViendo.innerText = `Cargando Episodio ${cap}...`;
             window.scrollTo({ top:0, behavior: 'smooth' });
+
+            // Actualizar botones de navegación (allEpisodes viene descendente: cap más alto primero)
+            const idx = allEpisodes.findIndex(e => e.numero === cap);
+            btnPrev.disabled = idx >= allEpisodes.length - 1;
+            btnNext.disabled = idx <= 0;
+
             try {
                 const res = await fetch(`${API_URL}/get-video?slug=${slug}&cap=${cap}`);
                 const data = await res.json();
                 if (data.servidores && data.servidores.length > 0) {
                     divServidores.innerHTML = '';
                     tituloViendo.innerText = `Viendo Episodio ${cap}`;
-                    data.servidores.forEach(srv => {
+                    data.servidores.forEach((srv, index) => {
                         const btn = document.createElement('button');
                         btn.className = 'btn-servidor';
                         btn.innerText = srv.nombre;
@@ -892,9 +926,20 @@
                             frame.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         };
                         divServidores.appendChild(btn);
+                        if (index === 0) btn.click();
                     });
                 } else { divServidores.innerHTML = '⚠️ No hay reproductores disponibles.'; }
             } catch (e) { tituloViendo.innerText = "❌ Error encontrando."; }
+        }
+
+        function capAnterior() {
+            const idx = allEpisodes.findIndex(e => e.numero === currentCap);
+            if (idx < allEpisodes.length - 1) buscarOpciones(allEpisodes[idx + 1].numero);
+        }
+
+        function capSiguiente() {
+            const idx = allEpisodes.findIndex(e => e.numero === currentCap);
+            if (idx > 0) buscarOpciones(allEpisodes[idx - 1].numero);
         }
 
         // Mobile search function

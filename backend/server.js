@@ -370,6 +370,7 @@ app.get('/anime-info', async (req, res) => {
             anio: scripts.match(/startDate:"(\d{4})/)?.[1] || "",
             tipo: scripts.match(/category:\s*\{[^}]*name:\s*"([^"]+)"/)?.[1] || "",
             generos: [...new Set([...scripts.matchAll(/name:"([^"]+)"/g)].map(m => m[1]))].filter(n => n.length > 3 && !n.includes('Anime')).slice(0, 5),
+            status: scripts.match(/status:(\d+)/)?.[1] || "0",
             episodios: episodes.sort((a, b) => b.numero - a.numero)
         };
         
