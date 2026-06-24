@@ -413,6 +413,7 @@ app.get('/get-video', async (req, res) => {
         
         const servidores = [];
         const descargas = [];
+        let episodeTitle = null;
         const pairRegex = /\{server:"([^"]+)",url:"([^"]+)"\}/g;
         
         const embedMatch = script.match(/embeds:\{SUB:\[([^\]]*)\]\}/);
@@ -431,8 +432,11 @@ app.get('/get-video', async (req, res) => {
             }
         }
         
-        VIDEO_CACHE.set(cacheKey, { data: { servidores, descargas }, time: ahora });
-        res.json({ servidores, descargas });
+        const epTitleMatch = script.match(/episode:\{[^}]*title:(null|"((?:[^"\\]|\\.)*)")/);
+        if (epTitleMatch && epTitleMatch[1] !== 'null') episodeTitle = epTitleMatch[2].replace(/\\"/g, '"');
+        
+        VIDEO_CACHE.set(cacheKey, { data: { servidores, descargas, episodeTitle }, time: ahora });
+        res.json({ servidores, descargas, episodeTitle });
     } catch (e) { res.status(500).json({ error: "Error al obtener video: " + e.message }); }
 });
 

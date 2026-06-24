@@ -1,8 +1,8 @@
 # Plan de Mejoras — Animelandia
 
-> **Progreso total:** 22/25 tareas completadas (88%)
+> **Progreso total:** 25/28 tareas completadas (89%)
 >
-> _Ultima actualización: Junio 2026 — Segunda sesión de mejoras_
+> _Ultima actualización: Junio 2026 — Tercera sesión: descargas + shortcuts_
 
 ---
 
@@ -52,6 +52,16 @@
 
 ---
 
+## Fase 4: Post-lanzamiento 🎯
+
+- [x] **26. Botón descarga por episodio** — Dropdown con servidores de descarga extraídos del source
+- [x] **27. Atajos de teclado en reproductor** — `F` pantalla completa, flechas ← → para cap anterior/siguiente
+- [x] **28. Título de episodio + highlight Siguiente** — Muestra título del cap si existe; botón Siguiente brilla cuando hay próximo cap
+
+### Progreso Fase 4: 3/3 (100%)
+
+---
+
 ## Resumen
 
 | Fase | Tareas | Completadas | Progreso |
@@ -59,4 +69,5 @@
 | Fase 1: Alto impacto | 9 | 8 | 89% |
 | Fase 2: Medio impacto | 11 | 10 | 91% |
 | Fase 3: Extra | 5 | 4 | 80% |
-| **Total** | **25** | **22** | **88%** |
+| Fase 4: Post-lanzamiento | 3 | 3 | 100% |
+| **Total** | **28** | **25** | **89%** |
