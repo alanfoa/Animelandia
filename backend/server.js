@@ -385,6 +385,7 @@ app.get('/anime-info', async (req, res) => {
         const info = {
             descripcion: scripts.match(/synopsis:"((?:[^"\\]|\\.)*?)",/)?.[1]?.replace(/\\n/g, ' ').replace(/\\"/g, '"') || "Sin descripción.",
             rating: scripts.match(/score:(\d+\.?\d*)/)?.[1] || "0.0",
+            titulo: scripts.match(/\btitle:"((?:[^"\\]|\\.)*?)"/)?.[1] || $('h1').first().text().trim() || '',
             anio: scripts.match(/startDate:"(\d{4})/)?.[1] || "",
             tipo: scripts.match(/category:\s*\{[^}]*name:\s*"([^"]+)"/)?.[1] || "",
             generos: [...new Set([...scripts.matchAll(/name:"([^"]+)"/g)].map(m => m[1]))].filter(n => n.length > 3 && !n.includes('Anime')).slice(0, 5),

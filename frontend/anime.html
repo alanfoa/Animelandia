@@ -372,7 +372,7 @@
                 slug = pathMatch[1];
                 const cached = sessionStorage.getItem(`anime-info-${slug}`);
                 if (cached) {
-                    try { const p = JSON.parse(cached); titulo = p.nombre || p.titulo || ''; imagenUrl = p.portada || p.imagen || ''; } catch(e) {}
+                    try { const p = JSON.parse(cached); titulo = p.titulo || ''; imagenUrl = p.imagen || ''; } catch(e) {}
                 }
             } else {
                 slug = params.get('slug') || '';
@@ -464,7 +464,7 @@
                 }
                 // Update title/cover from API if not from params/cache
                 if (!titulo || !imagenUrl) {
-                    titulo = data.nombre || data.titulo || titulo || 'Anime';
+                    titulo = data.titulo || titulo || 'Anime';
                     imagenUrl = data.portada || data.imagen || imagenUrl || '';
                     document.getElementById('titulo-anime').innerText = titulo;
                     document.title = `${titulo} - Animelandia`;
