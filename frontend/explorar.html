@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <title>Animelandia - Explorar</title>
     <link rel="icon" type="image/png" href="assets/img/Logo.png">
+    <link rel="apple-touch-icon" href="assets/img/Logo.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#00AEEF">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="dns-prefetch" href="https://animelandia-api-6wp2.onrender.com">
     <link rel="preconnect" href="https://animelandia-api-6wp2.onrender.com">
@@ -21,6 +24,7 @@
     <meta name="twitter:title" content="Animelandia - Explorar">
     <meta name="twitter:description" content="Explorá el catálogo de anime con filtros avanzados.">
     <meta name="twitter:image" content="https://animelandia-oficial.netlify.app/assets/img/Logo.png">
+    <script src="https://instant.page/5.2.0" type="module" integrity="sha384-jnZyxPqKULGz5P0hC1HkxykBgBg1OFN8GZt3dDEk07Slu3B3C1Y7N0YmKoBSCQ2"></script>
     <style>
         /* 1. DEFINICIÓN DE VARIABLES DE COLOR */
         :root {
@@ -756,6 +760,12 @@
         }
         .scroll-top-btn:hover { opacity: 0.9; transform: scale(1.1); }
 
+        /* Skeleton screens */
+        .skeleton { background: linear-gradient(90deg, var(--card-bg) 25%, var(--dark-bg) 50%, var(--card-bg) 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; border-radius: 8px; }
+        @keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .skeleton-card { height: 280px; width: 100%; }
+        .skeleton-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; padding: 20px; }
+
         .error-container {
             display: none;
             text-align: center;
@@ -1076,7 +1086,7 @@
             const container = document.getElementById('resultados');
             const paginationContainer = document.getElementById('pagination');
 
-            container.innerHTML = '<div class="loading-spinner"><img src="assets/img/Sharingam.png" alt="Buscando..."></div>';
+            container.innerHTML = '<div class="loading-spinner"><img src="assets/img/Sharingam.png" alt="Buscando..."></div><div class="skeleton-grid">' + Array(12).fill('<div class="skeleton skeleton-card"></div>').join('') + '</div>';
             if (paginationContainer) paginationContainer.innerHTML = '';
             paginaCargar = 1;
 

@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <title>Animelandia - Inicio</title>
     <link rel="icon" type="image/png" href="assets/img/Logo.png">
+    <link rel="apple-touch-icon" href="assets/img/Logo.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#00AEEF">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="dns-prefetch" href="https://animelandia-api-6wp2.onrender.com">
     <link rel="preconnect" href="https://animelandia-api-6wp2.onrender.com">
@@ -21,6 +24,7 @@
     <meta name="twitter:title" content="Animelandia - Inicio">
     <meta name="twitter:description" content="Streaming de anime gratis. Últimos episodios, catálogo y favoritos.">
     <meta name="twitter:image" content="https://animelandia-oficial.netlify.app/assets/img/Logo.png">
+    <script src="https://instant.page/5.2.0" type="module" integrity="sha384-jnZyxPqKULGz5P0hC1HkxykBgBg1OFN8GZt3dDEk07Slu3B3C1Y7N0YmKoBSCQ2"></script>
     <style>
         /* VARIABLES DE COLOR (NUEVO) */
         :root {
@@ -797,6 +801,12 @@
             padding: 60px 20px;
             grid-column: 1 / -1;
         }
+        /* Skeleton screens */
+        .skeleton { background: linear-gradient(90deg, var(--card-bg) 25%, var(--dark-bg) 50%, var(--card-bg) 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; border-radius: 8px; }
+        @keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .skeleton-card { height: 280px; width: 100%; }
+        .skeleton-text { height: 16px; width: 60%; margin: 8px 0; }
+        .skeleton-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; padding: 20px; }
         .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
         .error-container p {
             color: #e74c3c;
@@ -886,7 +896,7 @@
             <p id="error-message"></p>
             <button class="btn-nav" onclick="reintentar()">REINTENTAR</button>
         </div>
-    <div id="ultimos-lanzamientos" class="container"><div class="loading-spinner"><img src="assets/img/Sharingam.png" alt="Cargando..."></div></div>
+    <div id="ultimos-lanzamientos" class="container"><div class="loading-spinner"><img src="assets/img/Sharingam.png" alt="Cargando..."></div><div class="skeleton-grid" id="skeleton-grid" style="display:none;"></div></div>
 
     <h2 id="seccion-favoritos" style="padding: 20px 50px 0; color: var(--racing-celeste);">
         Favoritos
@@ -1090,7 +1100,7 @@
 
         async function cargarEstrenos() {
             const container = document.getElementById('ultimos-lanzamientos');
-            container.innerHTML = '<div class="loading-spinner"><img src="assets/img/Sharingam.png" alt="Cargando..."></div>';
+            container.innerHTML = '<div class="loading-spinner"><img src="assets/img/Sharingam.png" alt="Cargando..."></div><div class="skeleton-grid" id="skeleton-grid">' + Array(12).fill('<div class="skeleton skeleton-card"></div>').join('') + '</div>';
             try {
                 const res = await fetch(`${API_URL}/latest`);
                 const data = await res.json();

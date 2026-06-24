@@ -4,6 +4,7 @@ const cheerio = require('cheerio');
 const cors = require('cors');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
 const morgan = require('morgan');
 const http = require('http');
 const https = require('https');
@@ -27,6 +28,7 @@ axiosRetry.default(axios, {
 
 const app = express();
 app.use(cors({ origin: CORS_ORIGINS }));
+app.use(helmet());
 app.use(compression());
 app.use(morgan('short'));
 

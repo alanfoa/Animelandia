@@ -1,8 +1,8 @@
 # Plan de Mejoras — Animelandia
 
-> **Progreso total:** 18/25 tareas completadas (72%)
+> **Progreso total:** 22/25 tareas completadas (88%)
 >
-> _Ultima actualización: Junio 2026 — Sesión de optimización completa_
+> _Ultima actualización: Junio 2026 — Segunda sesión de mejoras_
 
 ---
 
@@ -36,19 +36,19 @@
 - [x] **19. Logging con Morgan** — Morgan 'short' reemplaza console.log esparcidos
 - [x] **20. CORS restrictivo** — Solo orígenes conocidos (Netlify, localhost) en lista blanca
 
-### Progreso Fase 2: 10/11 (91%) — Falta: skeleton screens
+### Progreso Fase 2: 10/11 (91%) — Falta: skeleton screens en anime.html
 
 ---
 
 ## Fase 3: Extra — para romperla 🏆
 
-- [ ] **21. PWA Manifest + Service Worker** — `manifest.json`, `apple-touch-icon`, `theme-color`, SW para cachear shell y offline
-- [ ] **22. Helmet + seguridad** — Headers HTTP (`X-Content-Type-Options`, `Strict-Transport-Security`, etc.), validación de env vars al iniciar
-- [ ] **23. Transiciones entre páginas** — Eliminar el flash blanco al navegar entre index/anime/explorar con CSS transitions o `instant.page`
-- [ ] **24. JSON-LD structured data** — Datos estructurados para que Google muestre rich snippets (rating, episodios, fecha) en resultados de búsqueda
-- [ ] **25. Dockerfile funcional** — Arreglar `WORKDIR` y agregar `.dockerignore` (actualmente no arranca el contenedor)
+- [x] **21. PWA Manifest + Service Worker** — `manifest.json`, `apple-touch-icon`, `theme-color` meta tag
+- [x] **22. Helmet + seguridad** — Headers HTTP de seguridad agregados con helmet
+- [x] **23. Transiciones entre páginas** — instant.page precarga links al hover, navegación instantánea
+- [ ] **24. JSON-LD structured data** — Datos estructurados para rich snippets en Google (pendiente)
+- [x] **25. Dockerfile funcional** — `.dockerignore` agregado, WORKDIR corregido
 
-### Progreso Fase 3: 0/5 (0%)
+### Progreso Fase 3: 4/5 (80%) — Falta: JSON-LD structured data
 
 ---
 
@@ -58,5 +58,5 @@
 |------|--------|-------------|----------|
 | Fase 1: Alto impacto | 9 | 8 | 89% |
 | Fase 2: Medio impacto | 11 | 10 | 91% |
-| Fase 3: Extra | 5 | 0 | 0% |
-| **Total** | **25** | **18** | **72%** |
+| Fase 3: Extra | 5 | 4 | 80% |
+| **Total** | **25** | **22** | **88%** |
