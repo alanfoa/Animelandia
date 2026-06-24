@@ -10,6 +10,17 @@
     <link rel="preconnect" href="https://animelandia-api-6wp2.onrender.com">
     <link rel="dns-prefetch" href="https://cdn.animeav1.com">
     <link rel="preconnect" href="https://cdn.animeav1.com">
+    <meta name="description" content="Animelandia - Streaming de anime gratis. Últimos episodios, explorá el catálogo y guardá tus favoritos.">
+    <meta property="og:title" content="Animelandia - Inicio">
+    <meta property="og:description" content="Streaming de anime gratis. Últimos episodios, catálogo y favoritos.">
+    <meta property="og:image" content="https://animelandia-oficial.netlify.app/assets/img/Logo.png">
+    <meta property="og:url" content="https://animelandia-oficial.netlify.app">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="es_LA">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Animelandia - Inicio">
+    <meta name="twitter:description" content="Streaming de anime gratis. Últimos episodios, catálogo y favoritos.">
+    <meta name="twitter:image" content="https://animelandia-oficial.netlify.app/assets/img/Logo.png">
     <style>
         /* VARIABLES DE COLOR (NUEVO) */
         :root {
@@ -731,12 +742,62 @@
             animation: sharingan-loading 3.5s ease-in-out infinite;
         }
 
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--card-bg);
+            color: var(--text-color);
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            z-index: 9999;
+            opacity: 0;
+            transition: all 0.4s ease;
+            border: 2px solid var(--racing-celeste);
+            pointer-events: none;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .scroll-top-btn {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--racing-celeste);
+            color: white;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 999;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .scroll-top-btn.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        .scroll-top-btn:hover { opacity: 0.9; transform: scale(1.1); }
+
         .error-container {
             display: none;
             text-align: center;
             padding: 60px 20px;
             grid-column: 1 / -1;
         }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
         .error-container p {
             color: #e74c3c;
             font-size: 16px;
@@ -787,7 +848,7 @@
             <!-- Mobile search (only visible inside hamburger menu on mobile) -->
             <table class="mobile-search-wrapper"><tr>
                 <td style="width:100%;padding:0;">
-                    <input type="text" id="input-buscador-mobile" placeholder="Busque seu anime favorito..."
+                    <input type="text" id="input-buscador-mobile" placeholder="Busque su anime favorito..."
                         onkeyup="if(event.key === 'Enter') buscarAnimeMobile()"
                         style="width:100%;padding:12px;border:1px solid #ddd;border-right:none;border-radius:8px 0 0 8px;box-sizing:border-box;background:var(--card-bg);color:var(--text-color);margin:0;">
                 </td>
@@ -804,7 +865,7 @@
                     <path class="star" d="M12,10 L14,13 L18,14 L15,16 L16,20 L12,18 L8,20 L9,16 L6,14 L10,13 Z" />
                 </svg>
             </button>
-            <button class="toggle-container" id="theme-toggle" onclick="toggleTheme()">
+            <button class="toggle-container" id="theme-toggle" onclick="toggleTheme()" aria-label="Cambiar tema oscuro/claro">
                 <div class="toggle-circle" id="toggle-circle">🌙</div>
             </button>
         </div>
@@ -812,8 +873,8 @@
 
     <div class="carousel-container" id="carousel">
         <div class="carousel-track" id="carousel-track"></div>
-        <button class="carousel-nav carousel-prev" onclick="moveCarousel(-1)">&#10094;</button>
-        <button class="carousel-nav carousel-next" onclick="moveCarousel(1)">&#10095;</button>
+        <button class="carousel-nav carousel-prev" onclick="moveCarousel(-1)" aria-label="Anterior slide">&#10094;</button>
+        <button class="carousel-nav carousel-next" onclick="moveCarousel(1)" aria-label="Siguiente slide">&#10095;</button>
         <div class="carousel-indicators" id="carousel-indicators"></div>
     </div>
 
@@ -821,10 +882,10 @@
         <button class="btn-nav" onclick="volverInicio()">← VOLVER AL INICIO</button>
     </div>
     <h2 id="titulo-seccion" style="padding: 20px 50px 0; color: var(--racing-celeste);">Ultimos Estrenos:</h2>
-    <div id="error-container" class="error-container">
-        <p id="error-message"></p>
-        <button class="btn-nav" onclick="reintentar()">REINTENTAR</button>
-    </div>
+        <div id="error-container" class="error-container" role="alert">
+            <p id="error-message"></p>
+            <button class="btn-nav" onclick="reintentar()">REINTENTAR</button>
+        </div>
     <div id="ultimos-lanzamientos" class="container"><div class="loading-spinner"><img src="assets/img/Sharingam.png" alt="Cargando..."></div></div>
 
     <h2 id="seccion-favoritos" style="padding: 20px 50px 0; color: var(--racing-celeste);">
@@ -1128,15 +1189,17 @@
                 favoritos.push(obj);
                 localStorage.setItem('misAnimes', JSON.stringify(favoritos));
                 if (icon) icon.classList.add('active');
+                showToast('✅ Agregado a favoritos');
             } else {
                 favoritos.splice(idx, 1);
                 localStorage.setItem('misAnimes', JSON.stringify(favoritos));
                 if (icon) icon.classList.remove('active');
+                showToast('❌ Eliminado de favoritos');
             }
             renderizarLista();
         }
 
-        function borrar(i) { favoritos.splice(i, 1); localStorage.setItem('misAnimes', JSON.stringify(favoritos)); renderizarLista(); }
+        function borrar(i) { favoritos.splice(i, 1); localStorage.setItem('misAnimes', JSON.stringify(favoritos)); renderizarLista(); showToast('❌ Eliminado de favoritos'); }
 
         // Mobile search function
         function buscarAnimeMobile() {
@@ -1161,7 +1224,33 @@
                 }
             });
         }
+
+        // Toast notification
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(t._hide);
+            t._hide = setTimeout(() => t.classList.remove('show'), 2500);
+        }
+
+        // Scroll-to-top
+        document.addEventListener('scroll', () => {
+            const btn = document.getElementById('scroll-top-btn');
+            btn.classList.toggle('visible', window.scrollY > 400);
+        });
+
+        // Ctrl+K / / para buscar
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey && e.key === 'k') || (!e.ctrlKey && !e.metaKey && e.key === '/' && !['INPUT','TEXTAREA'].includes(e.target.tagName))) {
+                e.preventDefault();
+                const input = document.getElementById('input-buscador') || document.getElementById('input-buscador-mobile');
+                if (input) input.focus();
+            }
+        });
     </script>
+    <div id="toast" class="toast"></div>
+    <button id="scroll-top-btn" class="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
     <footer style="text-align:center; padding:10px; font-size:12px; color:#666; background:#1a1a1a; margin-top:20px;">
         @AlanFoaRostirolla - Animelandia 2026
     </footer>

@@ -4,11 +4,13 @@ const cheerio = require('cheerio');
 const cors = require('cors');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
+const morgan = require('morgan');
 const http = require('http');
 const https = require('https');
 require('dotenv').config();
 
 const SCRAPING_TARGET = process.env.SCRAPING_TARGET || 'https://animeav1.com';
+const CORS_ORIGINS = (process.env.CORS_ORIGINS || 'https://animelandia-oficial.netlify.app,https://animelandia1.netlify.app,http://localhost:5500,http://127.0.0.1:5500').split(',');
 
 const httpAgent = new http.Agent({ keepAlive: true, keepAliveMsecs: 30000 });
 const httpsAgent = new https.Agent({ keepAlive: true, keepAliveMsecs: 30000 });
@@ -24,15 +26,16 @@ axiosRetry.default(axios, {
 });
 
 const app = express();
-app.use(cors());
+app.use(cors({ origin: CORS_ORIGINS }));
 app.use(compression());
+app.use(morgan('short'));
 
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
     message: { error: "Demasiadas solicitudes. Intentalo de nuevo en 15 minutos." }
 });
-app.use('/api/', limiter);
+app.use(limiter);
 
 app.use((req, res, next) => {
     res.set('Cache-Control', 'public, max-age=300');
@@ -79,8 +82,21 @@ async function getHomepage() {
     return homepagePromise;
 }
 
+// Limpieza periódica de caché (evita memory leak)
+const CACHE_MAX_AGE = 3600000;
+setInterval(() => {
+    const now = Date.now();
+    for (const [key, entry] of INFO_CACHE) { if (now - entry.time > CACHE_MAX_AGE) INFO_CACHE.delete(key); }
+    for (const [key, entry] of VIDEO_CACHE) { if (now - entry.time > CACHE_MAX_AGE) VIDEO_CACHE.delete(key); }
+    for (const [key, entry] of SEARCH_CACHE) { if (now - entry.time > CACHE_MAX_AGE) SEARCH_CACHE.delete(key); }
+}, 300000);
+
 const port = process.env.PORT || 3000;
-app.listen(port, '0.0.0.0', () => console.log(`📡 Sniper activo en puerto ${port}`));
+const server = app.listen(port, '0.0.0.0', () => console.log(`📡 Sniper activo en puerto ${port}`));
+
+// Graceful shutdown
+process.on('SIGTERM', () => { console.log('🛑 SIGTERM recibido, cerrando...'); server.close(() => process.exit(0)); });
+process.on('SIGINT', () => { console.log('🛑 SIGINT recibido, cerrando...'); server.close(() => process.exit(0)); });
 
 // 1. ÚLTIMOS ESTRENOS (Home) - Axios + Cheerio
 app.get('/latest', async (req, res) => {
@@ -402,4 +418,13 @@ app.get('/get-video', async (req, res) => {
         VIDEO_CACHE.set(cacheKey, { data: { servidores: results }, time: ahora });
         res.json({ servidores: results });
     } catch (e) { res.status(500).json({ error: "Error al obtener video: " + e.message }); }
+});
+
+// 404 handler
+app.use((req, res) => res.status(404).json({ error: 'Ruta no encontrada' }));
+
+// Error handler centralizado
+app.use((err, req, res, next) => {
+    console.error('Error no capturado:', err.message);
+    res.status(500).json({ error: 'Error interno del servidor' });
 });
