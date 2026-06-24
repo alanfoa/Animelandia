@@ -242,6 +242,15 @@
         .btn-nav-cap:hover { opacity: 0.9; transform: scale(1.05); }
         .btn-nav-cap:disabled { opacity: 0.4; cursor: default; transform: none; }
 
+        .download-wrap { position: relative; margin-left: auto; }
+        .btn-download { background: var(--racing-celeste); color: white; border: none; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 13px; white-space: nowrap; }
+        .btn-download:hover { opacity: 0.9; transform: scale(1.05); }
+        .download-menu { position: absolute; bottom: calc(100% + 8px); right: 0; background: var(--card-bg); border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: none; flex-direction: column; min-width: 170px; z-index: 100; overflow: hidden; }
+        .download-menu.show { display: flex; }
+        .download-menu a { padding: 10px 16px; color: var(--text-color); text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.15s; border-bottom: 1px solid #ddd; }
+        .download-menu a:last-child { border-bottom: none; }
+        .download-menu a:hover { background: var(--racing-celeste); color: white; }
+
         .grid-caps { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
         .cap-card { position: relative; cursor: pointer; overflow: hidden; border-radius: 10px; transition: 0.3s; aspect-ratio: 16 / 9; background: #000; }
         .cap-card:hover { transform: scale(1.05); }
@@ -648,6 +657,10 @@
             <div class="nav-cap">
                 <button id="btn-cap-prev" class="btn-nav-cap" onclick="capAnterior()" disabled>⬅ Anterior</button>
                 <button id="btn-cap-next" class="btn-nav-cap" onclick="capSiguiente()" disabled>Siguiente ➡</button>
+                <div class="download-wrap" id="download-wrap" style="display:none">
+                    <button class="btn-download" onclick="toggleDownloadMenu()">⬇ Descargar</button>
+                    <div class="download-menu" id="download-menu"></div>
+                </div>
             </div>
         </div>
 
@@ -711,6 +724,7 @@
         let titulo = '';
         let imagenUrl = '';
         let currentCap = null;
+        let downloads = [];
 
         // LÓGICA MODO OSCURO (NUEVO) - Default: Dark mode
         function toggleTheme() {
@@ -993,6 +1007,8 @@
             try {
                 const res = await fetch(`${API_URL}/get-video?slug=${slug}&cap=${cap}`);
                 const data = await res.json();
+                downloads = data.descargas || [];
+                renderDownloadMenu();
                 if (data.servidores && data.servidores.length > 0) {
                     divServidores.innerHTML = '';
                     tituloViendo.innerText = `Viendo Episodio ${cap}`;
@@ -1021,6 +1037,33 @@
             const idx = allEpisodes.findIndex(e => e.numero === currentCap);
             if (idx > 0) buscarOpciones(allEpisodes[idx - 1].numero);
         }
+
+        function renderDownloadMenu() {
+            const wrap = document.getElementById('download-wrap');
+            const menu = document.getElementById('download-menu');
+            if (!downloads.length) { wrap.style.display = 'none'; return; }
+            wrap.style.display = 'block';
+            menu.innerHTML = '';
+            downloads.forEach(d => {
+                const a = document.createElement('a');
+                a.href = d.url;
+                a.target = '_blank';
+                a.rel = 'noopener';
+                a.innerText = `📥 ${d.nombre}`;
+                menu.appendChild(a);
+            });
+        }
+
+        function toggleDownloadMenu() {
+            document.getElementById('download-menu').classList.toggle('show');
+        }
+
+        document.addEventListener('click', (e) => {
+            const wrap = document.getElementById('download-wrap');
+            if (wrap && !wrap.contains(e.target)) {
+                document.getElementById('download-menu')?.classList.remove('show');
+            }
+        });
 
         // Mobile search function
         function buscarYRedirigirMobile() {

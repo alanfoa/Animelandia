@@ -409,16 +409,30 @@ app.get('/get-video', async (req, res) => {
         const $ = await fetchAndParse(`${SCRAPING_TARGET}/media/${slug}/${cap}`);
         const scripts = $('script').map((i, el) => $(el).html()).get();
         const script = scripts.find(s => s.includes('embeds'));
-        if (!script) return res.json({ servidores: [] });
+        if (!script) return res.json({ servidores: [], descargas: [] });
         
-        const results = [];
-        const regex = /\{server:"([^"]+)",url:"([^"]+)"\}/g;
-        let m;
-        while ((m = regex.exec(script)) !== null) {
-            results.push({ nombre: m[1].toUpperCase(), url: m[2].replace(/\\u0023/g, '#') });
+        const servidores = [];
+        const descargas = [];
+        const pairRegex = /\{server:"([^"]+)",url:"([^"]+)"\}/g;
+        
+        const embedMatch = script.match(/embeds:\{SUB:\[([^\]]*)\]\}/);
+        if (embedMatch) {
+            let m;
+            while ((m = pairRegex.exec(embedMatch[1])) !== null) {
+                servidores.push({ nombre: m[1], url: m[2].replace(/\\u0023/g, '#') });
+            }
         }
-        VIDEO_CACHE.set(cacheKey, { data: { servidores: results }, time: ahora });
-        res.json({ servidores: results });
+        
+        const downloadMatch = script.match(/downloads:\{SUB:\[([^\]]*)\]\}/);
+        if (downloadMatch) {
+            let m;
+            while ((m = pairRegex.exec(downloadMatch[1])) !== null) {
+                descargas.push({ nombre: m[1], url: m[2].replace(/\\u0023/g, '#') });
+            }
+        }
+        
+        VIDEO_CACHE.set(cacheKey, { data: { servidores, descargas }, time: ahora });
+        res.json({ servidores, descargas });
     } catch (e) { res.status(500).json({ error: "Error al obtener video: " + e.message }); }
 });
 
