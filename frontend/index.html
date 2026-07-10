@@ -401,7 +401,7 @@
 
     <script>
         // API URL: usa localhost en desarrollo, Render en producción
-        const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://localhost:3000' : 'https://animelandia-api-6wp2.onrender.com';
+        const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://localhost:3001' : 'https://animelandia-api-6wp2.onrender.com';
         const isLocal = API_URL.startsWith('http://localhost');
 
         const listaDiv = document.getElementById('miLista');
@@ -492,7 +492,7 @@
                 const statusText = anime.status === 0 ? 'En emisión' : anime.status === 2 ? 'Finalizado' : 'Próximamente';
                 const statusClass = anime.status === 0 ? 'status-airing' : '';
                 const synopsis = anime.synopsis.length > 200 ? anime.synopsis.substring(0, 200) + '...' : anime.synopsis;
-                const href = isLocal ? `anime.html?slug=${anime.slug}` : `/anime/${anime.slug}`;
+                const href = `/anime/${anime.slug}`;
 
                 return `
                 <a class="carousel-slide" href="${href}" data-index="${index}" style="display:block; text-decoration:none; color:inherit;">
@@ -608,7 +608,7 @@
             episodios.forEach(ep => {
                 const card = document.createElement('a');
                 card.className = 'card';
-                card.href = isLocal ? `anime.html?slug=${ep.slug}` : `/anime/${ep.slug}`;
+                card.href = `/anime/${ep.slug}`;
                 card.style.textDecoration = 'none';
                 card.style.color = 'inherit';
 
@@ -662,7 +662,7 @@
         }
 
         function irADetalle(slug, titulo, imagen) {
-            window.location.href = isLocal ? `anime.html?slug=${slug}` : `/anime/${slug}`;
+            window.location.href = `/anime/${slug}`;
         }
 
         function eliminarContinuarViendo(slug, event) {
@@ -685,7 +685,7 @@
             entries.forEach(item => {
                 const card = document.createElement('a');
                 card.className = 'card';
-                card.href = isLocal ? `anime.html?slug=${item.slug}` : `/anime/${item.slug}`;
+                card.href = `/anime/${item.slug}`;
                 card.style.textDecoration = 'none';
                 card.style.color = 'inherit';
                 card.innerHTML = `
@@ -702,7 +702,7 @@
             favoritos.forEach((anime, i) => {
                 const card = document.createElement('a');
                 card.className = 'card';
-                card.href = isLocal ? `anime.html?slug=${anime.slug}` : `/anime/${anime.slug}`;
+                card.href = `/anime/${anime.slug}`;
                 card.style.textDecoration = 'none';
                 card.style.color = 'inherit';
                 card.innerHTML = `

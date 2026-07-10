@@ -391,7 +391,24 @@ app.get('/anime-info', async (req, res) => {
             generos: [...new Set([...scripts.matchAll(/name:"([^"]+)"/g)].map(m => m[1]))].filter(n => n.length > 3 && !n.includes('Anime')).slice(0, 5),
             status: scripts.match(/status:(\d+)/)?.[1] || "0",
             episodios: episodes.sort((a, b) => b.numero - a.numero),
-            imagen: mediaId ? `https://cdn.animeav1.com/covers/${mediaId}.jpg` : ""
+            imagen: mediaId ? `https://cdn.animeav1.com/covers/${mediaId}.jpg` : "",
+            nextDate: scripts.match(/nextDate:"(\d{4}-\d{2}-\d{2})"/)?.[1] || null,
+            waitDays: scripts.match(/waitDays:(\d+)/)?.[1] || null,
+            relaciones: (() => {
+                try {
+                    const relMatch = scripts.match(/relations:\s*\[([\s\S]*?)\]/);
+                    if (!relMatch) return [];
+                    const relStr = relMatch[1];
+                    const results = [];
+                    const itemRegex = /\{type:(\d+),destination:\{id:(\d+),slug:"([^"]+)",title:"((?:[^"\\]|\\.)*?)"/g;
+                    let rm;
+                    while ((rm = itemRegex.exec(relStr)) !== null) {
+                        const typeMap = { '1': 'Precuela', '2': 'Secuela', '3': 'Spin-off', '4': 'Adaptación', '5': 'Relacionado' };
+                        results.push({ type: rm[1], typeName: typeMap[rm[1]] || 'Relacionado', slug: rm[3], titulo: rm[4].replace(/\\"/g, '"') });
+                    }
+                    return results;
+                } catch (e) { return []; }
+            })()
         };
         
         INFO_CACHE.set(slug, { data: info, time: ahora });

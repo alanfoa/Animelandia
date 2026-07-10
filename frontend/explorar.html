@@ -515,7 +515,7 @@
 
     <script>
         // API URL: usa localhost en desarrollo, Render en producción
-        const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://localhost:3000' : 'https://animelandia-api-6wp2.onrender.com';
+        const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://localhost:3001' : 'https://animelandia-api-6wp2.onrender.com';
         const isLocal = API_URL.startsWith('http://localhost');
 
         // Modo Nocturno
@@ -690,7 +690,7 @@
             nuevosAnimes.forEach(anime => {
                 const card = document.createElement('a');
                 card.className = 'card';
-                card.href = isLocal ? `anime.html?slug=${anime.slug}` : `/anime/${anime.slug}`;
+                card.href = `/anime/${anime.slug}`;
                 card.style.textDecoration = 'none';
                 card.style.color = 'inherit';
 
