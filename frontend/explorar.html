@@ -331,7 +331,7 @@
             </a>
 
             <div class="nav-search nav-search-desktop">
-                <input type="text" id="input-buscador" placeholder="Busque su anime favorito..."
+                <input type="text" id="input-buscador" placeholder="Busque su anime favorito..." autocomplete="off"
                     onkeyup="if(event.key === 'Enter') buscarYRedirigir()">
                 <button class="btn-nav" onclick="buscarYRedirigir()">BUSCAR</button>
             </div>
@@ -349,7 +349,7 @@
             <!-- Mobile search (only visible inside hamburger menu on mobile) -->
             <table class="mobile-search-wrapper"><tr>
                 <td style="width:100%;padding:0;">
-                    <input type="text" id="input-buscador-mobile" placeholder="Busque su anime favorito..."
+                    <input type="text" id="input-buscador-mobile" placeholder="Busque su anime favorito..." autocomplete="off"
                         onkeyup="if(event.key === 'Enter') buscarYRedirigirMobile()"
                         style="width:100%;padding:12px;border:1px solid #ddd;border-right:none;border-radius:8px 0 0 8px;box-sizing:border-box;background:var(--card-bg);color:var(--text-color);margin:0;">
                 </td>
@@ -592,7 +592,7 @@
 
             // Persistir en URL
             const qs = params.toString();
-            const newUrl = qs ? `?${qs}` : window.location.pathname;
+            const newUrl = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
             history.replaceState(null, '', newUrl);
 
             return qs;
@@ -709,6 +709,7 @@
                     const favIcon = card.querySelector('.favorite-icon');
                     if (favIcon) favIcon.classList.add('active');
                 }
+                card.addEventListener('click', () => sessionStorage.setItem('animeReferrer', window.location.href));
                 container.appendChild(card);
             });
 

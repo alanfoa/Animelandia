@@ -30,6 +30,37 @@
     <style>
         input[type="text"] { width: 400px; }
 
+        .search-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 100;
+        }
+        .search-dropdown.active { display: block; }
+        .search-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            text-decoration: none;
+            color: var(--text-color);
+            transition: background 0.15s;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+        .search-dropdown-item:last-child { border-bottom: none; }
+        .search-dropdown-item:hover { background: var(--racing-celeste); color: white; }
+        .search-dropdown-item img { width: 40px; height: 56px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
+        .search-dropdown-item span { font-weight: 600; font-size: 13px; }
+        .search-dropdown-empty { padding: 14px; text-align: center; color: #999; font-size: 13px; }
+
         /* CAROUSEL STYLES */
         .carousel-container {
             position: relative;
@@ -327,10 +358,11 @@
                     onerror="this.src='https://via.placeholder.com/280x100?text=Animelandia'">
             </a>
 
-            <div class="nav-search nav-search-desktop">
-                <input type="text" id="input-buscador" placeholder="Busque su anime favorito..."
-                    onkeyup="if(event.key === 'Enter') buscarAnime()">
+            <div class="nav-search nav-search-desktop" style="position:relative;">
+                <input type="text" id="input-buscador" placeholder="Busque su anime favorito..." autocomplete="off"
+                    oninput="onSearchInput(this.value)" onkeyup="if(event.key === 'Enter') buscarAnime()">
                 <button class="btn-nav" onclick="buscarAnime()">BUSCAR</button>
+                <div id="search-dropdown" class="search-dropdown"></div>
             </div>
         </div>
 
@@ -346,7 +378,7 @@
             <!-- Mobile search (only visible inside hamburger menu on mobile) -->
             <table class="mobile-search-wrapper"><tr>
                 <td style="width:100%;padding:0;">
-                    <input type="text" id="input-buscador-mobile" placeholder="Busque su anime favorito..."
+                    <input type="text" id="input-buscador-mobile" placeholder="Busque su anime favorito..." autocomplete="off"
                         onkeyup="if(event.key === 'Enter') buscarAnimeMobile()"
                         style="width:100%;padding:12px;border:1px solid #ddd;border-right:none;border-radius:8px 0 0 8px;box-sizing:border-box;background:var(--card-bg);color:var(--text-color);margin:0;">
                 </td>
@@ -516,6 +548,10 @@
                 `<button class="carousel-indicator ${i === 0 ? 'active' : ''}" data-index="${i}"></button>`
             ).join('');
 
+            track.querySelectorAll('.carousel-slide').forEach(slide => {
+                slide.addEventListener('click', () => sessionStorage.setItem('animeReferrer', window.location.href));
+            });
+
             track.querySelectorAll('.carousel-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -632,6 +668,7 @@
                     if (favIcon) favIcon.classList.add('active');
                 }
                 favBtn.onclick = (e) => { e.stopPropagation(); e.preventDefault(); guardar(ep, favBtn); };
+                card.addEventListener('click', () => sessionStorage.setItem('animeReferrer', window.location.href));
                 container.appendChild(card);
             });
         }
@@ -641,13 +678,16 @@
             document.getElementById('input-buscador').value = '';
             document.getElementById('titulo-seccion').innerText = 'Ultimos Estrenos:';
             document.getElementById('btn-volver').style.display = 'none';
+            renderizarContinuarViendo();
             cargarEstrenos();
         }
 
         async function buscarAnime() {
             const query = document.getElementById('input-buscador').value.trim();
             if (!query) return;
+            document.getElementById('search-dropdown').classList.remove('active');
             document.getElementById('carousel').style.display = 'none';
+            document.getElementById('continuar-viendo-section').style.display = 'none';
             document.getElementById('btn-volver').style.display = 'inline-block';
             const container = document.getElementById('ultimos-lanzamientos');
             container.innerHTML = '<div class="loading-spinner"><img src="assets/img/Sharingam.png" alt="Buscando..."></div>';
@@ -693,6 +733,7 @@
                     <button class="btn-delete-cv" onclick="eliminarContinuarViendo('${item.slug}', event)" aria-label="Eliminar de continuar viendo">🗑️</button>
                     <img src="${item.imagen}" loading="lazy" onerror="this.src='https://via.placeholder.com/200x280?text=Sin+Imagen'">
                     <div class="card-info"><b>${item.titulo}</b></div>`;
+                card.addEventListener('click', () => sessionStorage.setItem('animeReferrer', window.location.href));
                 grid.appendChild(card);
             });
         }
@@ -713,6 +754,7 @@
                         </svg>
                     </button>
                     <img src="${anime.imagen}"><div class="card-info"><b>${anime.titulo}</b></div>`;
+                card.addEventListener('click', () => sessionStorage.setItem('animeReferrer', window.location.href));
                 listaDiv.appendChild(card);
             });
         }
@@ -783,6 +825,43 @@
                 const input = document.getElementById('input-buscador') || document.getElementById('input-buscador-mobile');
                 if (input) input.focus();
             }
+        });
+
+        // LIVE SEARCH AUTOCOMPLETE
+        let searchDebounceTimer = null;
+        let lastSearchQuery = '';
+
+        function onSearchInput(value) {
+            clearTimeout(searchDebounceTimer);
+            const dropdown = document.getElementById('search-dropdown');
+            if (!value.trim()) { dropdown.classList.remove('active'); lastSearchQuery = ''; return; }
+            searchDebounceTimer = setTimeout(() => fetchSearchSuggestions(value.trim()), 300);
+        }
+
+        async function fetchSearchSuggestions(query) {
+            if (query === lastSearchQuery) return;
+            lastSearchQuery = query;
+            const dropdown = document.getElementById('search-dropdown');
+            dropdown.innerHTML = '<div class="search-dropdown-empty">Buscando...</div>';
+            dropdown.classList.add('active');
+            try {
+                const res = await fetch(`${API_URL}/search?q=${encodeURIComponent(query)}`);
+                const data = await res.json();
+                const results = (data.results || []).slice(0, 8);
+                if (!results.length) { dropdown.innerHTML = '<div class="search-dropdown-empty">Sin resultados</div>'; return; }
+                dropdown.innerHTML = results.map(r => `
+                    <a class="search-dropdown-item" href="/anime/${r.slug}" onclick="sessionStorage.setItem('animeReferrer', window.location.href)">
+                        <img src="${r.imagen || ''}" onerror="this.src='https://via.placeholder.com/40x56?text=NA'" alt="">
+                        <span>${r.titulo}</span>
+                    </a>
+                `).join('');
+            } catch (e) { dropdown.innerHTML = '<div class="search-dropdown-empty">Error de conexión</div>'; }
+        }
+
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('search-dropdown');
+            const searchArea = document.querySelector('.nav-search-desktop');
+            if (dropdown && searchArea && !searchArea.contains(e.target)) dropdown.classList.remove('active');
         });
     </script>
     <div id="toast" class="toast"></div>

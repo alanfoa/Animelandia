@@ -197,7 +197,7 @@
             </a>
 
             <div class="nav-search nav-search-desktop">
-                <input type="text" id="input-buscador" placeholder="Busque su anime favorito..."
+                <input type="text" id="input-buscador" placeholder="Busque su anime favorito..." autocomplete="off"
                     onkeyup="if(event.key === 'Enter') buscarYRedirigir()">
                 <button class="btn-nav" onclick="buscarYRedirigir()">BUSCAR</button>
             </div>
@@ -215,7 +215,7 @@
             <!-- Mobile search (only visible inside hamburger menu on mobile) -->
             <table class="mobile-search-wrapper"><tr>
                 <td style="width:100%;padding:0;">
-                    <input type="text" id="input-buscador-mobile" placeholder="Busque su anime favorito..."
+                    <input type="text" id="input-buscador-mobile" placeholder="Busque su anime favorito..." autocomplete="off"
                         onkeyup="if(event.key === 'Enter') buscarYRedirigirMobile()"
                         style="width:100%;padding:12px;border:1px solid #ddd;border-right:none;border-radius:8px 0 0 8px;box-sizing:border-box;background:var(--card-bg);color:var(--text-color);margin:0;">
                 </td>
@@ -239,7 +239,7 @@
     </nav>
 
     <div style="max-width: 1100px; margin: 20px auto 0; padding: 0 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-        <button class="btn-nav" onclick="window.location.href='index.html'">← VOLVER AL INICIO</button>
+        <button class="btn-nav" id="btn-volver" onclick="volverAtras()">← VOLVER</button>
         <button class="btn-nav" onclick="compartirAnime()" style="background:#6c757d;">📤 COMPARTIR</button>
     </div>
 
@@ -485,6 +485,7 @@
                         a.className = 'relacion-tag';
                         a.href = `/anime/${r.slug}`;
                         a.textContent = `${r.typeName}: ${r.titulo}`;
+                        a.addEventListener('click', () => sessionStorage.setItem('animeReferrer', window.location.href));
                         relDiv.appendChild(a);
                     });
                 }
@@ -546,6 +547,16 @@
         function buscarYRedirigir() {
             const q = document.getElementById('input-buscador').value;
             if (q) window.location.href = `index.html?search=${encodeURIComponent(q)}`;
+        }
+
+        function volverAtras() {
+            const referrer = sessionStorage.getItem('animeReferrer');
+            if (referrer) {
+                sessionStorage.removeItem('animeReferrer');
+                window.location.href = referrer;
+            } else {
+                window.history.back();
+            }
         }
         
         function filtrarCapitulos() {
@@ -656,7 +667,7 @@
             favoritos.forEach((anime) => {
                 const card = document.createElement('div');
                 card.className = 'card-fav';
-                card.onclick = () => window.location.href = `/anime/${anime.slug}`;
+                card.onclick = () => { sessionStorage.setItem('animeReferrer', window.location.href); window.location.href = `/anime/${anime.slug}`; };
                 card.innerHTML = `<img src="${anime.imagen}"><div class="card-fav-info"><b>${anime.titulo}</b></div>`;
                 container.appendChild(card);
             });
