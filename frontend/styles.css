@@ -144,6 +144,41 @@ body {
     color: var(--racing-celeste);
 }
 
+.source-toggle {
+    height: 34px;
+    width: 70px;
+    background-color: #111;
+    border-radius: 34px;
+    cursor: pointer;
+    position: relative;
+    border: none;
+    padding: 0;
+    flex-shrink: 0;
+    transition: 0.3s;
+}
+.source-toggle:hover { opacity: 0.9; }
+.source-toggle-circle {
+    position: absolute;
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    border-radius: 50%;
+    border: 2px solid var(--racing-celeste);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #000;
+}
+.source-toggle-circle img {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    border-radius: 50%;
+}
+
 .hamburger-btn {
     display: none;
     flex-direction: column;
@@ -182,7 +217,7 @@ body {
     .nav-search-mobile { display: none !important; }
     .mobile-search-wrapper { display: none !important; }
     .nav-menu { display: flex !important; position: static; flex-direction: row; padding: 0; gap: 10px; border: none; box-shadow: none; background: transparent; }
-    .nav-menu .btn-nav, .nav-menu .toggle-container { flex-shrink: 0; }
+    .nav-menu .btn-nav, .nav-menu .toggle-container, .nav-menu .source-toggle { flex-shrink: 0; }
 }
 
 @media (max-width: 768px) {

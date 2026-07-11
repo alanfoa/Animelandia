@@ -10,6 +10,8 @@ const http = require('http');
 const https = require('https');
 require('dotenv').config();
 
+const tioanime = require('./scrapers/tioanime');
+
 const SCRAPING_TARGET = process.env.SCRAPING_TARGET || 'https://animeav1.com';
 const CORS_ORIGINS = (process.env.CORS_ORIGINS || 'https://animelandia-oficial.netlify.app,https://animelandia1.netlify.app,http://localhost:5500,http://127.0.0.1:5500').split(',');
 
@@ -102,6 +104,21 @@ process.on('SIGINT', () => { console.log('🛑 SIGINT recibido, cerrando...'); s
 
 // 1. ÚLTIMOS ESTRENOS (Home) - Axios + Cheerio
 app.get('/latest', async (req, res) => {
+    const { source } = req.query;
+
+    if (source === 'tio') {
+        try {
+            const data = await tioanime.getLatest();
+            return res.json(data.map(item => ({
+                titulo: item.titulo,
+                imagen: item.imagen,
+                slug: item.slug,
+                cap: item.cap,
+                source: 'tio'
+            })));
+        } catch (e) { console.error('Error en /latest (tio):', e.message); return res.status(500).json({ error: e.message }); }
+    }
+
     const ahora = Date.now();
     if (LATEST_CACHE.data && LATEST_CACHE.data.length > 0 && (ahora - LATEST_CACHE.lastUpdate < 600000)) return res.json(LATEST_CACHE.data);
     try {
@@ -129,6 +146,15 @@ app.get('/latest', async (req, res) => {
 
 // 1.5. FEATURED / CAROUSEL (Home) - Axios + Cheerio
 app.get('/featured', async (req, res) => {
+    const { source } = req.query;
+
+    if (source === 'tio') {
+        try {
+            const data = await tioanime.getFeatured();
+            return res.json(data);
+        } catch (e) { console.error('Error en /featured (tio):', e.message); return res.status(500).json({ error: e.message }); }
+    }
+
     const ahora = Date.now();
     if (FEATURED_CACHE.data && (ahora - FEATURED_CACHE.lastUpdate < 600000)) return res.json(FEATURED_CACHE.data);
     try {
@@ -291,7 +317,18 @@ app.get('/featured', async (req, res) => {
 
 // 2. BUSCADOR
 app.get('/search', async (req, res) => {
-    const { q, page = 1, ...filters } = req.query;
+    const { q, page = 1, source, ...filters } = req.query;
+
+    if (source === 'tio') {
+        try {
+            const data = await tioanime.search(q, page, filters);
+            return res.json({
+                results: data.results.map(item => ({ ...item, source: 'tio' })),
+                pagination: data.pagination
+            });
+        } catch (e) { console.error('Error en /search (tio):', e.message); return res.status(500).json({ results: [], pagination: { currentPage: 1, totalPages: 1, totalRecords: 0 }, error: e.message }); }
+    }
+
     const ahora = Date.now();
     if (page && (isNaN(page) || page < 1)) return res.status(400).json({ error: "'page' debe ser un número positivo" });
     try {
@@ -377,8 +414,18 @@ app.get('/search', async (req, res) => {
 
 // 3. INFO DEL ANIME (Detalles y Lista de Caps)
 app.get('/anime-info', async (req, res) => {
-    const { slug } = req.query;
+    const { slug, source } = req.query;
     if (!slug) return res.status(400).json({ error: "Falta el parámetro 'slug'. Ejemplo: /anime-info?slug=naruto" });
+
+    if (source === 'tio') {
+        try {
+            const info = await tioanime.getAnimeInfo(slug.split('/')[0]);
+            const statusMap = { '1': '0', '2': '2', '3': '1' };
+            info.status = statusMap[info.status] || info.status;
+            return res.json({ ...info, source: 'tio' });
+        } catch (e) { console.error('Error en /anime-info (tio):', e.message); return res.status(500).json({ error: e.message }); }
+    }
+
     const ahora = Date.now();
     if (INFO_CACHE.has(slug) && (ahora - INFO_CACHE.get(slug).time < 3600000)) return res.json(INFO_CACHE.get(slug).data);
     try {
@@ -429,9 +476,17 @@ app.get('/anime-info', async (req, res) => {
 
 // 4. REPRODUCTOR - Axios + Cheerio
 app.get('/get-video', async (req, res) => {
-    const { slug, cap } = req.query;
+    const { slug, cap, source } = req.query;
     if (!slug) return res.status(400).json({ error: "Falta el parámetro 'slug'" });
     if (!cap) return res.status(400).json({ error: "Falta el parámetro 'cap'" });
+
+    if (source === 'tio') {
+        try {
+            const data = await tioanime.getVideo(slug.split('/')[0], cap);
+            return res.json({ ...data, source: 'tio' });
+        } catch (e) { console.error('Error en /get-video (tio):', e.message); return res.status(500).json({ error: e.message }); }
+    }
+
     const cacheKey = `${slug}/${cap}`;
     const ahora = Date.now();
     if (VIDEO_CACHE.has(cacheKey) && (ahora - VIDEO_CACHE.get(cacheKey).time < 1800000)) return res.json(VIDEO_CACHE.get(cacheKey).data);

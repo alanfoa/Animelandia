@@ -365,6 +365,11 @@
                     <path class="star" d="M12,10 L14,13 L18,14 L15,16 L16,20 L12,18 L8,20 L9,16 L6,14 L10,13 Z" />
                 </svg>
             </button>
+            <button class="source-toggle" id="source-toggle" onclick="toggleSource()" aria-label="Cambiar fuente de anime">
+                <div class="source-toggle-circle" id="source-circle">
+                    <img id="source-icon" src="https://animeav1.com/favicon.png" alt="Fuente">
+                </div>
+            </button>
             <button class="toggle-container" id="theme-toggle" onclick="toggleTheme()" aria-label="Cambiar tema oscuro/claro">
                 <div class="toggle-circle" id="toggle-circle">🌙</div>
             </button>
@@ -518,6 +523,27 @@
         const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://localhost:3001' : 'https://animelandia-api-6wp2.onrender.com';
         const isLocal = API_URL.startsWith('http://localhost');
 
+        function getSource() { return localStorage.getItem('animeSource') || 'av1'; }
+        function withSource(url) { return getSource() === 'tio' ? url + (url.includes('?') ? '&' : '?') + 'source=tio' : url; }
+        function toggleSource() {
+            const next = getSource() === 'av1' ? 'tio' : 'av1';
+            localStorage.setItem('animeSource', next);
+            location.reload();
+        }
+        function updateSourceToggle() {
+            const src = getSource();
+            const circle = document.getElementById('source-circle');
+            const icon = document.getElementById('source-icon');
+            if (src === 'tio') {
+                circle.style.left = 'calc(100% - 30px)';
+                icon.src = 'https://tioanime.com/assets/img/icon-32x32.png';
+            } else {
+                circle.style.left = '4px';
+                icon.src = 'https://animeav1.com/favicon.png';
+            }
+        }
+        updateSourceToggle();
+
         // Modo Nocturno
         // LÓGICA MODO OSCURO
         function toggleTheme() {
@@ -665,7 +691,7 @@
                     }
                 }
 
-                const url = API_URL + '/search?' + params.toString();
+                const url = withSource(API_URL + '/search?' + params.toString());
                 const res = await fetch(url);
                 const data = await res.json();
 
@@ -787,7 +813,7 @@
                     params.append(key, value);
                 }
             }
-            fetch(API_URL + '/search?' + params.toString())
+            fetch(withSource(API_URL + '/search?' + params.toString()))
                 .then(res => res.json())
                 .then(data => { prefetchCache[num] = data; })
                 .catch(() => {});
