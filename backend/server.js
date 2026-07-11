@@ -307,6 +307,9 @@ app.get('/search', async (req, res) => {
             }
         }
 
+        const orderMap = { 'score-desc': 'score', 'title-asc': 'title', 'year-desc': 'year' };
+        if (filters.order && orderMap[filters.order]) filters.order = orderMap[filters.order];
+
         for (const [key, value] of Object.entries(filters)) {
             params.append(key, value);
         }
