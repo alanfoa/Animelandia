@@ -103,23 +103,28 @@ process.on('SIGINT', () => { console.log('🛑 SIGINT recibido, cerrando...'); s
 // 1. ÚLTIMOS ESTRENOS (Home) - Axios + Cheerio
 app.get('/latest', async (req, res) => {
     const ahora = Date.now();
-    if (LATEST_CACHE.data && (ahora - LATEST_CACHE.lastUpdate < 600000)) return res.json(LATEST_CACHE.data);
+    if (LATEST_CACHE.data && LATEST_CACHE.data.length > 0 && (ahora - LATEST_CACHE.lastUpdate < 600000)) return res.json(LATEST_CACHE.data);
     try {
-        const $ = await getHomepage();
+        const $ = await fetchAndParse(`${SCRAPING_TARGET}/`);
         const scripts = $('script').map((i, el) => $(el).html()).get();
-        const target = scripts.find(s => s.includes('latestEpisodes'));
-        if (!target) return res.json([]);
+        const target = scripts.find(s => s && s.includes('latestEpisodes'));
+        if (!target) {
+            console.log('latestEpisodes not found in any script tag');
+            return res.json(LATEST_CACHE.data && LATEST_CACHE.data.length > 0 ? LATEST_CACHE.data : []);
+        }
         
         const results = [];
-        // Nuevo regex para formato actual: media:{id:123,slug:"slug",title:"Titulo"},number:16
         const regex = /media:\s*\{id:\s*(\d+),\s*slug:\s*"([^"]+)",\s*title:\s*"((?:[^"\\]|\\.)+)"[^}]*\},\s*number:\s*(\d+)/g;
         let m;
         while ((m = regex.exec(target)) !== null) {
             results.push({ titulo: m[3].replace(/\\"/g, '"'), imagen: `https://cdn.animeav1.com/covers/${m[1]}.jpg`, slug: m[2], cap: m[4] });
         }
-        LATEST_CACHE = { data: results.slice(0, 24), lastUpdate: ahora };
-        res.json(LATEST_CACHE.data);
-    } catch (e) { res.status(500).json({ error: e.message }); }
+        if (results.length > 0) {
+            LATEST_CACHE = { data: results.slice(0, 24), lastUpdate: ahora };
+        }
+        console.log(`Latest: ${results.length} episodes found`);
+        res.json(results.length > 0 ? results.slice(0, 24) : (LATEST_CACHE.data || []));
+    } catch (e) { console.error('Error en /latest:', e.message); res.status(500).json({ error: e.message }); }
 });
 
 // 1.5. FEATURED / CAROUSEL (Home) - Axios + Cheerio
