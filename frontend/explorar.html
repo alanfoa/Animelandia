@@ -387,29 +387,22 @@
                 <select id="f-genero">
                     <option value="">Cualquiera</option>
                     <option value="accion">Acción</option>
-                    <option value="aventura">Aventura</option>
-                    <option value="ciencia-ficcion">Ciencia Ficción</option>
-                    <option value="comedia">Comedia</option>
-                    <option value="deportes">Deportes</option>
-                    <option value="drama">Drama</option>
-                    <option value="fantasia">Fantasía</option>
-                    <option value="misterio">Misterio</option>
-                    <option value="recuentos-de-la-vida">Recuentos de la Vida</option>
-                    <option value="romance">Romance</option>
-                    <option value="seinen">Seinen</option>
-                    <option value="shoujo">Shoujo</option>
-                    <option value="shounen">Shounen</option>
-                    <option value="sobrenatural">Sobrenatural</option>
-                    <option value="suspenso">Suspenso</option>
-                    <option value="terror">Terror</option>
                     <option value="antropomorfico">Antropomórfico</option>
                     <option value="artes-marciales">Artes Marciales</option>
+                    <option value="aventura">Aventura</option>
                     <option value="carreras">Carreras</option>
+                    <option value="ciencia-ficcion">Ciencia Ficción</option>
+                    <option value="comedia">Comedia</option>
+                    <option value="demencia">Demencia</option>
+                    <option value="demonios">Demonios</option>
+                    <option value="deportes">Deportes</option>
                     <option value="detectives">Detectives</option>
+                    <option value="drama">Drama</option>
                     <option value="ecchi">Ecchi</option>
                     <option value="elenco-adulto">Elenco Adulto</option>
                     <option value="escolares">Escolares</option>
                     <option value="espacial">Espacial</option>
+                    <option value="fantasia">Fantasía</option>
                     <option value="gore">Gore</option>
                     <option value="gourmet">Gourmet</option>
                     <option value="harem">Harem</option>
@@ -419,19 +412,32 @@
                     <option value="infantil">Infantil</option>
                     <option value="isekai">Isekai</option>
                     <option value="josei">Josei</option>
-                    <option value="juegos-estrategia">Juegos Estrategia</option>
+                    <option value="juegos">Juegos</option>
+                    <option value="magia">Magia</option>
                     <option value="mahou-shoujo">Mahou Shoujo</option>
                     <option value="mecha">Mecha</option>
                     <option value="militar">Militar</option>
+                    <option value="misterio">Misterio</option>
                     <option value="mitologia">Mitología</option>
                     <option value="musica">Música</option>
                     <option value="parodia">Parodia</option>
+                    <option value="policia">Policía</option>
                     <option value="psicologico">Psicológico</option>
+                    <option value="recuentos-de-la-vida">Recuentos de la Vida</option>
+                    <option value="romance">Romance</option>
                     <option value="samurai">Samurai</option>
+                    <option value="seinen">Seinen</option>
+                    <option value="shoujo">Shoujo</option>
                     <option value="shoujo-ai">Shoujo Ai</option>
+                    <option value="shounen">Shounen</option>
                     <option value="shounen-ai">Shounen Ai</option>
+                    <option value="sobrenatural">Sobrenatural</option>
                     <option value="superpoderes">Superpoderes</option>
+                    <option value="suspenso">Suspenso</option>
+                    <option value="terror">Terror</option>
                     <option value="vampiros">Vampiros</option>
+                    <option value="yaoi">Yaoi</option>
+                    <option value="yuri">Yuri</option>
                 </select>
             </div>
 
@@ -580,7 +586,7 @@
 
         // Generador de años
         const yearSelect = document.getElementById('f-year');
-        for (let y = 2026; y >= 1990; y--) {
+        for (let y = 2026; y >= 1950; y--) {
             let opt = document.createElement('option');
             opt.value = y;
             opt.innerText = y;

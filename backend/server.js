@@ -321,7 +321,23 @@ app.get('/search', async (req, res) => {
 
     if (source === 'tio') {
         try {
-            const data = await tioanime.search(q, page, filters);
+            const tioFilters = {};
+            if (filters.genre) tioFilters.genero = filters.genre;
+            if (filters.category) {
+                const typeMap = { 'tv-anime': '0', 'pelicula': '1', 'ova': '2', 'especial': '3' };
+                if (typeMap[filters.category]) tioFilters.type = typeMap[filters.category];
+            }
+            if (filters.status) {
+                const statusMap = { 'airing': '1', 'finished': '2', 'upcoming': '3' };
+                if (statusMap[filters.status]) tioFilters.status = statusMap[filters.status];
+            }
+            if (filters.order) {
+                const orderMap = { 'year': 'recent', 'score': 'recent' };
+                if (orderMap[filters.order]) tioFilters.sort = orderMap[filters.order];
+            }
+            if (filters.minYear) tioFilters.year = filters.minYear;
+
+            const data = await tioanime.search(q, page, tioFilters);
             return res.json({
                 results: data.results.map(item => ({ ...item, source: 'tio' })),
                 pagination: data.pagination
@@ -422,6 +438,27 @@ app.get('/anime-info', async (req, res) => {
             const info = await tioanime.getAnimeInfo(slug.split('/')[0]);
             const statusMap = { '1': '0', '2': '2', '3': '1' };
             info.status = statusMap[info.status] || info.status;
+            try {
+                let av1Scripts = '';
+                try {
+                    const $av1 = await fetchAndParse(`${SCRAPING_TARGET}/media/${slug.split('/')[0]}`);
+                    av1Scripts = $av1('script').map((i, el) => $(el).html()).get().join('');
+                } catch (e) {}
+                if (!av1Scripts.includes('nextDate:')) {
+                    const $search = await fetchAndParse(`${SCRAPING_TARGET}/catalogo?search=${encodeURIComponent(info.titulo)}`);
+                    const firstLink = $search('article a[href*="/media/"]').first().attr('href');
+                    if (firstLink) {
+                        const resp = await axios.get(`${SCRAPING_TARGET}${firstLink}`, {
+                            headers: { 'User-Agent': USER_AGENT }, timeout: 15000, httpAgent, httpsAgent
+                        });
+                        av1Scripts = resp.data;
+                    }
+                }
+                const nextDate = av1Scripts.match(/nextDate:"(\d{4}-\d{2}-\d{2})"/)?.[1] || null;
+                const waitDays = av1Scripts.match(/waitDays:(\d+)/)?.[1] || null;
+                if (nextDate) info.nextDate = nextDate;
+                if (waitDays) info.waitDays = waitDays;
+            } catch (e) {}
             return res.json({ ...info, source: 'tio' });
         } catch (e) { console.error('Error en /anime-info (tio):', e.message); return res.status(500).json({ error: e.message }); }
     }

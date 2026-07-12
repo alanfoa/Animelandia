@@ -126,7 +126,16 @@ async function getFeatured() {
 }
 
 async function search(q, page = 1, filters = {}) {
-    const urlDestino = `${BASE_URL}/directorio?p=${page}&q=${encodeURIComponent(q || '')}`;
+    const params = new URLSearchParams();
+    params.append('p', page);
+    if (q) params.append('q', q);
+    if (filters.genero) params.append('genero', filters.genero);
+    if (filters.type) params.append('type[]', filters.type);
+    if (filters.status) params.append('status', filters.status);
+    if (filters.sort) params.append('sort', filters.sort);
+    if (filters.year) params.append('year', filters.year);
+
+    const urlDestino = `${BASE_URL}/directorio?${params.toString()}`;
 
     const ahora = Date.now();
     const cached = getCached(SEARCH_CACHE, urlDestino, 300000);
@@ -211,7 +220,7 @@ async function getAnimeInfo(slug) {
     const titulo = $('h1.title').text().trim() || '';
     const descripcion = $('p.sinopsis').text().trim() || 'Sin descripción.';
     const tipo = $('span.anime-type-peli').first().text().trim() || '';
-    const anio = $('span.year').text().trim() || '';
+    const anio = $('article.anime-single .meta span.year').first().text().trim() || $('span.year').first().text().trim() || '';
     const statusText = $('a.btn.status').text().trim().toLowerCase();
     let status = '0';
     if (statusText.includes('emision') || statusText.includes('emisión') || statusText.includes('en emisión')) status = '2';
