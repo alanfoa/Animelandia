@@ -436,7 +436,7 @@ app.get('/anime-info', async (req, res) => {
     if (source === 'tio') {
         try {
             const info = await tioanime.getAnimeInfo(slug.split('/')[0]);
-            const statusMap = { '1': '0', '2': '2', '3': '1' };
+            const statusMap = { '1': '0', '2': '2', '3': '3' };
             info.status = statusMap[info.status] || info.status;
             try {
                 let av1Scripts = '';
