@@ -349,6 +349,11 @@
             }
         }
         updateSourceToggle();
+        const toggleBtn = document.getElementById('source-toggle');
+        toggleBtn.disabled = true;
+        toggleBtn.style.opacity = '0.4';
+        toggleBtn.style.cursor = 'not-allowed';
+        toggleBtn.title = 'No se puede cambiar de fuente viendo un anime';
 
         // Variables globales
         let favoritos = [];
