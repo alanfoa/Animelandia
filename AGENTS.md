@@ -26,7 +26,8 @@ frontend/
   styles.css             CSS compartido (navbar, tema, toasts, skeletons, favoritos)
   manifest.json, _redirects, serve.json, 404.html
   assets/img/            Logo.png, Sharingam.png (spinner)
-README.md, CONTEXT.md, plan.md, aprendizaje.md   Docs (pueden estar desactualizados)
+README.md                README público del repo de GitHub (actualizado)
+aprendizaje.md           Guía didáctica (gitignored, solo local)
 ```
 
 ## Backend (server.js)
@@ -113,7 +114,7 @@ cd frontend; npx serve -l 5500   # → http://localhost:5500
 - Repo: `github.com/alanfoa/Animelandia`, rama `main` (única en origin). Ramas locales legacy: `feat/animeflv-source`, `feat/faster-scraping`, `feature/pagination`, `refactor/migracion-profesional`.
 - Convensión de commits: `tipo: descripción en español` (ej. `feat:`, `fix:`).
 - **Regla**: no pushear cambios no probados.
-- Último commit (c4df872): reproducir HLS de zilla vía iframe (m3u8 directo) + HLS como servidor por defecto.
+- Últimos commits: `c4df872` (HLS de zilla vía iframe + servidor por defecto), `4b1b988` (docs: AGENTS.md unificado, borrados plan/README/CONTEXT). El README se restauró luego para el repo de GitHub.
 
 ## Plan y estado real
 
@@ -138,5 +139,5 @@ Trabajo posterior al plan.md:
 
 - Los segmentos HLS de zilla solo reproducen en navegador real (Cloudflare). No intentar proxy por backend.
 - El toggle de fuente en `anime.html` está deshabilitado intencionalmente.
-- `README.md`, `CONTEXT.md`, `plan.md` y `aprendizaje.md` pueden estar desactualizados: **el código es la fuente de verdad**.
+- `README.md` y `aprendizaje.md` existen como docs complementarios (el primero es público, el segundo solo local): **el código es la fuente de verdad**.
 - No hay tests (el script `test` es un stub). Verificar cambios probando en el navegador contra localhost.
