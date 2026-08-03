@@ -90,7 +90,7 @@ Ruta `/anime/{slug}` (rewrite por `_redirects` de Netlify y `serve.json` local).
 
 Render duerme el servicio tras 15 min de inactividad. Se usa **UptimeRobot** para ping cada 5 min a `https://animelandia-api-6wp2.onrender.com/health`. Si hay que recrearlo: crear monitor HTTP(s) apuntando a esa URL, intervalo 5 min.
 
-## Historico de optimización (mayo 2026, previo al plan.md)
+## Historico de optimización (mayo 2026, previo al plan de mejoras)
 
 - Backend: `cc22947` (homepage cache + keepAlive + axios-retry), `d525c41` (simplificar parser /featured), `5f772f9` (cache 30 min /get-video), `97bf4dd` (promise caching getHomepage), `e0c98f5` (compression gzip), `1d99f2f` (cache 5 min /search), `40d9e12` (validación + errores detallados), `4fd5a59` (rate limit), `f82d51b` (variables de entorno).
 - Frontend: `b71496d` (prefetch catálogo), `e7221bc` (fadeIn cards), `0566107` (dns-prefetch/preconnect), `c20087f` (sessionStorage anime-info), `be559e3` (errores visuales con REINTENTAR), `7124950` (título dinámico), `dee8fde` (fix Sharingam.png no commiteado).
@@ -114,17 +114,17 @@ cd frontend; npx serve -l 5500   # → http://localhost:5500
 - Repo: `github.com/alanfoa/Animelandia`, rama `main` (única en origin). Ramas locales legacy: `feat/animeflv-source`, `feat/faster-scraping`, `feature/pagination`, `refactor/migracion-profesional`.
 - Convensión de commits: `tipo: descripción en español` (ej. `feat:`, `fix:`).
 - **Regla**: no pushear cambios no probados.
-- Últimos commits: `c4df872` (HLS de zilla vía iframe + servidor por defecto), `4b1b988` (docs: AGENTS.md unificado, borrados plan/README/CONTEXT). El README se restauró luego para el repo de GitHub.
+- Últimos commits: `c4df872` (HLS de zilla vía iframe + servidor por defecto), `4b1b988` (docs: AGENTS.md unificado + borrados de docs redundantes). El README se restauró luego para el repo de GitHub.
 
 ## Plan y estado real
 
-`plan.md` quedó desactualizado (declara 25/28 = 89%). Estado **real**: las 28 tareas del plan están completas.
+El plan de mejoras original (28 tareas) está completo al 100% (declaraba 25/28). Estas 3 tareas figuraban como pendientes pero ya están hechas:
 
 - Tarea 1 (CSS compartido → styles.css): **hecha**.
 - Tarea 13 (skeleton screens): **hecha** (skeletons en las 3 páginas).
 - Tarea 24 (JSON-LD): **hecha** (en anime.html).
 
-Trabajo posterior al plan.md:
+Trabajo posterior a ese plan:
 1. **Simplificar URLs** (3b33a46): ruta `/anime/{slug}`, próximo capítulo (`nextDate`/`waitDays`), relaciones precuela/secuela.
 2. **Fix regex servidores** (3dd148b, 6fed894): `SUB:[...]` correcto cuando existe DUB; descargas como segundo bloque.
 3. **`/latest` sin cachear arrays vacíos** (dca8168).
