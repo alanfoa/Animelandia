@@ -12,8 +12,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="dns-prefetch" href="https://animelandia-api-6wp2.onrender.com">
     <link rel="preconnect" href="https://animelandia-api-6wp2.onrender.com">
-    <link rel="dns-prefetch" href="https://cdn.animeav1.com">
-    <link rel="preconnect" href="https://cdn.animeav1.com">
+    <link rel="dns-prefetch" href="https://player.zilla-networks.com">
+    <link rel="preconnect" href="https://player.zilla-networks.com">
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>
     <meta name="description" content="Animelandia - Información y episodios del anime. Streaming gratis.">
     <meta property="og:title" content="Animelandia - Detalles">
     <meta property="og:description" content="Información y episodios del anime. Streaming gratis.">
@@ -25,7 +26,7 @@
     <meta name="twitter:title" content="Animelandia - Detalles">
     <meta name="twitter:description" content="Información y episodios del anime. Streaming gratis.">
     <meta name="twitter:image" content="https://animelandia-oficial.netlify.app/assets/img/Logo.png">
-    <script src="https://instant.page/5.2.0" type="module" integrity="sha384-jnZyxPqKULGz5P0hC1HkxykBgBg1OFN8GZt3dDEk07Slu3B3C1Y7N0YmKoBSCQ2"></script>
+    <script src="https://instant.page/5.2.0" type="module"></script>
     <link rel="stylesheet" href="styles.css">
     <style>
         .content {
@@ -252,7 +253,9 @@
         <div id="reproductor">
             <h4 id="viendo-titulo" style="color:white; text-align:center; margin-top:0;"></h4>
             <div id="contenedor-servidores" class="lista-servidores"></div>
-            <iframe id="video-frame" src="" width="100%" height="500px" frameborder="0" allowfullscreen style="display:none; border-radius: 8px;"></iframe>
+            <iframe id="video-frame" src="" width="100%" height="500px" frameborder="0" allowfullscreen referrerpolicy="no-referrer" style="display:none; border-radius: 8px;"></iframe>
+            <video id="video-hls" controls playsinline preload="metadata" referrerpolicy="no-referrer" style="display:none; width:100%; height:500px; border-radius:8px; background:#000;"></video>
+            <div id="hls-error" style="display:none; color:#ff6b6b; text-align:center; padding:30px; font-size:15px; background:#1a1a1a; border-radius:8px; margin-top:10px;"></div>
             <div class="nav-cap">
                 <button id="btn-cap-prev" class="btn-nav-cap" onclick="capAnterior()" disabled>⬅ Anterior</button>
                 <button id="btn-cap-next" class="btn-nav-cap" onclick="capSiguiente()" disabled>Siguiente ➡</button>
@@ -725,6 +728,75 @@
             }
         }
 
+        let hlsInstance = null;
+
+        function mostrarErrorHls(mensaje) {
+            const err = document.getElementById('hls-error');
+            if (err) { err.innerText = mensaje; err.style.display = 'block'; }
+        }
+
+        function ocultarErrorHls() {
+            const err = document.getElementById('hls-error');
+            if (err) { err.style.display = 'none'; err.innerText = ''; }
+        }
+
+        function detenerVideoHls() {
+            if (hlsInstance) { try { hlsInstance.destroy(); } catch (e) {} hlsInstance = null; }
+            const videoHls = document.getElementById('video-hls');
+            if (videoHls) {
+                videoHls.pause();
+                videoHls.removeAttribute('src');
+                videoHls.load();
+                videoHls.style.display = 'none';
+            }
+            ocultarErrorHls();
+        }
+
+        function puedeHlsNativo() {
+            const v = document.createElement('video');
+            if (v.canPlayType('application/vnd.apple.mpegurl')) return true;
+            const m = navigator.userAgent.match(/(?:Chrome|Chromium)\/(\d+)/);
+            return !!(m && parseInt(m[1], 10) >= 142);
+        }
+
+        function reproducirHls(hlsUrl, videoHls, scrollTo) {
+            if (puedeHlsNativo()) {
+                videoHls.src = hlsUrl;
+                videoHls.addEventListener('error', () => {
+                    mostrarErrorHls('❌ No se pudo reproducir el video. Probá con Chrome/Edge actualizado.');
+                }, { once: true });
+                videoHls.play().catch(() => {});
+            } else if (window.Hls && Hls.isSupported()) {
+                hlsInstance = new Hls();
+                hlsInstance.loadSource(hlsUrl);
+                hlsInstance.attachMedia(videoHls);
+                hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => videoHls.play().catch(() => {}));
+                hlsInstance.on(Hls.Events.ERROR, (evt, data) => {
+                    if (data.fatal) mostrarErrorHls('❌ No se pudo reproducir el video.');
+                });
+            } else {
+                return false;
+            }
+            if (scrollTo) scrollTo();
+            return true;
+        }
+
+        function reproducirServidor(srv) {
+            const frame = document.getElementById('video-frame');
+            detenerVideoHls();
+            const m = (srv.hlsUrl) ? null : String(srv.url || '').match(/player\.zilla-networks\.com\/play\/([0-9a-f]{32})/i);
+            const hlsUrl = srv.hlsUrl || (m ? `https://player.zilla-networks.com/m3u8/${m[1]}` : null);
+            if (hlsUrl) {
+                frame.src = hlsUrl;
+                frame.style.display = 'block';
+                frame.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+            frame.src = srv.url;
+            frame.style.display = 'block';
+            frame.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
         async function buscarOpciones(cap) {
             currentCap = cap;
             const rep = document.getElementById('reproductor');
@@ -734,6 +806,7 @@
             const btnPrev = document.getElementById('btn-cap-prev');
             const btnNext = document.getElementById('btn-cap-next');
             if (frame) { frame.src = ""; frame.style.display = "none"; }
+            detenerVideoHls();
             rep.style.display = 'block';
             divServidores.innerHTML = '🔍 Buscando servidores...';
             tituloViendo.innerText = `Cargando Episodio ${cap}...`;
@@ -763,14 +836,12 @@
                         const btn = document.createElement('button');
                         btn.className = 'btn-servidor';
                         btn.innerText = srv.nombre;
-                        btn.onclick = () => {
-                            frame.src = srv.url;
-                            frame.style.display = 'block';
-                            frame.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        };
+                        btn.onclick = () => reproducirServidor(srv);
                         divServidores.appendChild(btn);
-                        if (index === 0) btn.click();
                     });
+                    const defaultIdx = data.servidores.findIndex(s => s.tipo === 'hls');
+                    const idxSelect = defaultIdx >= 0 ? defaultIdx : 0;
+                    divServidores.querySelectorAll('.btn-servidor')[idxSelect].click();
                 } else { divServidores.innerHTML = '⚠️ No hay reproductores disponibles.'; }
             } catch (e) { tituloViendo.innerText = "❌ Error encontrando."; }
         }
@@ -816,11 +887,13 @@
         document.addEventListener('keydown', (e) => {
             if (['INPUT','TEXTAREA'].includes(e.target.tagName)) return;
             const frame = document.getElementById('video-frame');
+            const videoHls = document.getElementById('video-hls');
             if (e.key === 'f' || e.key === 'F') {
-                if (frame && frame.src) {
+                const target = (videoHls && videoHls.style.display !== 'none' && videoHls.src) ? videoHls : (frame && frame.src ? frame : null);
+                if (target) {
                     e.preventDefault();
                     if (document.fullscreenElement) document.exitFullscreen();
-                    else frame.requestFullscreen?.();
+                    else target.requestFullscreen?.();
                 }
             }
             if (e.key === 'ArrowLeft' && !document.getElementById('btn-cap-prev').disabled) capAnterior();

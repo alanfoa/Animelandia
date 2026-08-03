@@ -58,6 +58,12 @@ let SEARCH_CACHE = new Map();
 
 const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36';
 
+function enriquecerServidor(srv) {
+    const m = (srv.url || '').match(/^https:\/\/player\.zilla-networks\.com\/play\/([0-9a-f]{32})/i);
+    if (m) return { ...srv, tipo: 'hls', hlsUrl: `https://player.zilla-networks.com/m3u8/${m[1]}` };
+    return { ...srv, tipo: 'iframe' };
+}
+
 async function fetchAndParse(url) {
     const response = await axios.get(url, {
         headers: { 'User-Agent': USER_AGENT },
@@ -520,6 +526,7 @@ app.get('/get-video', async (req, res) => {
     if (source === 'tio') {
         try {
             const data = await tioanime.getVideo(slug.split('/')[0], cap);
+            data.servidores = data.servidores.map(enriquecerServidor);
             return res.json({ ...data, source: 'tio' });
         } catch (e) { console.error('Error en /get-video (tio):', e.message); return res.status(500).json({ error: e.message }); }
     }
@@ -543,7 +550,7 @@ app.get('/get-video', async (req, res) => {
         if (embedMatch) {
             let m;
             while ((m = pairRegex.exec(embedMatch[1])) !== null) {
-                servidores.push({ nombre: m[1], url: m[2].replace(/\\u0023/g, '#') });
+                servidores.push(enriquecerServidor({ nombre: m[1], url: m[2].replace(/\\u0023/g, '#') }));
             }
         }
         
