@@ -61,6 +61,47 @@ Todos responden `{ error }` con 4xx/5xx en fallos. 404 global → JSON.
 - **Regla de oro**: reproducir `hlsUrl` con un **iframe** que apunte directo al `.m3u8` (el navegador lo muestra como media document). **NO** usar `<video>` nativo ni hls.js: el manifest responde 200 pero los segmentos `/segs/*` están protegidos por Cloudflare y dan 403 a requests que no vienen de un navegador real (hls.js falla con "❌ No se pudo reproducir el video"). No proxear por backend.
 - El iframe usa `referrerpolicy="no-referrer"`.
 
+### Payloads reales (fuente av1, abril 2026)
+
+`GET /anime-info?slug=boku-no-hero-academia-i-am-a-hero-too`:
+
+```json
+{
+  "descripcion": "Adaptación del manga de una sola entrega del fanbook de 2025...",
+  "rating": "0",
+  "titulo": "Boku no Hero Academia: I Am a Hero Too",
+  "anio": "2026",
+  "tipo": "Especial",
+  "generos": ["Shounen", "Escolares", "Superpoderes", "Acción", "Especial"],
+  "status": "0",
+  "episodios": [ { "numero": 1, "thumbnail": "https://cdn.animeav1.com/screenshots/4432/1.jpg" } ],
+  "imagen": "https://cdn.animeav1.com/covers/4432.jpg",
+  "nextDate": null,
+  "waitDays": "7",
+  "relaciones": [ { "type": "8", "typeName": "Relacionado", "slug": "...", "titulo": "..." } ]
+}
+```
+
+`GET /get-video?slug=boku-no-hero-academia-i-am-a-hero-too&cap=1`:
+
+```json
+{
+  "servidores": [
+    { "nombre": "UPNShare", "url": "https://animeav1.uns.bio/#ja6aaj", "tipo": "iframe" },
+    { "nombre": "HLS", "url": "https://player.zilla-networks.com/play/b259a0651ca5a0a1db2d86f8b707c94e", "tipo": "hls", "hlsUrl": "https://player.zilla-networks.com/m3u8/b259a0651ca5a0a1db2d86f8b707c94e" },
+    { "nombre": "Mega", "url": "https://mega.nz/embed/Si5xxLII#...", "tipo": "iframe" }
+  ],
+  "descargas": [
+    { "nombre": "TransferIt", "url": "https://transfer.it/t/DRCPOO5zlbSB" },
+    { "nombre": "Mega", "url": "https://mega.nz/file/Si5xxLII#..." }
+  ],
+  "episodeTitle": null
+}
+```
+
+- Los `servidores` ya vienen con `tipo` y `hlsUrl` resueltos por `enriquecerServidor`. `episodeTitle` suele ser `null` en av1.
+- En fuente `tio` la forma es la misma; cambian los slugs (`/ver/{slug}-{cap}`) y los servidores scrapeados.
+
 ## Frontend
 
 ### Funcionamiento general
@@ -114,7 +155,7 @@ cd frontend; npx serve -l 5500   # → http://localhost:5500
 - Repo: `github.com/alanfoa/Animelandia`, rama `main` (única en origin). Ramas locales legacy: `feat/animeflv-source`, `feat/faster-scraping`, `feature/pagination`, `refactor/migracion-profesional`.
 - Convensión de commits: `tipo: descripción en español` (ej. `feat:`, `fix:`).
 - **Regla**: no pushear cambios no probados.
-- Últimos commits: `c4df872` (HLS de zilla vía iframe + servidor por defecto), `4b1b988` (docs: AGENTS.md unificado + borrados de docs redundantes). El README se restauró luego para el repo de GitHub.
+- Últimos commits: `88a454e` (docs: quitar referencias a plan.md), `c4df872` (HLS de zilla vía iframe + servidor por defecto), `4b1b988` (docs: AGENTS.md unificado + borrados de docs redundantes). El README se restauró luego para el repo de GitHub.
 
 ## Plan y estado real
 
@@ -134,6 +175,18 @@ Trabajo posterior a ese plan:
 7. **Deshabilitar toggle de fuente en detalle** (73c7e2a).
 8. **Fix status mapping TioAnime** (fbaac9d): Próximamente mostraba Finalizado.
 9. **HLS vía iframe m3u8 directo + default** (c4df872, última sesión, pusheado).
+
+## Para tocar X, leé estos archivos
+
+- **Endpoints / rutas / validación / rate limit / CORS / cachés**: `backend/server.js` (todo el backend está ahí).
+- **Scraping de una fuente (parseo de HTML, regex, slugs)**: `backend/scrapers/animeav1.js` o `backend/scrapers/tioanime.js`.
+- **Agregar/quitar fuente**: `server.js` (mapa de scrapers + dispatch) + nuevo `backend/scrapers/{fuente}.js`.
+- **HLS / enriquecimiento de servidores**: `enriquecerServidor` en `server.js:61` + el iframe en `frontend/anime.html`.
+- **Home (carrusel, /latest, favoritos, continuar viendo)**: `frontend/index.html`.
+- **Catálogo (filtros, paginación, prefetch)**: `frontend/explorar.html`.
+- **Detalle (info, episodios, reproductor, descargas, shortcuts)**: `frontend/anime.html`.
+- **Estilos / tema / toasts / skeletons / navbar**: `frontend/styles.css`.
+- **Config de deploy**: Render (`backend/render-build.sh`, `Dockerfile`), Netlify (`frontend/_redirects`, `manifest.json`, `serve.json`).
 
 ## Gotchas / pendientes
 
